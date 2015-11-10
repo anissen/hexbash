@@ -104,14 +104,26 @@ class BattleMap extends luxe.Entity {
         }
     }
 
-    function isWalkable(hex :Hex) {
-        var tile = hex_to_tile(hex);
-        if (tile == null) return false;
-        if (tile.has('Blocked')) return false;
-        for (e in entities) {
-            if (pos_to_hex(e.pos).key == hex.key) return false;
-        }
+    public function is_walkable(hex :Hex) {
+        if (is_blocked(hex)) return false;
+        if (get_entity(hex) != null) return false;
         return true;
+    }
+
+    public function get_entity(hex :Hex) {
+        var tile = hex_to_tile(hex);
+        if (tile == null) return null;
+        for (e in entities) {
+            if (pos_to_hex(e.pos).key == hex.key) return e;
+        }
+        return null;
+    }
+
+    public function is_blocked(hex :Hex) {
+        var tile = hex_to_tile(hex);
+        if (tile == null) return true;
+        if (tile.has('Blocked')) return true;
+        return false;
     }
 
     public function hex_to_tile(hex :Hex) :HexTile {
@@ -131,11 +143,11 @@ class BattleMap extends luxe.Entity {
     }
 
     public function get_path(start :Hex, end :Hex) :Array<Hex> {
-        return start.find_path(end, 100, 6, isWalkable);
+        return start.find_path(end, 100, 6, is_walkable);
     }
 
     public function get_reachable(start :Hex, range :Int) :Array<Hex> {
-        return start.reachable(isWalkable, range);
+        return start.reachable(is_walkable, range);
     }
 
     override function onmousemove(event :MouseEvent) {
@@ -227,6 +239,7 @@ class PieceActionState extends State {
     var battleMap :BattleMap;
     var path_dots :Array<Vector>;
     var reachable_dots :Array<Vector>;
+    var attack_dots :Array<Vector>;
     var selected :Piece;
 
     var mouseMoveEvent :String;
@@ -236,6 +249,7 @@ class PieceActionState extends State {
         super({ name: StateId });
         path_dots = [];
         reachable_dots = [];
+        attack_dots = [];
     }
 
     function select(p :Piece) {
@@ -247,11 +261,20 @@ class PieceActionState extends State {
         selected = p;
         selected.add(new Selected({ name: 'Selected' }));
 
-        var reachable = battleMap.get_reachable(battleMap.pos_to_hex(selected.pos), 2);
+        var hex = battleMap.pos_to_hex(selected.pos);
+        var reachable = battleMap.get_reachable(hex, 2);
         reachable_dots = [ for (r in reachable) {
             var pos = Layout.hexToPixel(battleMap.layout, r);
             new Vector(pos.x, pos.y);
         }];
+
+        attack_dots = [];
+        for (a in hex.ring(1)) {
+            var entity = battleMap.get_entity(a);
+            if (entity == null) continue;
+            var pos = Layout.hexToPixel(battleMap.layout, a);
+            attack_dots.push(new Vector(pos.x, pos.y));
+        }
     }
 
     override function onenter<T>(_data :T) {
@@ -289,10 +312,20 @@ class PieceActionState extends State {
 
         clickEvent = battleMap.events.listen(BattleMap.HEX_CLICKED_EVENT, function(hex :Hex) {
             if (selected == null) return;
+
+            // Attack
+            var entity = battleMap.get_entity(hex);
+            if (entity != null && entity != selected) { // TODO: Check that it's the other player's entity
+                entity.destroy();
+                return;
+            }
+
+            // Move
             var path = get_path_positions(hex);
             if (path.length == 0) return;
             path_dots = [];
             reachable_dots = [];
+            attack_dots = [];
             var count :Int = 0;
             var timePerHex :Float = 0.2;
             for (p in path) {
@@ -324,6 +357,16 @@ class PieceActionState extends State {
                 x: dot.x,
                 y: dot.y,
                 r: 20,
+                immediate: true,
+                depth: 10
+            });
+        }
+        for (dot in attack_dots) {
+            Luxe.draw.circle({
+                x: dot.x,
+                y: dot.y,
+                r: 25,
+                color: new Color(1.0, 0.6, 0.6),
                 immediate: true,
                 depth: 10
             });
@@ -371,6 +414,8 @@ class CardCastState extends State {
         clickEvent = battleMap.events.listen(BattleMap.HEX_CLICKED_EVENT, function(hex :Hex) {
             if (selectedCard == null) return;
             selectedCard.trigger(hex);
+            selectedCard.destroy();
+            Main.states.set(BattleState.StateId);
         });
     }
 }
@@ -496,7 +541,7 @@ class SelectableCard extends luxe.Component {
         is_mouse_over = is_mouse_over_card(event.pos);
     }
 
-    override function onmousedown(event :luxe.Input.MouseEvent) {
+    override function onmouseup(event :luxe.Input.MouseEvent) {
         if (is_mouse_over_card(event.pos)) func(card);
     }
 
