@@ -1,0 +1,49 @@
+{
+    flow : {
+        build : {
+            android : {
+                sdk: '/usr/local/Cellar/android-sdk/r21.1/',
+                ant_path: '/usr/local/Cellar/ant/1.9.4/bin/ant'
+            }
+        }
+    },
+
+    luxe:{
+        window: {
+            width: 1024,
+            height: 768,
+            title: 'hexbash',
+            fullscreen: false,
+            resizable: true,
+            borderless: false
+        }
+    },
+
+    project : {
+        name : 'hexbash',
+        version : '0.1.0',
+        author : 'Anders Nissen',
+
+        app : {
+            name : 'hexbash',
+            package : 'com.andersnissen.hexbash',
+            main : 'Main',
+            mobile : {
+                orientation : 'portrait'
+            }
+        },
+
+        build : {
+            dependencies : {
+                luxe : '*'
+            },
+            defines : [
+                'absolute-path'
+            ]
+        },
+
+        files : {
+            assets : 'assets/'
+        }
+    }
+}
