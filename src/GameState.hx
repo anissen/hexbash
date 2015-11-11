@@ -68,7 +68,7 @@ enum Event {
 }
 
 class GameModel {
-    public var hexes :Array<Hex>;
+    var hexes :Map<String, Hex>;
     public var pieces :Array<PieceModel>;
     var map_radius :Int = 4;
     var random :luxe.utils.Random;
@@ -76,8 +76,8 @@ class GameModel {
 
     public function new() {
         listeners = new List();
-        random = new luxe.utils.Random(42);
-        hexes = [];
+        random = new luxe.utils.Random(43);
+        hexes = new Map();
         pieces = [];
     }
 
@@ -89,8 +89,12 @@ class GameModel {
     }
 
     function add_hex(hex :Hex) {
-        hexes.push(hex);
+        hexes.set(hex.key, hex);
         emit(HexAdded(hex));
+    }
+
+    public function has_hex(hex :Hex) {
+        return hexes.exists(hex.key);
     }
 
     public function add_piece(p :PieceModel) {
@@ -112,7 +116,7 @@ class GameModel {
 class BattleMap extends luxe.Entity {
     static public var HEX_CLICKED_EVENT :String = 'hex_clicked';
     static public var HEX_MOUSEMOVED_EVENT :String = 'hex_mousemoved';
-    public /* HACK */ var layout :Layout;
+    public var layout :Layout;
     public var gameModel :GameModel;
 
     public var hexSize :Int = 60;
@@ -121,7 +125,6 @@ class BattleMap extends luxe.Entity {
     public function new() {
         super({ name: 'BattleMap' });
         gameModel = new GameModel();
-
     }
 
     override function init() {
@@ -151,11 +154,12 @@ class BattleMap extends luxe.Entity {
         return start.find_path(end, 100, 6, is_walkable);
     }
 
-    public function get_reachable(start :Hex, range :Int) :Array<Hex> {
-        return start.reachable(is_walkable, range);
-    }
+    // public function get_reachable(start :Hex, range :Int) :Array<Hex> {
+    //     return start.reachable(is_walkable, range);
+    // }
 
     public function is_walkable(hex :Hex) {
+        if (!gameModel.has_hex(hex)) return false;
         if (get_piece(hex) != null) return false;
         return true;
     }
@@ -219,10 +223,10 @@ class BattleState extends State {
         hexMap[hex.key] = tile;
     }
 
-    function add_piece(piece :PieceModel) {
-        var minionPos = Layout.hexToPixel(battleMap.layout, piece.hex);
+    function add_piece(model :PieceModel) {
+        var minionPos = Layout.hexToPixel(battleMap.layout, model.hex);
         var minion = new Minion({
-            power: piece.power,
+            model: model,
             pos: new Vector(minionPos.x, minionPos.y),
             color: new Color(129/255, 83/255, 118/255),
             depth: 2
@@ -258,6 +262,9 @@ class BattleState extends State {
         // battleMap.entities.push(hero);
         // battleMap.entities.push(minion);
         // battleMap.entities.push(enemy);
+
+        battleMap.gameModel.add_piece(new PieceModel('Enemy', 1, 8, new Hex(3, -2, 0)));
+        battleMap.gameModel.add_piece(new PieceModel('Hero', 0, 5, new Hex(-1, 0, 0)));
     }
 
     function setup_hand() {
@@ -313,20 +320,20 @@ class PieceActionState extends State {
         selected = p;
         selected.add(new Selected({ name: 'Selected' }));
 
-        // var hex = battleMap.pos_to_hex(selected.pos);
-        // var reachable = hex.reachable();
-        // reachable_dots = [ for (r in reachable) {
-        //     var pos = Layout.hexToPixel(battleMap.layout, r);
-        //     new Vector(pos.x, pos.y);
-        // }];
-        //
-        // attack_dots = [];
-        // for (a in hex.ring(1)) {
-        //     var entity = battleMap.get_piece(a);
-        //     if (entity == null) continue;
-        //     var pos = Layout.hexToPixel(battleMap.layout, a);
-        //     attack_dots.push(new Vector(pos.x, pos.y));
-        // }
+        var hex = battleMap.pos_to_hex(selected.pos);
+        var reachable = hex.reachable(battleMap.is_walkable, 2);
+        reachable_dots = [ for (r in reachable) {
+            var pos = Layout.hexToPixel(battleMap.layout, r);
+            new Vector(pos.x, pos.y);
+        }];
+
+        attack_dots = [];
+        for (a in hex.ring(1)) {
+            var entity = battleMap.get_piece(a);
+            if (entity == null) continue;
+            var pos = Layout.hexToPixel(battleMap.layout, a);
+            attack_dots.push(new Vector(pos.x, pos.y));
+        }
     }
 
     override function onenter<T>(_data :T) {
@@ -383,6 +390,7 @@ class PieceActionState extends State {
                 var pos = battleMap.hex_to_pos(p);
                 Luxe.timer.schedule(count * timePerHex, function() {
                     luxe.tween.Actuate.tween(selected.pos, timePerHex, { x: pos.x, y: pos.y });
+                    selected.model.hex = p;
                     // var this_hex = battleMap.pos_to_hex(tile.pos);
                     // var enemy_hex = battleMap.pos_to_hex(enemy.pos);
                     // if (this_hex.key == enemy_hex.key) enemy.destroy();
@@ -473,16 +481,20 @@ class CardCastState extends State {
 
 typedef PieceOptions = {
     > VisualOptions,
-    power: Int
+    model :PieceModel
 };
 class Piece extends Visual {
+    public var model :PieceModel;
+
     public function new(options :PieceOptions) {
         var _options = options;
         if (_options.color == null) _options.color = new Color(0, 0.5, 0.5);
         super(_options);
 
+        model = _options.model;
+
         new luxe.Text({
-            text: '' + _options.power,
+            text: '' + model.power,
             align: luxe.Text.TextAlign.center,
             align_vertical: luxe.Text.TextAlign.center,
             parent: this,
