@@ -33,18 +33,6 @@ class HexTile extends Visual {
     }
 }
 
-class Blocked extends luxe.Component {
-    public function new() {
-        super({ name: 'Blocked' });
-    }
-
-    override function init() {
-        var hexTile :HexTile = cast entity;
-        hexTile.color.tween(1, { a: 0.0 });
-        hexTile.foreground.color.tween(1, { r: 26/255, g: 39/255, b: 60/255 });
-    }
-}
-
 /*
 Idea:
 BattleState
@@ -58,79 +46,99 @@ BattleState
 Model-View separation between LevelMap, Pieces, Cards
 */
 
+class PieceModel {
+    public var title :String;
+    public var playerId :Int;
+    public var power :Int;
+    public var hex :Hex;
+
+    public function new(title :String, playerId :Int, power :Int, hex :Hex) {
+        this.title = title;
+        this.playerId = playerId;
+        this.power = power;
+        this.hex = hex;
+    }
+}
+
+typedef EventListenerFunction = Event -> Void;
+// typedef PieceAddedData = {  };
+
+enum Event {
+    HexAdded(hex :Hex);
+    PieceAdded(pieceModel :PieceModel);
+}
+
+class GameModel {
+    public var hexes :Array<Hex>;
+    public var pieces :Array<PieceModel>;
+    var map_radius :Int = 4;
+    var random :luxe.utils.Random;
+
+
+    var listeners :List<EventListenerFunction>;
+
+    public function new() {
+        listeners = new List();
+        random = new luxe.utils.Random(42);
+        hexes = [];
+        pieces = [];
+    }
+
+    public function load_map() {
+        var tempHexes = MapFactory.create_hexagon_map(map_radius);
+        for (hex in tempHexes) {
+            if (random.get() < 0.7) add_hex(hex);
+        }
+    }
+
+    function add_hex(hex :Hex) {
+        hexes.push(hex);
+        // Emit one event per hex
+        emit(HexAdded(hex));
+    }
+
+    public function add_piece(p :PieceModel) {
+        pieces.push(p);
+        // Emit event
+        emit(PieceAdded(p));
+    }
+
+    function emit(event :Event) :Void {
+        for (listener in listeners) {
+            listener(event);
+        }
+    }
+
+    public function listen(func: EventListenerFunction) {
+        listeners.add(func);
+    }
+}
+
 // TODO: Abstract out the level logic to be able to listen to level events, e.g.
 // * c
 class BattleMap extends luxe.Entity {
     static public var HEX_CLICKED_EVENT :String = 'hex_clicked';
     static public var HEX_MOUSEMOVED_EVENT :String = 'hex_mousemoved';
-    var levelScene :Scene;
     public /* HACK */ var layout :Layout;
+    public var gameModel :GameModel;
 
-    var map_radius :Int = 4;
-    var hexSize :Int = 60;
+    public var hexSize :Int = 60;
     var margin  :Int = 5;
-
-    var hexMap :Map<String, HexTile>;
-    public var entities :Array<Piece>;
-    var random :luxe.utils.Random;
 
 
     public function new() {
         super({ name: 'BattleMap' });
-        hexMap = new Map();
-        levelScene = new Scene();
-        entities = [];
-        random = new luxe.utils.Random(42);
+        gameModel = new GameModel();
+
     }
 
     override function init() {
-        var hexes = MapFactory.create_hexagon_map(map_radius);
-
         var size = new Point(hexSize + margin, hexSize + margin);
         var origin = new Point(Luxe.screen.mid.x, Luxe.screen.mid.y);
         layout = new Layout(Layout.pointy, size, origin);
-
-        for (hex in hexes) {
-            var pos = Layout.hexToPixel(layout, hex);
-            var tile = new HexTile({
-                pos: new Vector(pos.x, pos.y),
-                r: hexSize,
-                scene: levelScene
-            });
-            if (random.get() < 0.3) {
-                tile.add(new Blocked());
-            }
-            hexMap[hex.key] = tile;
-        }
     }
 
-    public function is_walkable(hex :Hex) {
-        if (is_blocked(hex)) return false;
-        if (get_entity(hex) != null) return false;
-        return true;
-    }
-
-    public function get_entity(hex :Hex) {
-        var tile = hex_to_tile(hex);
-        if (tile == null) return null;
-        for (e in entities) {
-            if (pos_to_hex(e.pos).key == hex.key) return e;
-        }
-        return null;
-    }
-
-    public function is_blocked(hex :Hex) {
-        var tile = hex_to_tile(hex);
-        if (tile == null) return true;
-        if (tile.has('Blocked')) return true;
-        return false;
-    }
-
-    public function hex_to_tile(hex :Hex) :HexTile {
-        return hexMap[hex.key];
-    }
-
-    public function mouseWorldPos(pos :Vector) :Vector {
+    public function get_world_pos(pos :Vector) :Vector {
         var r = Luxe.camera.view.screen_point_to_ray(pos);
         var result = Luxe.utils.geometry.intersect_ray_plane(r.origin, r.dir, new Vector(0, 0, 1), new Vector());
         result.z = 0;
@@ -142,6 +150,11 @@ class BattleMap extends luxe.Entity {
         return FractionalHex.hexRound(fractionalHex);
     }
 
+    public function hex_to_pos(hex :Hex) :Vector {
+        var point = Layout.hexToPixel(layout, hex);
+        return get_world_pos(new Vector(point.x, point.y));
+    }
+
     public function get_path(start :Hex, end :Hex) :Array<Hex> {
         return start.find_path(end, 100, 6, is_walkable);
     }
@@ -150,34 +163,98 @@ class BattleMap extends luxe.Entity {
         return start.reachable(is_walkable, range);
     }
 
+    public function is_walkable(hex :Hex) {
+        if (get_piece(hex) != null) return false;
+        return true;
+    }
+
+    public function get_piece(hex :Hex) {
+        for (p in gameModel.pieces) {
+            if (p.hex.key == hex.key) return p;
+        }
+        return null;
+    }
+
     override function onmousemove(event :MouseEvent) {
-        var world_pos = mouseWorldPos(event.pos);
+        var world_pos = get_world_pos(event.pos);
         var hex = pos_to_hex(world_pos);
         events.fire(HEX_MOUSEMOVED_EVENT, hex);
     }
 
     override function onmouseup(event :MouseEvent) {
-        var world_pos = mouseWorldPos(event.pos);
+        var world_pos = get_world_pos(event.pos);
         var hex = pos_to_hex(world_pos);
-        if (hex_to_tile(hex) == null) return;
+        //if (hex_to_tile(hex) == null) return;
         events.fire(HEX_CLICKED_EVENT, hex);
     }
 }
 
 class BattleState extends State {
     static public var StateId :String = 'BattleState';
+    var levelScene :Scene;
+    var entities :Array<Piece>;
+    var hexMap :Map<String, HexTile>;
 
     var battleMap :BattleMap;
 
     public function new() {
         super({ name: StateId });
         battleMap = new BattleMap();
+        levelScene = new Scene();
+        hexMap = new Map();
     }
 
     override function init() {
+        battleMap.gameModel.listen(handle_event);
+        battleMap.gameModel.load_map();
+
         setup_map();
         setup_hand();
     }
+
+    function handle_event(event :Event) {
+        switch (event) {
+            case HexAdded(hex): add_hex(hex);
+            case PieceAdded(piece): add_piece(piece);
+        }
+    }
+
+    function add_hex(hex :Hex) {
+        var pos = Layout.hexToPixel(battleMap.layout, hex);
+        var tile = new HexTile({
+            pos: new Vector(pos.x, pos.y),
+            r: battleMap.hexSize,
+            scene: levelScene
+        });
+        // if (random.get() < 0.3) {
+        //     tile.add(new Blocked());
+        // }
+        hexMap[hex.key] = tile;
+    }
+
+    function add_piece(piece :PieceModel) {
+        var minionPos = Layout.hexToPixel(battleMap.layout, piece.hex);
+        var minion = new Minion({
+            power: piece.power,
+            pos: new Vector(minionPos.x, minionPos.y),
+            color: new Color(129/255, 83/255, 118/255),
+            depth: 2
+        });
+        minion.add(new Selectable(select));
+    }
+
+
+
+    // public function is_blocked(hex :Hex) {
+    //     var tile = hex_to_tile(hex);
+    //     if (tile == null) return true;
+    //     if (tile.has('Blocked')) return true;
+    //     return false;
+    // }
+
+    // public function hex_to_tile(hex :Hex) :HexTile {
+    //     return hexMap[hex.key];
+    // }
 
     function select(p :Piece) {
         Main.states.set(PieceActionState.StateId, { battleMap: battleMap, piece: p });
@@ -188,41 +265,42 @@ class BattleState extends State {
     }
 
     function setup_map() {
-        var heroPos = Layout.hexToPixel(battleMap.layout, new Hex(-1, 0, 0));
-        var hero = new Hero({ power: 7, pos: new Vector(heroPos.x, heroPos.y), color: new Color(229/255, 83/255, 118/255),/* scene: levelScene, */ depth: 2 });
-        hero.add(new Selectable(select));
+        // var heroPos = Layout.hexToPixel(battleMap.layout, new Hex(-1, 0, 0));
+        // var hero = new Hero({ power: 7, pos: new Vector(heroPos.x, heroPos.y), color: new Color(229/255, 83/255, 118/255),/* scene: levelScene, */ depth: 2 });
+        // hero.add(new Selectable(select));
+        //
+        // var minionPos = Layout.hexToPixel(battleMap.layout, new Hex(-2, 1, 0));
+        // var minion = new Minion({
+        //     power: 2,
+        //     pos: new Vector(minionPos.x, minionPos.y),
+        //     color: new Color(129/255, 83/255, 118/255),
+        //     depth: 2
+        // });
+        // minion.add(new Selectable(select));
+        //
+        // var enemyPos = Layout.hexToPixel(battleMap.layout, new Hex(3, -2, 0));
+        // var enemy = new Hero({ power: 8, pos: new Vector(enemyPos.x, enemyPos.y), color: new Color(1, 0, 0), depth: 2 });
 
-        var minionPos = Layout.hexToPixel(battleMap.layout, new Hex(-2, 1, 0));
-        var minion = new Minion({
-            power: 2,
-            pos: new Vector(minionPos.x, minionPos.y),
-            color: new Color(129/255, 83/255, 118/255),
-            depth: 2
-        });
-        minion.add(new Selectable(select));
-
-        var enemyPos = Layout.hexToPixel(battleMap.layout, new Hex(3, -2, 0));
-        var enemy = new Hero({ power: 8, pos: new Vector(enemyPos.x, enemyPos.y), color: new Color(1, 0, 0), depth: 2 });
-
-        battleMap.entities.push(hero);
-        battleMap.entities.push(minion);
-        battleMap.entities.push(enemy);
+        // battleMap.entities.push(hero);
+        // battleMap.entities.push(minion);
+        // battleMap.entities.push(enemy);
     }
 
     function setup_hand() {
         function nothing(hex) {}
 
         function create_minion(hex) {
-            var minionPos = Layout.hexToPixel(battleMap.layout, hex);
-            var minion = new Minion({
-                power: 3,
-                pos: new Vector(minionPos.x, minionPos.y),
-                color: new Color(129/255, 83/255, 118/255),
-                depth: 2
-            });
-            minion.add(new Selectable(select));
+            // var minionPos = Layout.hexToPixel(battleMap.layout, hex);
+            // var minion = new Minion({
+            //     power: 3,
+            //     pos: new Vector(minionPos.x, minionPos.y),
+            //     color: new Color(129/255, 83/255, 118/255),
+            //     depth: 2
+            // });
+            // minion.add(new Selectable(select));
 
-            battleMap.entities.push(minion);
+            // battleMap.entities.push(minion);
+            battleMap.gameModel.add_piece(new PieceModel('Minion', 0, 3, hex));
         }
         var card1 = new Card({ pos: new Vector(200, 600), depth: 3, effect: create_minion });
         var card2 = new Card({ pos: new Vector(320, 600), depth: 3, effect: create_minion });
@@ -261,20 +339,20 @@ class PieceActionState extends State {
         selected = p;
         selected.add(new Selected({ name: 'Selected' }));
 
-        var hex = battleMap.pos_to_hex(selected.pos);
-        var reachable = battleMap.get_reachable(hex, 2);
-        reachable_dots = [ for (r in reachable) {
-            var pos = Layout.hexToPixel(battleMap.layout, r);
-            new Vector(pos.x, pos.y);
-        }];
-
-        attack_dots = [];
-        for (a in hex.ring(1)) {
-            var entity = battleMap.get_entity(a);
-            if (entity == null) continue;
-            var pos = Layout.hexToPixel(battleMap.layout, a);
-            attack_dots.push(new Vector(pos.x, pos.y));
-        }
+        // var hex = battleMap.pos_to_hex(selected.pos);
+        // var reachable = hex.reachable();
+        // reachable_dots = [ for (r in reachable) {
+        //     var pos = Layout.hexToPixel(battleMap.layout, r);
+        //     new Vector(pos.x, pos.y);
+        // }];
+        //
+        // attack_dots = [];
+        // for (a in hex.ring(1)) {
+        //     var entity = battleMap.get_piece(a);
+        //     if (entity == null) continue;
+        //     var pos = Layout.hexToPixel(battleMap.layout, a);
+        //     attack_dots.push(new Vector(pos.x, pos.y));
+        // }
     }
 
     override function onenter<T>(_data :T) {
@@ -303,7 +381,7 @@ class PieceActionState extends State {
         mouseMoveEvent = battleMap.events.listen(BattleMap.HEX_MOUSEMOVED_EVENT, function(hex :Hex) {
             if (selected == null) return;
             path_dots = [];
-            if (battleMap.hex_to_tile(hex) == null)  return;
+            // if (battleMap.hex_to_tile(hex) == null)  return;
             for (p in get_path_positions(hex)) {
                 var pos = Layout.hexToPixel(battleMap.layout, p);
                 path_dots.push(new Vector(pos.x, pos.y));
@@ -314,11 +392,11 @@ class PieceActionState extends State {
             if (selected == null) return;
 
             // Attack
-            var entity = battleMap.get_entity(hex);
-            if (entity != null && entity != selected) { // TODO: Check that it's the other player's entity
-                entity.destroy();
-                return;
-            }
+            // var entity = battleMap.get_piece(hex);
+            // if (entity != null) { // TODO: Check that it's the other player's entity
+            //     entity.destroy();
+            //     return;
+            // }
 
             // Move
             var path = get_path_positions(hex);
@@ -329,9 +407,9 @@ class PieceActionState extends State {
             var count :Int = 0;
             var timePerHex :Float = 0.2;
             for (p in path) {
-                var tile = battleMap.hex_to_tile(p);
+                var pos = battleMap.hex_to_pos(p);
                 Luxe.timer.schedule(count * timePerHex, function() {
-                    luxe.tween.Actuate.tween(selected.pos, timePerHex, { x: tile.pos.x, y: tile.pos.y });
+                    luxe.tween.Actuate.tween(selected.pos, timePerHex, { x: pos.x, y: pos.y });
                     // var this_hex = battleMap.pos_to_hex(tile.pos);
                     // var enemy_hex = battleMap.pos_to_hex(enemy.pos);
                     // if (this_hex.key == enemy_hex.key) enemy.destroy();
