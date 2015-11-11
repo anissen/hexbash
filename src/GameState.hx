@@ -61,7 +61,6 @@ class PieceModel {
 }
 
 typedef EventListenerFunction = Event -> Void;
-// typedef PieceAddedData = {  };
 
 enum Event {
     HexAdded(hex :Hex);
@@ -73,8 +72,6 @@ class GameModel {
     public var pieces :Array<PieceModel>;
     var map_radius :Int = 4;
     var random :luxe.utils.Random;
-
-
     var listeners :List<EventListenerFunction>;
 
     public function new() {
@@ -93,13 +90,11 @@ class GameModel {
 
     function add_hex(hex :Hex) {
         hexes.push(hex);
-        // Emit one event per hex
         emit(HexAdded(hex));
     }
 
     public function add_piece(p :PieceModel) {
         pieces.push(p);
-        // Emit event
         emit(PieceAdded(p));
     }
 
@@ -114,8 +109,6 @@ class GameModel {
     }
 }
 
-// TODO: Abstract out the level logic to be able to listen to level events, e.g.
-// * c
 class BattleMap extends luxe.Entity {
     static public var HEX_CLICKED_EVENT :String = 'hex_clicked';
     static public var HEX_MOUSEMOVED_EVENT :String = 'hex_mousemoved';
@@ -124,7 +117,6 @@ class BattleMap extends luxe.Entity {
 
     public var hexSize :Int = 60;
     var margin  :Int = 5;
-
 
     public function new() {
         super({ name: 'BattleMap' });
@@ -184,7 +176,6 @@ class BattleMap extends luxe.Entity {
     override function onmouseup(event :MouseEvent) {
         var world_pos = get_world_pos(event.pos);
         var hex = pos_to_hex(world_pos);
-        //if (hex_to_tile(hex) == null) return;
         events.fire(HEX_CLICKED_EVENT, hex);
     }
 }
@@ -194,7 +185,6 @@ class BattleState extends State {
     var levelScene :Scene;
     var entities :Array<Piece>;
     var hexMap :Map<String, HexTile>;
-
     var battleMap :BattleMap;
 
     public function new() {
@@ -226,9 +216,6 @@ class BattleState extends State {
             r: battleMap.hexSize,
             scene: levelScene
         });
-        // if (random.get() < 0.3) {
-        //     tile.add(new Blocked());
-        // }
         hexMap[hex.key] = tile;
     }
 
@@ -242,19 +229,6 @@ class BattleState extends State {
         });
         minion.add(new Selectable(select));
     }
-
-
-
-    // public function is_blocked(hex :Hex) {
-    //     var tile = hex_to_tile(hex);
-    //     if (tile == null) return true;
-    //     if (tile.has('Blocked')) return true;
-    //     return false;
-    // }
-
-    // public function hex_to_tile(hex :Hex) :HexTile {
-    //     return hexMap[hex.key];
-    // }
 
     function select(p :Piece) {
         Main.states.set(PieceActionState.StateId, { battleMap: battleMap, piece: p });
@@ -381,7 +355,6 @@ class PieceActionState extends State {
         mouseMoveEvent = battleMap.events.listen(BattleMap.HEX_MOUSEMOVED_EVENT, function(hex :Hex) {
             if (selected == null) return;
             path_dots = [];
-            // if (battleMap.hex_to_tile(hex) == null)  return;
             for (p in get_path_positions(hex)) {
                 var pos = Layout.hexToPixel(battleMap.layout, p);
                 path_dots.push(new Vector(pos.x, pos.y));
