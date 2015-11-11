@@ -69,7 +69,7 @@ enum Event {
 
 class GameModel {
     var hexes :Map<String, Hex>;
-    public var pieces :Array<PieceModel>;
+    var pieces :Array<PieceModel>;
     var map_radius :Int = 4;
     var random :luxe.utils.Random;
     var listeners :List<EventListenerFunction>;
@@ -95,6 +95,13 @@ class GameModel {
 
     public function has_hex(hex :Hex) {
         return hexes.exists(hex.key);
+    }
+
+    public function get_piece(hex :Hex) {
+        for (p in pieces) {
+            if (p.hex.key == hex.key) return p;
+        }
+        return null;
     }
 
     public function add_piece(p :PieceModel) {
@@ -160,15 +167,8 @@ class BattleMap extends luxe.Entity {
 
     public function is_walkable(hex :Hex) {
         if (!gameModel.has_hex(hex)) return false;
-        if (get_piece(hex) != null) return false;
+        if (gameModel.get_piece(hex) != null) return false;
         return true;
-    }
-
-    public function get_piece(hex :Hex) {
-        for (p in gameModel.pieces) {
-            if (p.hex.key == hex.key) return p;
-        }
-        return null;
     }
 
     override function onmousemove(event :MouseEvent) {
@@ -329,7 +329,7 @@ class PieceActionState extends State {
 
         attack_dots = [];
         for (a in hex.ring(1)) {
-            var entity = battleMap.get_piece(a);
+            var entity = battleMap.gameModel.get_piece(a);
             if (entity == null) continue;
             var pos = Layout.hexToPixel(battleMap.layout, a);
             attack_dots.push(new Vector(pos.x, pos.y));
