@@ -70,7 +70,6 @@ enum Event {
 class GameModel {
     var hexes :Map<String, Hex>;
     var pieces :Array<PieceModel>;
-    var map_radius :Int = 4;
     var random :luxe.utils.Random;
     var listeners :List<EventListenerFunction>;
 
@@ -82,6 +81,7 @@ class GameModel {
     }
 
     public function load_map() {
+        var map_radius :Int = 4;
         var tempHexes = MapFactory.create_hexagon_map(map_radius);
         for (hex in tempHexes) {
             if (random.get() < 0.7) add_hex(hex);
@@ -97,7 +97,7 @@ class GameModel {
         return hexes.exists(hex.key);
     }
 
-    public function get_piece(hex :Hex) {
+    public function get_piece(hex :Hex) :PieceModel {
         for (p in pieces) {
             if (p.hex.key == hex.key) return p;
         }
@@ -228,10 +228,10 @@ class BattleState extends State {
         var minion = new Minion({
             model: model,
             pos: new Vector(minionPos.x, minionPos.y),
-            color: new Color(129/255, 83/255, 118/255),
+            color: (model.playerId == 0 ? new Color(129/255, 83/255, 118/255) : new Color(229/255, 83/255, 118/255)),
             depth: 2
         });
-        minion.add(new Selectable(select));
+        if (model.playerId == 0) minion.add(new Selectable(select));
     }
 
     function select(p :Piece) {
@@ -243,26 +243,7 @@ class BattleState extends State {
     }
 
     function setup_map() {
-        // var heroPos = Layout.hexToPixel(battleMap.layout, new Hex(-1, 0, 0));
-        // var hero = new Hero({ power: 7, pos: new Vector(heroPos.x, heroPos.y), color: new Color(229/255, 83/255, 118/255),/* scene: levelScene, */ depth: 2 });
-        // hero.add(new Selectable(select));
-        //
-        // var minionPos = Layout.hexToPixel(battleMap.layout, new Hex(-2, 1, 0));
-        // var minion = new Minion({
-        //     power: 2,
-        //     pos: new Vector(minionPos.x, minionPos.y),
-        //     color: new Color(129/255, 83/255, 118/255),
-        //     depth: 2
-        // });
-        // minion.add(new Selectable(select));
-        //
-        // var enemyPos = Layout.hexToPixel(battleMap.layout, new Hex(3, -2, 0));
-        // var enemy = new Hero({ power: 8, pos: new Vector(enemyPos.x, enemyPos.y), color: new Color(1, 0, 0), depth: 2 });
-
-        // battleMap.entities.push(hero);
-        // battleMap.entities.push(minion);
-        // battleMap.entities.push(enemy);
-
+        // TODO: Should not be dependent on battleMap; should be gameModel.add_piece
         battleMap.gameModel.add_piece(new PieceModel('Enemy', 1, 8, new Hex(3, -2, 0)));
         battleMap.gameModel.add_piece(new PieceModel('Hero', 0, 5, new Hex(-1, 0, 0)));
     }
@@ -271,16 +252,6 @@ class BattleState extends State {
         function nothing(hex) {}
 
         function create_minion(hex) {
-            // var minionPos = Layout.hexToPixel(battleMap.layout, hex);
-            // var minion = new Minion({
-            //     power: 3,
-            //     pos: new Vector(minionPos.x, minionPos.y),
-            //     color: new Color(129/255, 83/255, 118/255),
-            //     depth: 2
-            // });
-            // minion.add(new Selectable(select));
-
-            // battleMap.entities.push(minion);
             battleMap.gameModel.add_piece(new PieceModel('Minion', 0, 3, hex));
         }
         var card1 = new Card({ pos: new Vector(200, 600), depth: 3, effect: create_minion });
@@ -329,8 +300,8 @@ class PieceActionState extends State {
 
         attack_dots = [];
         for (a in hex.ring(1)) {
-            var entity = battleMap.gameModel.get_piece(a);
-            if (entity == null) continue;
+            var model = battleMap.gameModel.get_piece(a);
+            if (model == null || model.playerId == selected.model.playerId) continue;
             var pos = Layout.hexToPixel(battleMap.layout, a);
             attack_dots.push(new Vector(pos.x, pos.y));
         }
@@ -372,11 +343,14 @@ class PieceActionState extends State {
             if (selected == null) return;
 
             // Attack
-            // var entity = battleMap.get_piece(hex);
-            // if (entity != null) { // TODO: Check that it's the other player's entity
-            //     entity.destroy();
-            //     return;
-            // }
+            var model = battleMap.gameModel.get_piece(hex);
+            if (model != null && model.playerId != selected.model.playerId) {
+                //entity.destroy();
+                var minPower = Math.floor(Math.min(model.power, selected.model.power));
+                model.power -= minPower;
+                selected.model.power -= minPower;
+                return;
+            }
 
             // Move
             var path = get_path_positions(hex);
@@ -391,9 +365,6 @@ class PieceActionState extends State {
                 Luxe.timer.schedule(count * timePerHex, function() {
                     luxe.tween.Actuate.tween(selected.pos, timePerHex, { x: pos.x, y: pos.y });
                     selected.model.hex = p;
-                    // var this_hex = battleMap.pos_to_hex(tile.pos);
-                    // var enemy_hex = battleMap.pos_to_hex(enemy.pos);
-                    // if (this_hex.key == enemy_hex.key) enemy.destroy();
                 });
                 count++;
             }
@@ -485,6 +456,7 @@ typedef PieceOptions = {
 };
 class Piece extends Visual {
     public var model :PieceModel;
+    var powerText :luxe.Text;
 
     public function new(options :PieceOptions) {
         var _options = options;
@@ -493,13 +465,18 @@ class Piece extends Visual {
 
         model = _options.model;
 
-        new luxe.Text({
+        powerText = new luxe.Text({
             text: '' + model.power,
             align: luxe.Text.TextAlign.center,
             align_vertical: luxe.Text.TextAlign.center,
             parent: this,
             depth: _options.depth + 0.01
         });
+    }
+
+    override public function update(dt :Float) {
+        powerText.text = '' + model.power; // HACK
+        if (model.power <= 0) destroy(); // TODO: Remove piece from game board
     }
 }
 
