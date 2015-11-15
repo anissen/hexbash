@@ -53,12 +53,15 @@ Model-View separation between LevelMap, minions, Cards
 */
 
 class MinionModel {
+    static var Id :Int = 0;
+    public var id :Int;
     public var title :String;
     public var playerId :Int;
     public var power :Int;
     public var hex :Hex;
 
     public function new(title :String, playerId :Int, power :Int, hex :Hex) {
+        this.id = Id++;
         this.title = title;
         this.playerId = playerId;
         this.power = power;
@@ -68,9 +71,17 @@ class MinionModel {
 
 typedef EventListenerFunction = Event -> Void;
 
+enum Action {
+    Move(model :MinionModel, hex :Hex);
+    Attack(attackerModel :MinionModel, defenderModel :MinionModel);
+}
+
 enum Event {
     HexAdded(hex :Hex);
-    MinionAdded(minionModel :MinionModel);
+    MinionAdded(model :MinionModel);
+    MinionMoved(model :MinionModel, from :Hex, to :Hex);
+    MinionAttacked(attackerModel :MinionModel, defenderModel :MinionModel);
+    MinionDamaged(model :MinionModel, damage :Int);
 }
 
 class BattleModel {
@@ -113,6 +124,33 @@ class BattleModel {
     public function add_minion(m :MinionModel) {
         minions.push(m);
         emit(MinionAdded(m));
+    }
+
+    public function do_action(action :Action) {
+        switch (action) {
+            case Move(minion, hex): handle_move(minion, hex);
+            case Attack(attacker, defender): handle_attack(attacker, defender);
+        }
+    }
+
+    function handle_move(model :MinionModel, hex :Hex) {
+        if (get_minion(hex) != null) throw 'Destination hex is already occupied!';
+        var from = model.hex;
+        model.hex = hex;
+        emit(MinionMoved(model, from, hex));
+    }
+
+    function handle_attack(attacker :MinionModel, defender :MinionModel) {
+        emit(MinionAttacked(attacker, defender));
+
+        var minPower = Math.floor(Math.min(attacker.power, defender.power));
+        defender.power -= minPower;
+        emit(MinionDamaged(defender, minPower));
+
+        emit(MinionAttacked(defender, attacker));
+
+        attacker.power -= minPower;
+        emit(MinionDamaged(attacker, minPower));
     }
 
     function emit(event :Event) :Void {
@@ -187,7 +225,8 @@ class BattleMap extends luxe.Entity {
 class BattleState extends State {
     static public var StateId :String = 'BattleState';
     var levelScene :Scene;
-    var entities :Array<Minion>;
+    // var entities :Array<Minion>;
+    var minionMap :Map<Int, Minion>;
     var hexMap :Map<String, HexTile>;
     var battleModel :BattleModel;
     var battleMap :BattleMap;
@@ -198,6 +237,7 @@ class BattleState extends State {
         battleMap = new BattleMap();
         levelScene = new Scene();
         hexMap = new Map();
+        minionMap = new Map();
     }
 
     override function init() {
@@ -211,7 +251,10 @@ class BattleState extends State {
     function handle_event(event :Event) {
         switch (event) {
             case HexAdded(hex): add_hex(hex);
-            case MinionAdded(minion): add_minion(minion);
+            case MinionAdded(model): add_minion(model);
+            case MinionMoved(model, from, to): move_minion(model, from, to);
+            case MinionDamaged(model, damage): damage_minion(model, damage);
+            case MinionAttacked(attacker, defender): attack_minion(attacker, defender);
         }
     }
 
@@ -234,8 +277,34 @@ class BattleState extends State {
             color: (model.playerId == 0 ? new Color(129/255, 83/255, 118/255) : new Color(229/255, 83/255, 118/255)),
             depth: 2
         });
+        minionMap.set(model.id, minion);
         minion.add(new PopIn());
         if (model.playerId == 0) minion.add(new Selectable(select));
+    }
+
+    function minion_from_model(model :MinionModel) {
+        return minionMap.get(model.id);
+    }
+
+    function move_minion(model :MinionModel, from :Hex, to :Hex) {
+        trace('move_minion: from $from to $to');
+        var minion = minion_from_model(model);
+        minion.pos = battleMap.hex_to_pos(to);
+        var pos = battleMap.hex_to_pos(to); // TODO: Rename to pos_from_hex
+        luxe.tween.Actuate.tween(minion, 0.5, { x: pos.x, y: pos.y });
+    }
+
+    function damage_minion(model :MinionModel, damage :Int) {
+        trace('damage_minion: $damage damage');
+        var minion = minion_from_model(model);
+        luxe.tween.Actuate.tween(minion.color, 0.5, { r: 1 }).reflect();
+    }
+
+    function attack_minion(attackerModel :MinionModel, defenderModel :MinionModel) {
+        trace('attack_minion: $attackerModel attacks $defenderModel');
+        var attacker = minion_from_model(attackerModel);
+        var defender = minion_from_model(defenderModel);
+        luxe.tween.Actuate.tween(attacker.pos, 0.5, { x: defender.pos.x, y: defender.pos.y }).reflect();
     }
 
     function select(m :Minion) {
@@ -346,10 +415,19 @@ class MinionActionState extends State {
         clickEvent = battleMap.events.listen(BattleMap.HEX_CLICKED_EVENT, function(hex :Hex) {
             if (selected == null) return;
 
+            var model = battleModel.get_minion(hex);
+            if (model != null) {
+                if (model.playerId != selected.model.playerId) {
+                    battleModel.do_action(Attack(selected.model, model));
+                }
+                return;
+            }
+
+            battleModel.do_action(Move(selected.model, hex));
+            /*
             // Attack
             var model = battleModel.get_minion(hex);
             if (model != null && model.playerId != selected.model.playerId) {
-                //entity.destroy();
                 var minPower = Math.floor(Math.min(model.power, selected.model.power));
                 model.power -= minPower;
                 selected.model.power -= minPower;
@@ -372,6 +450,7 @@ class MinionActionState extends State {
                 });
                 count++;
             }
+            */
         });
     }
 
