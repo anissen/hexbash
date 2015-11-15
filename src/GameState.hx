@@ -26,10 +26,16 @@ class HexTile extends Visual {
         });
 
         foreground = new Visual({
-            pos: options.pos,
             color: new Color(52/255, 73/255, 103/255),
-            geometry: Luxe.draw.ngon({ sides: 6, r: options.r - 5, angle: 30, solid: true })
+            geometry: Luxe.draw.ngon({ sides: 6, r: options.r - 5, angle: 30, solid: true }),
+            parent: this
         });
+    }
+}
+
+class PopIn extends luxe.Component {
+    override function onadded() {
+        luxe.tween.Actuate.tween(entity.scale, 0.3, { x: 0.0, y: 0.0 }).reverse();
     }
 }
 
@@ -216,6 +222,7 @@ class BattleState extends State {
             r: battleMap.hexSize,
             scene: levelScene
         });
+        tile.add(new PopIn());
         hexMap[hex.key] = tile;
     }
 
@@ -227,6 +234,7 @@ class BattleState extends State {
             color: (model.playerId == 0 ? new Color(129/255, 83/255, 118/255) : new Color(229/255, 83/255, 118/255)),
             depth: 2
         });
+        minion.add(new PopIn());
         if (model.playerId == 0) minion.add(new Selectable(select));
     }
 
@@ -244,17 +252,16 @@ class BattleState extends State {
     }
 
     function setup_hand() {
-        function nothing(hex) {}
-
         function create_minion(hex) {
             battleModel.add_minion(new MinionModel('Minion', 0, 3, hex));
         }
-        var card1 = new Card({ pos: new Vector(200, 600), depth: 3, effect: create_minion });
-        var card2 = new Card({ pos: new Vector(320, 600), depth: 3, effect: create_minion });
-        var card3 = new Card({ pos: new Vector(440, 600), depth: 3, effect: create_minion });
-        card1.add(new SelectableCard(selectCard));
-        card2.add(new SelectableCard(selectCard));
-        card3.add(new SelectableCard(selectCard));
+
+        var cardCount = 3;
+        for (i in 0 ... cardCount) {
+            var card = new Card({ pos: new Vector(200 + 120 * i, 600), depth: 3, effect: create_minion });
+            card.add(new PopIn());
+            card.add(new SelectableCard(selectCard));
+        }
     }
 }
 
