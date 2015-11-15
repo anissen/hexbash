@@ -82,6 +82,7 @@ enum Event {
     MinionMoved(model :MinionModel, from :Hex, to :Hex);
     MinionAttacked(attackerModel :MinionModel, defenderModel :MinionModel);
     MinionDamaged(model :MinionModel, damage :Int);
+    MinionDied(model :MinionModel);
 }
 
 class BattleModel {
@@ -126,6 +127,11 @@ class BattleModel {
         emit(MinionAdded(m));
     }
 
+    public function remove_minion(m :MinionModel) {
+        minions.remove(m);
+        emit(MinionDied(m));
+    }
+
     public function do_action(action :Action) {
         switch (action) {
             case Move(minion, hex): handle_move(minion, hex);
@@ -151,6 +157,9 @@ class BattleModel {
 
         attacker.power -= minPower;
         emit(MinionDamaged(attacker, minPower));
+
+        if (defender.power <= 0) remove_minion(defender);
+        if (attacker.power <= 0) remove_minion(attacker);
     }
 
     function emit(event :Event) :Void {
@@ -225,7 +234,6 @@ class BattleMap extends luxe.Entity {
 class BattleState extends State {
     static public var StateId :String = 'BattleState';
     var levelScene :Scene;
-    // var entities :Array<Minion>;
     var minionMap :Map<Int, Minion>;
     var hexMap :Map<String, HexTile>;
     var battleModel :BattleModel;
@@ -255,6 +263,7 @@ class BattleState extends State {
             case MinionMoved(model, from, to): move_minion(model, from, to);
             case MinionDamaged(model, damage): damage_minion(model, damage);
             case MinionAttacked(attacker, defender): attack_minion(attacker, defender);
+            case MinionDied(model): remove_minion(model);
         }
     }
 
@@ -280,6 +289,12 @@ class BattleState extends State {
         minionMap.set(model.id, minion);
         minion.add(new PopIn());
         if (model.playerId == 0) minion.add(new Selectable(select));
+    }
+
+    function remove_minion(model :MinionModel) {
+        var minion = minion_from_model(model);
+        minion.destroy();
+        minionMap.remove(model.id);
     }
 
     function minion_from_model(model :MinionModel) {
