@@ -67,7 +67,7 @@ enum Event {
     MinionAdded(minionModel :MinionModel);
 }
 
-class GameModel {
+class BattleModel {
     var hexes :Map<String, Hex>;
     var minions :Array<MinionModel>;
     var random :luxe.utils.Random;
@@ -124,14 +124,14 @@ class BattleMap extends luxe.Entity {
     static public var HEX_CLICKED_EVENT :String = 'hex_clicked';
     static public var HEX_MOUSEMOVED_EVENT :String = 'hex_mousemoved';
     public var layout :Layout;
-    public var gameModel :GameModel;
+    public var battleModel :BattleModel;
 
     public var hexSize :Int = 60;
     var margin  :Int = 5;
 
     public function new() {
         super({ name: 'BattleMap' });
-        gameModel = new GameModel();
+        battleModel = new BattleModel();
     }
 
     override function init() {
@@ -166,8 +166,8 @@ class BattleMap extends luxe.Entity {
     // }
 
     public function is_walkable(hex :Hex) {
-        if (!gameModel.has_hex(hex)) return false;
-        if (gameModel.get_minion(hex) != null) return false;
+        if (!battleModel.has_hex(hex)) return false;
+        if (battleModel.get_minion(hex) != null) return false;
         return true;
     }
 
@@ -199,8 +199,8 @@ class BattleState extends State {
     }
 
     override function init() {
-        battleMap.gameModel.listen(handle_event);
-        battleMap.gameModel.load_map();
+        battleMap.battleModel.listen(handle_event);
+        battleMap.battleModel.load_map();
 
         setup_map();
         setup_hand();
@@ -243,16 +243,16 @@ class BattleState extends State {
     }
 
     function setup_map() {
-        // TODO: Should not be dependent on battleMap; should be gameModel.add_minion
-        battleMap.gameModel.add_minion(new MinionModel('Enemy', 1, 8, new Hex(3, -2, 0)));
-        battleMap.gameModel.add_minion(new MinionModel('Hero', 0, 5, new Hex(-1, 0, 0)));
+        // TODO: Should not be dependent on battleMap; should be battleModel.add_minion
+        battleMap.battleModel.add_minion(new MinionModel('Enemy', 1, 8, new Hex(3, -2, 0)));
+        battleMap.battleModel.add_minion(new MinionModel('Hero', 0, 5, new Hex(-1, 0, 0)));
     }
 
     function setup_hand() {
         function nothing(hex) {}
 
         function create_minion(hex) {
-            battleMap.gameModel.add_minion(new MinionModel('Minion', 0, 3, hex));
+            battleMap.battleModel.add_minion(new MinionModel('Minion', 0, 3, hex));
         }
         var card1 = new Card({ pos: new Vector(200, 600), depth: 3, effect: create_minion });
         var card2 = new Card({ pos: new Vector(320, 600), depth: 3, effect: create_minion });
@@ -300,7 +300,7 @@ class MinionActionState extends State {
 
         attack_dots = [];
         for (a in hex.ring(1)) {
-            var model = battleMap.gameModel.get_minion(a);
+            var model = battleMap.battleModel.get_minion(a);
             if (model == null || model.playerId == selected.model.playerId) continue;
             var pos = Layout.hexToPixel(battleMap.layout, a);
             attack_dots.push(new Vector(pos.x, pos.y));
@@ -343,7 +343,7 @@ class MinionActionState extends State {
             if (selected == null) return;
 
             // Attack
-            var model = battleMap.gameModel.get_minion(hex);
+            var model = battleMap.battleModel.get_minion(hex);
             if (model != null && model.playerId != selected.model.playerId) {
                 //entity.destroy();
                 var minPower = Math.floor(Math.min(model.power, selected.model.power));
