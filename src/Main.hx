@@ -20,7 +20,7 @@ class Main extends luxe.Game {
 
         states = new States({ name: 'state_machine' });
         states.add(new GameState.BattleState());
-        states.add(new GameState.PieceActionState());
+        states.add(new GameState.MinionActionState());
         states.add(new GameState.CardCastState());
         states.set(GameState.BattleState.StateId);
     }

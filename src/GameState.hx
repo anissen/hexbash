@@ -40,13 +40,13 @@ BattleState
     HAS cards
     HAS entities
     States:
-    -> PieceActionState
+    -> MinionActionState
     -> CardCastState
 
-Model-View separation between LevelMap, Pieces, Cards
+Model-View separation between LevelMap, minions, Cards
 */
 
-class PieceModel {
+class MinionModel {
     public var title :String;
     public var playerId :Int;
     public var power :Int;
@@ -64,12 +64,12 @@ typedef EventListenerFunction = Event -> Void;
 
 enum Event {
     HexAdded(hex :Hex);
-    PieceAdded(pieceModel :PieceModel);
+    MinionAdded(minionModel :MinionModel);
 }
 
 class GameModel {
     var hexes :Map<String, Hex>;
-    var pieces :Array<PieceModel>;
+    var minions :Array<MinionModel>;
     var random :luxe.utils.Random;
     var listeners :List<EventListenerFunction>;
 
@@ -77,7 +77,7 @@ class GameModel {
         listeners = new List();
         random = new luxe.utils.Random(43);
         hexes = new Map();
-        pieces = [];
+        minions = [];
     }
 
     public function load_map() {
@@ -97,16 +97,16 @@ class GameModel {
         return hexes.exists(hex.key);
     }
 
-    public function get_piece(hex :Hex) :PieceModel {
-        for (p in pieces) {
+    public function get_minion(hex :Hex) :MinionModel {
+        for (p in minions) {
             if (p.hex.key == hex.key) return p;
         }
         return null;
     }
 
-    public function add_piece(p :PieceModel) {
-        pieces.push(p);
-        emit(PieceAdded(p));
+    public function add_minion(m :MinionModel) {
+        minions.push(m);
+        emit(MinionAdded(m));
     }
 
     function emit(event :Event) :Void {
@@ -167,7 +167,7 @@ class BattleMap extends luxe.Entity {
 
     public function is_walkable(hex :Hex) {
         if (!gameModel.has_hex(hex)) return false;
-        if (gameModel.get_piece(hex) != null) return false;
+        if (gameModel.get_minion(hex) != null) return false;
         return true;
     }
 
@@ -187,7 +187,7 @@ class BattleMap extends luxe.Entity {
 class BattleState extends State {
     static public var StateId :String = 'BattleState';
     var levelScene :Scene;
-    var entities :Array<Piece>;
+    var entities :Array<Minion>;
     var hexMap :Map<String, HexTile>;
     var battleMap :BattleMap;
 
@@ -209,7 +209,7 @@ class BattleState extends State {
     function handle_event(event :Event) {
         switch (event) {
             case HexAdded(hex): add_hex(hex);
-            case PieceAdded(piece): add_piece(piece);
+            case MinionAdded(minion): add_minion(minion);
         }
     }
 
@@ -223,7 +223,7 @@ class BattleState extends State {
         hexMap[hex.key] = tile;
     }
 
-    function add_piece(model :PieceModel) {
+    function add_minion(model :MinionModel) {
         var minionPos = Layout.hexToPixel(battleMap.layout, model.hex);
         var minion = new Minion({
             model: model,
@@ -234,8 +234,8 @@ class BattleState extends State {
         if (model.playerId == 0) minion.add(new Selectable(select));
     }
 
-    function select(p :Piece) {
-        Main.states.set(PieceActionState.StateId, { battleMap: battleMap, piece: p });
+    function select(m :Minion) {
+        Main.states.set(MinionActionState.StateId, { battleMap: battleMap, minion: m });
     }
 
     function selectCard(c :Card) {
@@ -243,16 +243,16 @@ class BattleState extends State {
     }
 
     function setup_map() {
-        // TODO: Should not be dependent on battleMap; should be gameModel.add_piece
-        battleMap.gameModel.add_piece(new PieceModel('Enemy', 1, 8, new Hex(3, -2, 0)));
-        battleMap.gameModel.add_piece(new PieceModel('Hero', 0, 5, new Hex(-1, 0, 0)));
+        // TODO: Should not be dependent on battleMap; should be gameModel.add_minion
+        battleMap.gameModel.add_minion(new MinionModel('Enemy', 1, 8, new Hex(3, -2, 0)));
+        battleMap.gameModel.add_minion(new MinionModel('Hero', 0, 5, new Hex(-1, 0, 0)));
     }
 
     function setup_hand() {
         function nothing(hex) {}
 
         function create_minion(hex) {
-            battleMap.gameModel.add_piece(new PieceModel('Minion', 0, 3, hex));
+            battleMap.gameModel.add_minion(new MinionModel('Minion', 0, 3, hex));
         }
         var card1 = new Card({ pos: new Vector(200, 600), depth: 3, effect: create_minion });
         var card2 = new Card({ pos: new Vector(320, 600), depth: 3, effect: create_minion });
@@ -263,14 +263,14 @@ class BattleState extends State {
     }
 }
 
-class PieceActionState extends State {
-    static public var StateId :String = 'PieceActionState';
+class MinionActionState extends State {
+    static public var StateId :String = 'MinionActionState';
 
     var battleMap :BattleMap;
     var path_dots :Array<Vector>;
     var reachable_dots :Array<Vector>;
     var attack_dots :Array<Vector>;
-    var selected :Piece;
+    var selected :Minion;
 
     var mouseMoveEvent :String;
     var clickEvent :String;
@@ -282,7 +282,7 @@ class PieceActionState extends State {
         attack_dots = [];
     }
 
-    function select(p :Piece) {
+    function select(p :Minion) {
         if (selected != null) selected.remove('Selected');
         if (selected == p) {
             selected = null;
@@ -300,7 +300,7 @@ class PieceActionState extends State {
 
         attack_dots = [];
         for (a in hex.ring(1)) {
-            var model = battleMap.gameModel.get_piece(a);
+            var model = battleMap.gameModel.get_minion(a);
             if (model == null || model.playerId == selected.model.playerId) continue;
             var pos = Layout.hexToPixel(battleMap.layout, a);
             attack_dots.push(new Vector(pos.x, pos.y));
@@ -308,17 +308,17 @@ class PieceActionState extends State {
     }
 
     override function onenter<T>(_data :T) {
-        trace('PieceActionState::onenter');
-        var data :{ battleMap :BattleMap, piece :Piece } = cast _data;
+        trace('MinionActionState::onenter');
+        var data :{ battleMap :BattleMap, minion :Minion } = cast _data;
         battleMap = data.battleMap;
 
         setup();
 
-        select(data.piece);
+        select(data.minion);
     }
 
     override function onleave<T>(_data :T) {
-        trace('PieceActionState::onleave');
+        trace('MinionActionState::onleave');
         battleMap.events.unlisten(mouseMoveEvent);
         battleMap.events.unlisten(clickEvent);
     }
@@ -343,7 +343,7 @@ class PieceActionState extends State {
             if (selected == null) return;
 
             // Attack
-            var model = battleMap.gameModel.get_piece(hex);
+            var model = battleMap.gameModel.get_minion(hex);
             if (model != null && model.playerId != selected.model.playerId) {
                 //entity.destroy();
                 var minPower = Math.floor(Math.min(model.power, selected.model.power));
@@ -450,17 +450,18 @@ class CardCastState extends State {
     }
 }
 
-typedef PieceOptions = {
+typedef MinionOptions = {
     > VisualOptions,
-    model :PieceModel
+    model :MinionModel
 };
-class Piece extends Visual {
-    public var model :PieceModel;
+class Minion extends Visual {
+    public var model :MinionModel;
     var powerText :luxe.Text;
 
-    public function new(options :PieceOptions) {
+    public function new(options :MinionOptions) {
         var _options = options;
         if (_options.color == null) _options.color = new Color(0, 0.5, 0.5);
+        if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 30 });
         super(_options);
 
         model = _options.model;
@@ -476,22 +477,14 @@ class Piece extends Visual {
 
     override public function update(dt :Float) {
         powerText.text = '' + model.power; // HACK
-        if (model.power <= 0) destroy(); // TODO: Remove piece from game board
+        if (model.power <= 0) destroy(); // TODO: Remove minion from game board
     }
 }
 
-class Hero extends Piece {
-    public function new(options :PieceOptions) {
+class Hero extends Minion {
+    public function new(options :MinionOptions) {
         var _options = options;
         if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 40 });
-        super(_options);
-    }
-}
-
-class Minion extends Piece {
-    public function new(options :PieceOptions) {
-        var _options = options;
-        if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 30 });
         super(_options);
     }
 }
@@ -519,31 +512,31 @@ class Card extends luxe.Sprite {
 }
 
 class Selectable extends luxe.Component {
-    var func :Piece->Void;
-    var piece :Piece;
+    var func :Minion->Void;
+    var minion :Minion;
     var is_mouse_over :Bool = false;
 
-    public function new(f :Piece->Void) {
+    public function new(f :Minion->Void) {
         super({ name: 'Selectable' });
         func = f;
     }
 
     override function init() {
-        piece = cast entity;
+        minion = cast entity;
     }
 
-    function is_mouse_over_piece(pos) {
+    function is_mouse_over_minion(pos) {
         var r = Luxe.camera.view.screen_point_to_ray(pos);
         var result = Luxe.utils.geometry.intersect_ray_plane(r.origin, r.dir, new Vector(0, 0, 1), new Vector());
-        return (Luxe.utils.geometry.point_in_geometry(result, piece.geometry));
+        return (Luxe.utils.geometry.point_in_geometry(result, minion.geometry));
     }
 
     override function onmousemove(event :luxe.Input.MouseEvent) {
-        is_mouse_over = is_mouse_over_piece(event.pos);
+        is_mouse_over = is_mouse_over_minion(event.pos);
     }
 
     override function onmousedown(event :luxe.Input.MouseEvent) {
-        if (is_mouse_over_piece(event.pos)) func(piece);
+        if (is_mouse_over_minion(event.pos)) func(minion);
     }
 
     override function update(dt :Float) {
