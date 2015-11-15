@@ -118,20 +118,28 @@ class BattleModel {
     public function listen(func: EventListenerFunction) {
         listeners.add(func);
     }
+
+    public function is_walkable(hex :Hex) {
+        if (!has_hex(hex)) return false;
+        if (get_minion(hex) != null) return false;
+        return true;
+    }
+
+    public function get_path(start :Hex, end :Hex) :Array<Hex> {
+        return start.find_path(end, 100, 6, is_walkable);
+    }
 }
 
 class BattleMap extends luxe.Entity {
     static public var HEX_CLICKED_EVENT :String = 'hex_clicked';
     static public var HEX_MOUSEMOVED_EVENT :String = 'hex_mousemoved';
     public var layout :Layout;
-    public var battleModel :BattleModel;
 
     public var hexSize :Int = 60;
     var margin  :Int = 5;
 
     public function new() {
         super({ name: 'BattleMap' });
-        battleModel = new BattleModel();
     }
 
     override function init() {
@@ -157,20 +165,6 @@ class BattleMap extends luxe.Entity {
         return get_world_pos(new Vector(point.x, point.y));
     }
 
-    public function get_path(start :Hex, end :Hex) :Array<Hex> {
-        return start.find_path(end, 100, 6, is_walkable);
-    }
-
-    // public function get_reachable(start :Hex, range :Int) :Array<Hex> {
-    //     return start.reachable(is_walkable, range);
-    // }
-
-    public function is_walkable(hex :Hex) {
-        if (!battleModel.has_hex(hex)) return false;
-        if (battleModel.get_minion(hex) != null) return false;
-        return true;
-    }
-
     override function onmousemove(event :MouseEvent) {
         var world_pos = get_world_pos(event.pos);
         var hex = pos_to_hex(world_pos);
@@ -189,18 +183,20 @@ class BattleState extends State {
     var levelScene :Scene;
     var entities :Array<Minion>;
     var hexMap :Map<String, HexTile>;
+    var battleModel :BattleModel;
     var battleMap :BattleMap;
 
     public function new() {
         super({ name: StateId });
+        battleModel = new BattleModel();
         battleMap = new BattleMap();
         levelScene = new Scene();
         hexMap = new Map();
     }
 
     override function init() {
-        battleMap.battleModel.listen(handle_event);
-        battleMap.battleModel.load_map();
+        battleModel.listen(handle_event);
+        battleModel.load_map();
 
         setup_map();
         setup_hand();
@@ -235,7 +231,7 @@ class BattleState extends State {
     }
 
     function select(m :Minion) {
-        Main.states.set(MinionActionState.StateId, { battleMap: battleMap, minion: m });
+        Main.states.set(MinionActionState.StateId, { battleModel: battleModel, battleMap: battleMap, minion: m });
     }
 
     function selectCard(c :Card) {
@@ -243,16 +239,15 @@ class BattleState extends State {
     }
 
     function setup_map() {
-        // TODO: Should not be dependent on battleMap; should be battleModel.add_minion
-        battleMap.battleModel.add_minion(new MinionModel('Enemy', 1, 8, new Hex(3, -2, 0)));
-        battleMap.battleModel.add_minion(new MinionModel('Hero', 0, 5, new Hex(-1, 0, 0)));
+        battleModel.add_minion(new MinionModel('Enemy', 1, 8, new Hex(3, -2, 0)));
+        battleModel.add_minion(new MinionModel('Hero', 0, 5, new Hex(-1, 0, 0)));
     }
 
     function setup_hand() {
         function nothing(hex) {}
 
         function create_minion(hex) {
-            battleMap.battleModel.add_minion(new MinionModel('Minion', 0, 3, hex));
+            battleModel.add_minion(new MinionModel('Minion', 0, 3, hex));
         }
         var card1 = new Card({ pos: new Vector(200, 600), depth: 3, effect: create_minion });
         var card2 = new Card({ pos: new Vector(320, 600), depth: 3, effect: create_minion });
@@ -266,6 +261,7 @@ class BattleState extends State {
 class MinionActionState extends State {
     static public var StateId :String = 'MinionActionState';
 
+    var battleModel :BattleModel;
     var battleMap :BattleMap;
     var path_dots :Array<Vector>;
     var reachable_dots :Array<Vector>;
@@ -292,7 +288,7 @@ class MinionActionState extends State {
         selected.add(new Selected({ name: 'Selected' }));
 
         var hex = battleMap.pos_to_hex(selected.pos);
-        var reachable = hex.reachable(battleMap.is_walkable, 2);
+        var reachable = hex.reachable(battleModel.is_walkable, 2);
         reachable_dots = [ for (r in reachable) {
             var pos = Layout.hexToPixel(battleMap.layout, r);
             new Vector(pos.x, pos.y);
@@ -300,7 +296,7 @@ class MinionActionState extends State {
 
         attack_dots = [];
         for (a in hex.ring(1)) {
-            var model = battleMap.battleModel.get_minion(a);
+            var model = battleModel.get_minion(a);
             if (model == null || model.playerId == selected.model.playerId) continue;
             var pos = Layout.hexToPixel(battleMap.layout, a);
             attack_dots.push(new Vector(pos.x, pos.y));
@@ -309,7 +305,8 @@ class MinionActionState extends State {
 
     override function onenter<T>(_data :T) {
         trace('MinionActionState::onenter');
-        var data :{ battleMap :BattleMap, minion :Minion } = cast _data;
+        var data :{ battleModel :BattleModel, battleMap :BattleMap, minion :Minion } = cast _data;
+        battleModel = data.battleModel;
         battleMap = data.battleMap;
 
         setup();
@@ -327,7 +324,7 @@ class MinionActionState extends State {
         function get_path_positions(hex) {
             if (selected == null) return [];
             var hero_hex = battleMap.pos_to_hex(selected.pos);
-            return battleMap.get_path(hero_hex, hex);
+            return battleModel.get_path(hero_hex, hex);
         }
 
         mouseMoveEvent = battleMap.events.listen(BattleMap.HEX_MOUSEMOVED_EVENT, function(hex :Hex) {
@@ -343,7 +340,7 @@ class MinionActionState extends State {
             if (selected == null) return;
 
             // Attack
-            var model = battleMap.battleModel.get_minion(hex);
+            var model = battleModel.get_minion(hex);
             if (model != null && model.playerId != selected.model.playerId) {
                 //entity.destroy();
                 var minPower = Math.floor(Math.min(model.power, selected.model.power));
