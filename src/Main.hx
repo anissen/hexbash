@@ -3,6 +3,8 @@ import luxe.States;
 import luxe.Input.KeyEvent;
 import luxe.Input.Key;
 
+import game.States;
+
 class Main extends luxe.Game {
     static public var states :States;
 
@@ -19,10 +21,10 @@ class Main extends luxe.Game {
         Luxe.renderer.clear_color.set(25/255, 35/255, 55/255);
 
         states = new States({ name: 'state_machine' });
-        states.add(new GameState.BattleState());
-        states.add(new GameState.MinionActionState());
-        states.add(new GameState.CardCastState());
-        states.set(GameState.BattleState.StateId);
+        states.add(new BattleState());
+        states.add(new MinionActionState());
+        states.add(new CardCastState());
+        states.set(BattleState.StateId);
     }
 
     override function onkeyup(e :KeyEvent) {

@@ -1,5 +1,6 @@
+package core;
 
-import HexLibrary;
+import core.HexLibrary;
 
 class MapFactory {
     static public function create_hexagon_map(radius :Int = 3) :Array<Hex> {

@@ -1,3 +1,5 @@
+package core;
+
 // From http://www.redblobgames.com/grids/hexagons/
 
 class Point
@@ -110,9 +112,9 @@ class HexTools {
 
     static public function breadthFirstSearch(start :Hex, maxMovement :Int, maxMagnitude :Int, is_walkable :Hex -> Bool) :{ cost_so_far :Map<String, Int>, came_from :Map<String, Hex> } {
         /* see http://www.redblobgames.com/pathfinding/a-star/introduction.html */
-        var cost_so_far = new Map(); 
+        var cost_so_far = new Map();
         cost_so_far[start.key] = 0;
-        
+
         var came_from = new Map();
         came_from[start.key] = null;
 
@@ -486,4 +488,3 @@ class Tests
         trace("FAIL ", name);
     }
 }
-
