@@ -20,40 +20,23 @@ import game.Components;
 
 using core.HexLibrary.HexTools;
 
-class BattleState extends State {
-    static public var StateId :String = 'BattleState';
-    var levelScene :Scene;
-    var minionMap :Map<Int, Minion>;
-    var hexMap :Map<String, HexTile>;
-    var battleModel :BattleModel;
-    var battleMap :BattleMap;
+class EventQueue {
     var eventQueue :List<Event>;
     var idle :Bool;
+    var handler :Event->Promise;
 
     public function new() {
-        super({ name: StateId });
-        battleModel = new BattleModel();
-        battleMap = new BattleMap();
-        levelScene = new Scene();
-        hexMap = new Map();
-        minionMap = new Map();
         eventQueue = new List();
         idle = true;
     }
 
-    override function init() {
-        battleModel.listen(add_to_event_queue);
-        battleModel.load_map();
-
-        setup_map();
-        setup_hand();
-
-        // battleModel.do_action(core.Models.Action.Move()
-    }
-
-    function add_to_event_queue(event :Event) {
+    public function handle(event :Event) {
         eventQueue.add(event);
         if (idle) handle_next_event();
+    }
+
+    public function set_handler(handler :Event->Promise) {
+        this.handler = handler;
     }
 
     function handle_next_event() {
@@ -66,7 +49,43 @@ class BattleState extends State {
 
     function handle_event(event :Event) {
         idle = false;
-        var promise :Promise = switch (event) {
+        if (handler == null) throw 'Handler not set!';
+        handler(event)
+            .then(handle_next_event)
+            .error(function(e) { trace('Error: $e'); });
+    }
+}
+
+class BattleState extends State {
+    static public var StateId :String = 'BattleState';
+    var levelScene :Scene;
+    var minionMap :Map<Int, Minion>;
+    var hexMap :Map<String, HexTile>;
+    var battleModel :BattleModel;
+    var battleMap :BattleMap;
+    var eventQueue :EventQueue;
+
+    public function new() {
+        super({ name: StateId });
+        battleModel = new BattleModel();
+        battleMap = new BattleMap();
+        levelScene = new Scene();
+        hexMap = new Map();
+        minionMap = new Map();
+        eventQueue = new EventQueue();
+    }
+
+    override function init() {
+        eventQueue.set_handler(handle_event);
+        battleModel.listen(eventQueue.handle);
+        battleModel.load_map();
+
+        setup_map();
+        setup_hand();
+    }
+
+    function handle_event(event :Event) :Promise {
+        return switch (event) {
             case HexAdded(hex): add_hex(hex);
             case MinionAdded(model): add_minion(model);
             case MinionMoved(model, from, to): move_minion(model, from, to);
@@ -74,7 +93,6 @@ class BattleState extends State {
             case MinionAttacked(attacker, defender): attack_minion(attacker, defender);
             case MinionDied(model): remove_minion(model);
         };
-        promise.then(handle_next_event);
     }
 
     function add_hex(hex :Hex) :Promise {
@@ -120,8 +138,8 @@ class BattleState extends State {
         var minion = minion_from_model(model);
         minion.pos = battleMap.hex_to_pos(from);
         var pos = battleMap.hex_to_pos(to); // TODO: Rename to pos_from_hex
-        return new Promise(function(resolve, reject /* remove? */) {
-            Actuate.tween(minion.pos, 2.5, { x: pos.x, y: pos.y }).onComplete(resolve);
+        return new Promise(function(resolve) {
+            Actuate.tween(minion.pos, 0.5, { x: pos.x, y: pos.y }).onComplete(resolve);
         });
     }
 
