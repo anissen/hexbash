@@ -146,6 +146,19 @@ class BattleState extends State {
             if (hexes.length == 0) return;
             var randomHex = hexes[Math.floor(hexes.length * Math.random())];
             battleModel.do_action(core.Models.Action.Move(minionModel, randomHex));
+        } else if (event.keycode == luxe.Input.Key.key_p) {
+            var minion = minionMap[1];
+            var minion2 = minionMap[0];
+            if (minion == null || minion2 == null) return;
+            var minionModel = minion.model;
+            var minionModel2 = minion2.model;
+            var nearbyHexes = minionModel2.hex.reachable(battleModel.is_walkable, 1); // HACK because endpoint is not reachable
+            var randomNearbyHex = nearbyHexes[Math.floor(nearbyHexes.length * Math.random())];
+            var path = minionModel.hex.find_path(randomNearbyHex, 100, 6, battleModel.is_walkable);
+            //minionModel.hex.find_path_excluding_endpoint()
+            for (p in path) {
+                battleModel.do_action(core.Models.Action.Move(minionModel, p));
+            }
         } else if (event.keycode == luxe.Input.Key.key_r) {
             battleModel.replay();
         }
