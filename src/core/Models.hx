@@ -1,5 +1,6 @@
 package core;
 
+import snow.api.Promise;
 import core.HexLibrary;
 using core.HexLibrary.HexTools;
 
@@ -33,7 +34,7 @@ class MinionModel {
     }
 }
 
-typedef EventListenerFunction = Event -> Void;
+typedef EventListenerFunction = Event -> snow.api.Promise;
 
 enum Action {
     Move(model :MinionModel, hex :Hex);
@@ -51,7 +52,7 @@ enum Event {
 
 class BattleModel {
     var actions :MessageQueue<Action>;
-    var events :MessageQueue<Event>;
+    var events :PromiseQueue<Event>;
     var hexes :Map<String, Hex>;
     var minions :Array<MinionModel>;
     var random :luxe.utils.Random;
@@ -66,12 +67,11 @@ class BattleModel {
         actions = new MessageQueue({ serializable: true });
         actions.on = handle_action;
 
-        events = new MessageQueue();
-        events.on = function(event :Event) {
-            for (listener in listeners) {
-                listener(event);
-            }
-        };
+        events = new PromiseQueue();
+        events.set_handler(function(event :Event) {
+            var promises :Array<Promise> = [ for (l in listeners) l(event) ];
+            return Promise.all(promises);
+        });
     }
 
     public function load_map() {
@@ -148,7 +148,7 @@ class BattleModel {
     }
 
     function emit(event :Event) :Void {
-        events.emit([event]);
+        events.handle(event);
     }
 
     public function listen(func: EventListenerFunction) {

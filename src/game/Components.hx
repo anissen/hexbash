@@ -36,6 +36,6 @@ class PopIn extends Component {
 
 class FastPopIn extends PopIn {
     public function new() {
-        super(0.05);
+        super(0.02);
     }
 }

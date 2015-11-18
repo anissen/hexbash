@@ -12,6 +12,7 @@ import luxe.Color;
 import snow.api.Promise;
 
 import core.Models;
+import core.PromiseQueue;
 import game.Entities.Card;
 import game.Entities.Minion;
 import game.Entities.HexTile;
@@ -20,42 +21,6 @@ import game.Components;
 
 using core.HexLibrary.HexTools;
 
-class EventQueue {
-    var eventQueue :List<Event>;
-    var idle :Bool;
-    var handler :Event->Promise;
-
-    public function new() {
-        eventQueue = new List();
-        idle = true;
-    }
-
-    public function handle(event :Event) {
-        eventQueue.add(event);
-        if (idle) handle_next_event();
-    }
-
-    public function set_handler(handler :Event->Promise) {
-        this.handler = handler;
-    }
-
-    function handle_next_event() {
-        if (eventQueue.isEmpty()) {
-            idle = true;
-            return;
-        }
-        handle_event(eventQueue.pop());
-    }
-
-    function handle_event(event :Event) {
-        idle = false;
-        if (handler == null) throw 'Handler not set!';
-        handler(event)
-            .then(handle_next_event)
-            .error(function(e) { trace('Error: $e'); });
-    }
-}
-
 class BattleState extends State {
     static public var StateId :String = 'BattleState';
     var levelScene :Scene;
@@ -63,7 +28,6 @@ class BattleState extends State {
     var hexMap :Map<String, HexTile>;
     var battleModel :BattleModel;
     var battleMap :BattleMap;
-    var eventQueue :EventQueue;
 
     public function new() {
         super({ name: StateId });
@@ -72,12 +36,10 @@ class BattleState extends State {
         levelScene = new Scene();
         hexMap = new Map();
         minionMap = new Map();
-        eventQueue = new EventQueue();
     }
 
     override function init() {
-        eventQueue.set_handler(handle_event);
-        battleModel.listen(eventQueue.handle);
+        battleModel.listen(handle_event);
         battleModel.load_map();
 
         setup_map();
