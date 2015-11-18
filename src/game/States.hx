@@ -9,6 +9,7 @@ import luxe.tween.Actuate;
 import luxe.Vector;
 import luxe.Visual;
 import luxe.Color;
+import snow.api.Promise;
 
 import core.Models;
 import game.Entities.Card;
@@ -26,6 +27,8 @@ class BattleState extends State {
     var hexMap :Map<String, HexTile>;
     var battleModel :BattleModel;
     var battleMap :BattleMap;
+    var eventQueue :List<Event>;
+    var idle :Bool;
 
     public function new() {
         super({ name: StateId });
@@ -34,40 +37,60 @@ class BattleState extends State {
         levelScene = new Scene();
         hexMap = new Map();
         minionMap = new Map();
+        eventQueue = new List();
+        idle = true;
     }
 
     override function init() {
-        battleModel.listen(handle_event);
+        battleModel.listen(add_to_event_queue);
         battleModel.load_map();
 
         setup_map();
         setup_hand();
+
+        // battleModel.do_action(core.Models.Action.Move()
+    }
+
+    function add_to_event_queue(event :Event) {
+        eventQueue.add(event);
+        if (idle) handle_next_event();
+    }
+
+    function handle_next_event() {
+        if (eventQueue.isEmpty()) {
+            idle = true;
+            return;
+        }
         handle_event(eventQueue.pop());
     }
 
     function handle_event(event :Event) {
-        switch (event) {
+        idle = false;
+        var promise :Promise = switch (event) {
             case HexAdded(hex): add_hex(hex);
             case MinionAdded(model): add_minion(model);
             case MinionMoved(model, from, to): move_minion(model, from, to);
             case MinionDamaged(model, damage): damage_minion(model, damage);
             case MinionAttacked(attacker, defender): attack_minion(attacker, defender);
             case MinionDied(model): remove_minion(model);
-        }
+        };
+        promise.then(handle_next_event);
     }
 
-    function add_hex(hex :Hex) {
+    function add_hex(hex :Hex) :Promise {
         var pos = Layout.hexToPixel(battleMap.layout, hex);
         var tile = new HexTile({
             pos: new Vector(pos.x, pos.y),
             r: battleMap.hexSize,
             scene: levelScene
         });
-        tile.add(new PopIn());
+        var popIn = new FastPopIn();
+        tile.add(popIn);
         hexMap[hex.key] = tile;
+        return popIn.promise;
     }
 
-    function add_minion(model :MinionModel) {
+    function add_minion(model :MinionModel) :Promise {
         var minionPos = Layout.hexToPixel(battleMap.layout, model.hex);
         var minion = new Minion({
             model: model,
@@ -76,39 +99,45 @@ class BattleState extends State {
             depth: 2
         });
         minionMap.set(model.id, minion);
-        minion.add(new PopIn());
-        if (model.playerId == 0) minion.add(new Selectable(select));
+        var popIn = new PopIn();
+        minion.add(popIn);
+        return popIn.promise;
     }
 
-    function remove_minion(model :MinionModel) {
+    function remove_minion(model :MinionModel) :Promise {
         var minion = minion_from_model(model);
         minion.destroy();
         minionMap.remove(model.id);
+        return Promise.resolve();
     }
 
     function minion_from_model(model :MinionModel) {
         return minionMap.get(model.id);
     }
 
-    function move_minion(model :MinionModel, from :Hex, to :Hex) {
+    function move_minion(model :MinionModel, from :Hex, to :Hex) :Promise {
         trace('move_minion: from $from to $to');
         var minion = minion_from_model(model);
         minion.pos = battleMap.hex_to_pos(from);
         var pos = battleMap.hex_to_pos(to); // TODO: Rename to pos_from_hex
-        luxe.tween.Actuate.tween(minion, 0.5, { x: pos.x, y: pos.y });
+        return new Promise(function(resolve, reject /* remove? */) {
+            Actuate.tween(minion.pos, 2.5, { x: pos.x, y: pos.y }).onComplete(resolve);
+        });
     }
 
-    function damage_minion(model :MinionModel, damage :Int) {
+    function damage_minion(model :MinionModel, damage :Int) :Promise {
         trace('damage_minion: $damage damage');
         var minion = minion_from_model(model);
-        luxe.tween.Actuate.tween(minion.color, 0.5, { r: 1 }).reflect();
+        Actuate.tween(minion.color, 0.5, { r: 1 }).reflect();
+        return Promise.resolve();
     }
 
-    function attack_minion(attackerModel :MinionModel, defenderModel :MinionModel) {
+    function attack_minion(attackerModel :MinionModel, defenderModel :MinionModel) :Promise {
         trace('attack_minion: $attackerModel attacks $defenderModel');
         var attacker = minion_from_model(attackerModel);
         var defender = minion_from_model(defenderModel);
         Actuate.tween(attacker.pos, 0.5, { x: defender.pos.x, y: defender.pos.y }).reflect();
+        return Promise.resolve();
     }
 
     function setup_map() {

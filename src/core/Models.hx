@@ -50,6 +50,8 @@ enum Event {
 }
 
 class BattleModel {
+    var actions :MessageQueue<Action>;
+    var events :MessageQueue<Event>;
     var hexes :Map<String, Hex>;
     var minions :Array<MinionModel>;
     var random :luxe.utils.Random;
@@ -60,6 +62,16 @@ class BattleModel {
         random = new luxe.utils.Random(43);
         hexes = new Map();
         minions = [];
+
+        actions = new MessageQueue({ serializable: true });
+        actions.on = handle_action;
+
+        events = new MessageQueue();
+        events.on = function(event :Event) {
+            for (listener in listeners) {
+                listener(event);
+            }
+        };
     }
 
     public function load_map() {
@@ -96,7 +108,16 @@ class BattleModel {
         emit(MinionDied(m));
     }
 
+    public function replay() {
+        // reset();
+        actions.deserialize(actions.serialize());
+    }
+
     public function do_action(action :Action) {
+        actions.emit([action]);
+    }
+
+    function handle_action(action :Action) {
         switch (action) {
             case Move(minion, hex): handle_move(minion, hex);
             case Attack(attacker, defender): handle_attack(attacker, defender);
@@ -127,9 +148,7 @@ class BattleModel {
     }
 
     function emit(event :Event) :Void {
-        for (listener in listeners) {
-            listener(event);
-        }
+        events.emit([event]);
     }
 
     public function listen(func: EventListenerFunction) {
