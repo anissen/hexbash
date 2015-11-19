@@ -108,16 +108,18 @@ class BattleState extends State {
     function damage_minion(model :MinionModel, damage :Int) :Promise {
         // trace('damage_minion: $damage damage');
         var minion = minion_from_model(model);
-        Actuate.tween(minion.color, 0.5, { r: 1 }).reflect();
-        return Promise.resolve();
+        return new Promise(function(resolve) {
+            Actuate.tween(minion.color, 0.5, { r: 1 }).reflect().repeat(1).onComplete(resolve);
+        });
     }
 
     function attack_minion(attackerModel :MinionModel, defenderModel :MinionModel) :Promise {
         // trace('attack_minion: $attackerModel attacks $defenderModel');
         var attacker = minion_from_model(attackerModel);
         var defender = minion_from_model(defenderModel);
-        Actuate.tween(attacker.pos, 0.5, { x: defender.pos.x, y: defender.pos.y }).reflect();
-        return Promise.resolve();
+        return new Promise(function(resolve) {
+            Actuate.tween(attacker.pos, 0.5, { x: defender.pos.x, y: defender.pos.y }).reflect().repeat(1).onComplete(resolve);
+        });
     }
 
     function setup_map() {
