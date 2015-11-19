@@ -92,8 +92,8 @@ class BattleModel {
     }
 
     public function get_minion(hex :Hex) :MinionModel {
-        for (p in minions) {
-            if (p.hex.key == hex.key) return p;
+        for (m in minions) {
+            if (m.hex.key == hex.key) return m;
         }
         return null;
     }

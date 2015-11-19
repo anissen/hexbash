@@ -139,7 +139,7 @@ class BattleState extends State {
 
     override public function onkeydown(event :luxe.Input.KeyEvent) {
         if (event.keycode == luxe.Input.Key.key_a) {
-            var minion = minionMap.iterator().next();
+            var minion = minionMap[0];
             if (minion == null) return;
             var minionModel = minion.model;
             var hexes = minionModel.hex.reachable(battleModel.is_walkable, 1);
@@ -152,14 +152,20 @@ class BattleState extends State {
             if (minion == null || minion2 == null) return;
             var minionModel = minion.model;
             var minionModel2 = minion2.model;
-            var nearbyHexes = minionModel2.hex.reachable(battleModel.is_walkable, 1); // HACK because endpoint is not reachable
-            var randomNearbyHex = nearbyHexes[Math.floor(nearbyHexes.length * Math.random())];
-            var path = minionModel.hex.find_path(randomNearbyHex, 100, 6, battleModel.is_walkable);
-            //minionModel.hex.find_path_excluding_endpoint()
-            for (p in path) {
-                battleModel.do_action(core.Models.Action.Move(minionModel, p));
+            // var nearbyHexes = minionModel2.hex.reachable(battleModel.is_walkable, 1); // HACK because endpoint is not reachable
+            // var randomNearbyHex = nearbyHexes[Math.floor(nearbyHexes.length * Math.random())];
+
+            function walkable(hex :Hex) {
+                if (!battleModel.has_hex(hex)) return false;
+                if (hex.key == minionModel2.hex.key) return true; // Ignore that goal is occupied by a minion
+                if (battleModel.get_minion(hex) != null) return false;
+                return true;
             }
-        } else if (event.keycode == luxe.Input.Key.key_r) {
+
+            var path = minionModel.hex.find_path(minionModel2.hex, 100, 6, walkable);
+            for (i in 0 ... path.length - 1 /* don't move on top of minion2 */) {
+                battleModel.do_action(core.Models.Action.Move(minionModel, path[i]));
+            }
             battleModel.replay();
         }
     }
