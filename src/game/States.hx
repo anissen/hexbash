@@ -138,14 +138,22 @@ class BattleState extends State {
     }
 
     override public function onkeydown(event :luxe.Input.KeyEvent) {
-        if (event.keycode == luxe.Input.Key.key_a) {
+        if (event.keycode == luxe.Input.Key.key_m) {
             var minion = minionMap[0];
             if (minion == null) return;
             var minionModel = minion.model;
-            var hexes = minionModel.hex.reachable(battleModel.is_walkable, 1);
-            if (hexes.length == 0) return;
-            var randomHex = hexes[Math.floor(hexes.length * Math.random())];
-            battleModel.do_action(core.Models.Action.Move(minionModel, randomHex));
+            var moves = battleModel.get_minion_moves(minionModel);
+            if (moves.length == 0) return;
+            var randomMove = moves[Math.floor(moves.length * Math.random())];
+            battleModel.do_action(randomMove);
+        } else if (event.keycode == luxe.Input.Key.key_a) {
+            var minion = minionMap[0];
+            if (minion == null) return;
+            var minionModel = minion.model;
+            var attacks = battleModel.get_minion_attacks(minionModel);
+            if (attacks.length == 0) return;
+            var randomAttack = attacks[Math.floor(attacks.length * Math.random())];
+            battleModel.do_action(randomAttack);
         } else if (event.keycode == luxe.Input.Key.key_p) {
             var minion = minionMap[1];
             var minion2 = minionMap[0];

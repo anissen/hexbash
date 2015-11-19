@@ -147,6 +147,25 @@ class BattleModel {
         if (attacker.power <= 0) remove_minion(attacker);
     }
 
+    public function get_minion_moves(model :MinionModel) :Array<Action> {
+        return model.hex.ring(1).map(function(hex) {
+            if (is_walkable(hex)) return Move(model, hex);
+            return null;
+        }).filter(function(action) { return (action != null); });
+    }
+
+    public function get_minion_attacks(model :MinionModel) :Array<Action> {
+        return model.hex.ring(1).map(function(hex) {
+            var other = get_minion(hex);
+            if (other != null && other.playerId != model.playerId) return Attack(model, other);
+            return null;
+        }).filter(function(action) { return (action != null); });
+    }
+
+    public function get_minion_actions(model :MinionModel) :Array<Action> {
+        return get_minion_moves(model).concat(get_minion_attacks(model));
+    }
+
     function emit(event :Event) :Void {
         events.handle(event);
     }
