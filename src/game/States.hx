@@ -96,24 +96,24 @@ class BattleState extends State {
     }
 
     function move_minion(model :MinionModel, from :Hex, to :Hex) :Promise {
-        trace('move_minion: from $from to $to');
+        // trace('move_minion: from $from to $to');
         var minion = minion_from_model(model);
         minion.pos = battleMap.hex_to_pos(from);
         var pos = battleMap.hex_to_pos(to); // TODO: Rename to pos_from_hex
         return new Promise(function(resolve) {
-            Actuate.tween(minion.pos, 0.5, { x: pos.x, y: pos.y }).onComplete(resolve);
+            Actuate.tween(minion.pos, 0.3, { x: pos.x, y: pos.y }).onComplete(resolve);
         });
     }
 
     function damage_minion(model :MinionModel, damage :Int) :Promise {
-        trace('damage_minion: $damage damage');
+        // trace('damage_minion: $damage damage');
         var minion = minion_from_model(model);
         Actuate.tween(minion.color, 0.5, { r: 1 }).reflect();
         return Promise.resolve();
     }
 
     function attack_minion(attackerModel :MinionModel, defenderModel :MinionModel) :Promise {
-        trace('attack_minion: $attackerModel attacks $defenderModel');
+        // trace('attack_minion: $attackerModel attacks $defenderModel');
         var attacker = minion_from_model(attackerModel);
         var defender = minion_from_model(defenderModel);
         Actuate.tween(attacker.pos, 0.5, { x: defender.pos.x, y: defender.pos.y }).reflect();
@@ -166,7 +166,8 @@ class BattleState extends State {
             for (i in 0 ... path.length - 1 /* don't move on top of minion2 */) {
                 battleModel.do_action(core.Models.Action.Move(minionModel, path[i]));
             }
+        } /* else if (event.keycode == luxe.Input.Key.key_r) {
             battleModel.replay();
-        }
+        } */
     }
 }
