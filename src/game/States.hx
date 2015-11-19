@@ -20,6 +20,15 @@ import game.Entities.BattleMap;
 import game.Components;
 
 using core.HexLibrary.HexTools;
+using game.States.TweenTools;
+
+class TweenTools {
+    static public function toPromise(tween :luxe.tween.actuators.GenericActuator.IGenericActuator) :Promise {
+        return new Promise(function(resolve) {
+            tween.onComplete(resolve);
+        });
+    }
+}
 
 class BattleState extends State {
     static public var StateId :String = 'BattleState';
@@ -96,30 +105,24 @@ class BattleState extends State {
     }
 
     function move_minion(model :MinionModel, from :Hex, to :Hex) :Promise {
-        // trace('move_minion: from $from to $to');
+        trace('move_minion: from $from to $to');
         var minion = minion_from_model(model);
         minion.pos = battleMap.hex_to_pos(from);
         var pos = battleMap.hex_to_pos(to); // TODO: Rename to pos_from_hex
-        return new Promise(function(resolve) {
-            Actuate.tween(minion.pos, 0.3, { x: pos.x, y: pos.y }).onComplete(resolve);
-        });
+        return Actuate.tween(minion.pos, 0.3, { x: pos.x, y: pos.y }).toPromise();
     }
 
     function damage_minion(model :MinionModel, damage :Int) :Promise {
-        // trace('damage_minion: $damage damage');
+        trace('damage_minion: $damage damage');
         var minion = minion_from_model(model);
-        return new Promise(function(resolve) {
-            Actuate.tween(minion.color, 0.5, { r: 1 }).reflect().repeat(1).onComplete(resolve);
-        });
+        return Actuate.tween(minion.color, 0.5, { r: 1.0 }).reflect().repeat(1).toPromise();
     }
 
     function attack_minion(attackerModel :MinionModel, defenderModel :MinionModel) :Promise {
-        // trace('attack_minion: $attackerModel attacks $defenderModel');
+        trace('attack_minion: $attackerModel attacks $defenderModel');
         var attacker = minion_from_model(attackerModel);
         var defender = minion_from_model(defenderModel);
-        return new Promise(function(resolve) {
-            Actuate.tween(attacker.pos, 0.5, { x: defender.pos.x, y: defender.pos.y }).reflect().repeat(1).onComplete(resolve);
-        });
+        return Actuate.tween(attacker.pos, 0.3, { x: defender.pos.x, y: defender.pos.y }).reflect().repeat(1).toPromise();
     }
 
     function setup_map() {
