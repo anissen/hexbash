@@ -108,9 +108,8 @@ class Minion extends Visual {
         });
     }
 
-    override public function update(dt :Float) {
-        powerText.text = '' + model.power; // HACK
-        if (model.power <= 0) destroy(); // TODO: Remove minion from game board
+    public function set_power(power :Int) {
+        powerText.text = '' + power;
     }
 }
 

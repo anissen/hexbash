@@ -138,8 +138,6 @@ class BattleModel {
         defender.power -= minPower;
         emit(MinionDamaged(defender, minPower));
 
-        emit(MinionAttacked(defender, attacker));
-
         attacker.power -= minPower;
         emit(MinionDamaged(attacker, minPower));
 

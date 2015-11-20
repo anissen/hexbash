@@ -105,7 +105,7 @@ class BattleState extends State {
     }
 
     function move_minion(model :MinionModel, from :Hex, to :Hex) :Promise {
-        trace('move_minion: from $from to $to');
+        // trace('move_minion: from $from to $to');
         var minion = minion_from_model(model);
         minion.pos = battleMap.hex_to_pos(from);
         var pos = battleMap.hex_to_pos(to); // TODO: Rename to pos_from_hex
@@ -113,13 +113,16 @@ class BattleState extends State {
     }
 
     function damage_minion(model :MinionModel, damage :Int) :Promise {
-        trace('damage_minion: $damage damage');
+        // trace('damage_minion: $damage damage');
         var minion = minion_from_model(model);
-        return Actuate.tween(minion.color, 0.5, { r: 1.0 }).reflect().repeat(1).toPromise();
+        return new Promise(function(resolve) {
+            Actuate.tween(minion.color, 0.3, { r: 1.0, g: 1.0, b: 1.0 }).reflect().repeat(1)
+                .onComplete(function() { minion.set_power(model.power); resolve(); });
+        });
     }
 
     function attack_minion(attackerModel :MinionModel, defenderModel :MinionModel) :Promise {
-        trace('attack_minion: $attackerModel attacks $defenderModel');
+        // trace('attack_minion: $attackerModel attacks $defenderModel');
         var attacker = minion_from_model(attackerModel);
         var defender = minion_from_model(defenderModel);
         return Actuate.tween(attacker.pos, 0.3, { x: defender.pos.x, y: defender.pos.y }).reflect().repeat(1).toPromise();
