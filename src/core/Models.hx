@@ -25,13 +25,17 @@ class MinionModel {
     public var power :Int;
     public var hex :Hex;
 
-    public function new(title :String, playerId :Int, power :Int, hex :Hex) {
-        this.id = Id++;
+    public function new(title :String, playerId :Int, power :Int, hex :Hex, ?id :Int) {
+        this.id = (id != null ? id : Id++);
         this.title = title;
         this.playerId = playerId;
         this.power = power;
         this.hex = hex;
     }
+
+    // public function clone() {
+    //     return new MinionModel(title, playerId, power, hex, id);
+    // }
 }
 
 typedef EventListenerFunction = Event -> snow.api.Promise;
@@ -60,7 +64,7 @@ class BattleModel {
 
     public function new() {
         listeners = new List();
-        random = new luxe.utils.Random(43);
+        random = new luxe.utils.Random(42);
         hexes = new Map();
         minions = [];
 
@@ -75,11 +79,12 @@ class BattleModel {
     }
 
     public function load_map() {
-        var map_radius :Int = 4;
-        var tempHexes = MapFactory.create_hexagon_map(map_radius);
-        for (hex in tempHexes) {
-            if (random.get() < 0.7) add_hex(hex);
-        }
+        var map_radius :Int = 3;
+        var mapHexes = MapFactory.create_hexagon_map(map_radius);
+        mapHexes = mapHexes.filter(function(hex) {
+            return (hex.key != '0,0' && hex.key != '-2,0' && hex.key != '2,0');
+        });
+        mapHexes.map(add_hex);
     }
 
     function add_hex(hex :Hex) {

@@ -116,7 +116,7 @@ class Minion extends Visual {
 class Hero extends Minion {
     public function new(options :MinionOptions) {
         var _options = options;
-        if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 40 });
+        if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 45 });
         super(_options);
     }
 }

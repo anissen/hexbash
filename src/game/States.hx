@@ -129,8 +129,10 @@ class BattleState extends State {
     }
 
     function setup_map() {
-        battleModel.add_minion(new MinionModel('Enemy', 1, 8, new Hex(3, -2, 0)));
-        battleModel.add_minion(new MinionModel('Hero', 0, 5, new Hex(-1, 0, 0)));
+        battleModel.add_minion(new MinionModel('Enemy', 1, 8, new Hex(1, -2, 0)));
+        battleModel.add_minion(new MinionModel('Enemy Minion 1', 1, 3, new Hex(0, -2, 0)));
+        battleModel.add_minion(new MinionModel('Enemy Minion 2', 1, 3, new Hex(2, -2, 0)));
+        battleModel.add_minion(new MinionModel('Hero', 0, 5, new Hex(-1, 2, 0)));
     }
 
     function setup_hand() {
