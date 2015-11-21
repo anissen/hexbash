@@ -149,6 +149,21 @@ class BattleState extends State {
         }
     }
 
+    override public function onrender() {
+        var minion = minionMap[0];
+        if (minion == null) return;
+        for (action in battleModel.get_minion_actions(minion.model)) {
+            switch (action) {
+                case Move(_, hex):
+                    var pos = battleMap.hex_to_pos(hex);
+                    Luxe.draw.circle({ x: pos.x, y: pos.y, r: 10, immediate: true, depth: 15 });
+                case Attack(_, other):
+                    var pos = battleMap.hex_to_pos(other.hex);
+                    Luxe.draw.circle({ x: pos.x, y: pos.y, r: 10, immediate: true, depth: 15, color: new Color(1, 0, 0) });
+            }
+        }
+    }
+
     override public function onkeydown(event :luxe.Input.KeyEvent) {
         if (event.keycode == luxe.Input.Key.key_m) {
             var minion = minionMap[0];
