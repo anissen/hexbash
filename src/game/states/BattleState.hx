@@ -1,4 +1,5 @@
-package game;
+
+package game.states;
 
 import core.HexLibrary;
 import luxe.Input.MouseEvent;
@@ -20,7 +21,7 @@ import game.Entities.BattleMap;
 import game.Components;
 
 using core.HexLibrary.HexTools;
-using game.States.TweenTools;
+using game.states.BattleState.TweenTools;
 
 class TweenTools {
     static public function toPromise(tween :luxe.tween.actuators.GenericActuator.IGenericActuator) :Promise {
@@ -116,7 +117,7 @@ class BattleState extends State {
         // trace('damage_minion: $damage damage');
         var minion = minion_from_model(model);
         return new Promise(function(resolve) {
-            Actuate.tween(minion.color, 0.3, { r: 1.0, g: 1.0, b: 1.0 }).reflect().repeat(1)
+            Actuate.tween(minion.color, 0.2, { r: 1.0, g: 1.0, b: 1.0 }).reflect().repeat(1)
                 .onComplete(function() { minion.set_power(model.power); resolve(); });
         });
     }
@@ -125,14 +126,15 @@ class BattleState extends State {
         // trace('attack_minion: $attackerModel attacks $defenderModel');
         var attacker = minion_from_model(attackerModel);
         var defender = minion_from_model(defenderModel);
-        return Actuate.tween(attacker.pos, 0.3, { x: defender.pos.x, y: defender.pos.y }).reflect().repeat(1).toPromise();
+        return Actuate.tween(attacker.pos, 0.2, { x: defender.pos.x, y: defender.pos.y }).reflect().repeat(1).toPromise();
     }
 
     function setup_map() {
+        battleModel.add_minion(new MinionModel('Hero', 0, 5, new Hex(-1, 2, 0)));
+
         battleModel.add_minion(new MinionModel('Enemy', 1, 8, new Hex(1, -2, 0)));
         battleModel.add_minion(new MinionModel('Enemy Minion 1', 1, 3, new Hex(0, -2, 0)));
         battleModel.add_minion(new MinionModel('Enemy Minion 2', 1, 3, new Hex(2, -2, 0)));
-        battleModel.add_minion(new MinionModel('Hero', 0, 5, new Hex(-1, 2, 0)));
     }
 
     function setup_hand() {

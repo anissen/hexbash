@@ -3,7 +3,7 @@ import luxe.States;
 import luxe.Input.KeyEvent;
 import luxe.Input.Key;
 
-import game.States;
+import game.states.BattleState;
 
 class Main extends luxe.Game {
     static public var states :States;
