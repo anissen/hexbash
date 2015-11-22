@@ -3,7 +3,7 @@ import luxe.States;
 import luxe.Input.KeyEvent;
 import luxe.Input.Key;
 
-import game.states.BattleState;
+import game.states.*;
 
 class Main extends luxe.Game {
     static public var states :States;
@@ -24,6 +24,7 @@ class Main extends luxe.Game {
 
         states = new States({ name: 'state_machine' });
         states.add(new BattleState());
+        states.add(new MinionActionsState());
         states.set(BattleState.StateId);
     }
 
