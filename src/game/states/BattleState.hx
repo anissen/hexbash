@@ -149,17 +149,13 @@ class BattleState extends State {
         }
     }
 
-    override public function onrender() {
-        var minion = minionMap[0];
-        if (minion == null) return;
-        for (action in battleModel.get_minion_actions(minion.model)) {
-            switch (action) {
-                case Move(_, hex):
-                    var pos = battleMap.hex_to_pos(hex);
-                    Luxe.draw.circle({ x: pos.x, y: pos.y, r: 10, immediate: true, depth: 15 });
-                case Attack(_, other):
-                    var pos = battleMap.hex_to_pos(other.hex);
-                    Luxe.draw.circle({ x: pos.x, y: pos.y, r: 10, immediate: true, depth: 15, color: new Color(1, 0, 0) });
+    override public function onmousedown(event :luxe.Input.MouseEvent) {
+        /* HACK */
+        for (minion in minionMap.iterator()) {
+            var pos = Luxe.camera.screen_point_to_world(event.pos);
+            if (Luxe.utils.geometry.point_in_geometry(pos, minion.geometry)) {
+                Main.states.enable(MinionActionsState.StateId, { model: minion.model, battleModel: battleModel, battleMap: battleMap });
+                return;
             }
         }
     }
