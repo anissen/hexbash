@@ -121,6 +121,10 @@ class BattleModel {
         emit(MinionDied(m));
     }
 
+    public function get_minions() :Array<MinionModel> {
+        return minions;
+    }
+
     public function replay() {
         // reset();
         actions.deserialize(actions.serialize());

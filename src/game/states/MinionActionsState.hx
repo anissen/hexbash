@@ -20,6 +20,7 @@ import game.Entities.HexTile;
 import game.Entities.BattleMap;
 import game.Components;
 
+using Lambda;
 using core.HexLibrary.HexTools;
 
 class MinionActionsState extends State {
@@ -91,16 +92,14 @@ class MinionActionsState extends State {
             if (attacks.length == 0) return;
             var randomAttack = attacks[Math.floor(attacks.length * Math.random())];
             battleModel.do_action(MinionAction(model, randomAttack));
-        } /* else if (event.keycode == luxe.Input.Key.key_p) {
-            var minion2 = minionMap[0];
-            if (minion == null || minion2 == null) return;
-            var model = minion.model;
-            var randomEnemy = battleModel.get_minions().asdf
-            var minionModel2 = minion2.model;
-            var path = minionModel.hex.find_path(minionModel2.hex, 100, 6, battleModel.is_walkable, true);
+        } else if (event.keycode == luxe.Input.Key.key_p) {
+            var enemyMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
+            if (enemyMinions.length == 0) return;
+            var randomEnemy = enemyMinions[Math.floor(enemyMinions.length * Math.random())];
+            var path = model.hex.find_path(randomEnemy.hex, 100, 6, battleModel.is_walkable, true);
             for (p in path) {
-                battleModel.do_action(MinionAction(minionModel, core.Models.MinionAction.Move(p)));
+                battleModel.do_action(MinionAction(model, core.Models.MinionAction.Move(p)));
             }
-        } */
+        }
     }
 }
