@@ -185,7 +185,7 @@ class BattleModel {
     }
 
     public function get_minion_actions(model :MinionModel) :Array<MinionAction> {
-        return get_minion_moves(model).concat(get_minion_attacks(model));
+        return get_minion_attacks(model).concat(get_minion_moves(model));
     }
 
     function emit(event :Event) :Void {

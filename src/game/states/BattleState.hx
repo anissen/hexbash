@@ -143,6 +143,7 @@ class BattleState extends State {
     function setup_map() {
         var playerId = 0;
         battleModel.add_minion(new MinionModel('Hero', playerId, 13, new Hex(-1, 2, 0)));
+        battleModel.add_minion(new MinionModel('Hero Minion 1', playerId, 2, new Hex(-2, 2, 0)));
 
         var enemyId = 1;
         battleModel.add_minion(new MinionModel('Enemy', enemyId, 8, new Hex(1, -2, 0)));
@@ -162,19 +163,20 @@ class BattleState extends State {
         }
     }
 
-    override public function onmousedown(event :luxe.Input.MouseEvent) {
+    override public function onmouseup(event :luxe.Input.MouseEvent) {
         /* HACK */
-        for (minion in minionMap.iterator()) {
-            if (minion.model.playerId != 0) continue; // Only open actions for own minions
+        for (model in battleModel.get_minions()) {
+            if (model.playerId != 0) continue; // Only open actions for own minions
             var pos = Luxe.camera.screen_point_to_world(event.pos);
+            var minion = minionMap[model.id];
             if (Luxe.utils.geometry.point_in_geometry(pos, minion.geometry)) {
-                Main.states.enable(MinionActionsState.StateId, { model: minion.model, battleModel: battleModel, battleMap: battleMap });
+                Main.states.enable(MinionActionsState.StateId, { model: model, battleModel: battleModel, battleMap: battleMap });
                 return;
             }
         }
     }
 
-    override public function onkeydown(event :luxe.Input.KeyEvent) {
+    override public function onkeyup(event :luxe.Input.KeyEvent) {
         if (event.keycode == luxe.Input.Key.enter) {
             battleModel.do_action(core.Models.Action.EndTurn);
         }/* else if (event.keycode == luxe.Input.Key.key_r) {

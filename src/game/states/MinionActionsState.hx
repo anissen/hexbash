@@ -61,7 +61,7 @@ class MinionActionsState extends State {
         }
     }
 
-    override public function onmousedown(event :luxe.Input.MouseEvent) {
+    override public function onmouseup(event :luxe.Input.MouseEvent) {
         if (!has_data) return;
         var pos = Luxe.camera.screen_point_to_world(event.pos);
         var mouse_hex = battleMap.pos_to_hex(pos);
@@ -81,7 +81,7 @@ class MinionActionsState extends State {
         }
     }
 
-    override public function onkeydown(event :luxe.Input.KeyEvent) {
+    override public function onkeyup(event :luxe.Input.KeyEvent) {
         if (event.keycode == luxe.Input.Key.key_m) {
             var moves = battleModel.get_minion_moves(model);
             if (moves.length == 0) return;
