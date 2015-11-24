@@ -107,7 +107,7 @@ class BattleState extends State {
         trace('Turn started for player $playerId');
         currentPlayer = playerId;
         if (currentPlayer == 1) {
-            
+
         }
         return Promise.resolve();
     }
@@ -182,7 +182,7 @@ class BattleState extends State {
             var moves = battleModel.get_minion_moves(minionModel);
             if (moves.length == 0) return;
             var randomMove = moves[Math.floor(moves.length * Math.random())];
-            battleModel.do_action(randomMove);
+            battleModel.do_action(MinionAction(minionModel, randomMove));
         } else if (event.keycode == luxe.Input.Key.key_a) {
             var minion = minionMap[0];
             if (minion == null) return;
@@ -190,7 +190,7 @@ class BattleState extends State {
             var attacks = battleModel.get_minion_attacks(minionModel);
             if (attacks.length == 0) return;
             var randomAttack = attacks[Math.floor(attacks.length * Math.random())];
-            battleModel.do_action(randomAttack);
+            battleModel.do_action(MinionAction(minionModel, randomAttack));
         } else if (event.keycode == luxe.Input.Key.key_p) {
             var minion = minionMap[1];
             var minion2 = minionMap[0];
@@ -209,7 +209,7 @@ class BattleState extends State {
 
             var path = minionModel.hex.find_path(minionModel2.hex, 100, 6, walkable);
             for (i in 0 ... path.length - 1 /* don't move on top of minion2 */) {
-                battleModel.do_action(core.Models.Action.Move(minionModel, path[i]));
+                battleModel.do_action(MinionAction(minionModel, core.Models.MinionAction.Move(path[i])));
             }
         } else if (event.keycode == luxe.Input.Key.enter) {
             battleModel.do_action(core.Models.Action.EndTurn);

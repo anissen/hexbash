@@ -48,15 +48,14 @@ class MinionActionsState extends State {
         var mouse_hex = battleMap.pos_to_hex(pos);
         for (action in battleModel.get_minion_actions(model)) {
             switch (action) {
-                case Move(_, hex):
+                case Move(hex):
                     var pos = battleMap.hex_to_pos(hex);
                     var radius = (mouse_hex.key == hex.key ? 20 : 10);
                     Luxe.draw.circle({ x: pos.x, y: pos.y, r: radius, immediate: true, depth: 15 });
-                case Attack(_, other):
+                case Attack(other):
                     var pos = battleMap.hex_to_pos(other.hex);
                     var radius = (mouse_hex.key == other.hex.key ? 20 : 10);
                     Luxe.draw.circle({ x: pos.x, y: pos.y, r: radius, immediate: true, depth: 15, color: new Color(1, 0, 0) });
-                case _: // Nothing
             }
         }
     }
@@ -67,17 +66,16 @@ class MinionActionsState extends State {
         var mouse_hex = battleMap.pos_to_hex(pos);
         for (action in battleModel.get_minion_actions(model)) {
             switch (action) {
-                case Move(model, hex):
+                case Move(hex):
                     if (mouse_hex.key == hex.key) {
-                        battleModel.do_action(Move(model, hex));
+                        battleModel.do_action(MinionAction(model, Move(hex)));
                         return;
                     }
-                case Attack(model, other):
+                case Attack(other):
                     if (mouse_hex.key == other.hex.key) {
-                        battleModel.do_action(Attack(model, other));
+                        battleModel.do_action(MinionAction(model, Attack(other)));
                         return;
                     }
-                case _: // nothing
             }
         }
     }

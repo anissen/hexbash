@@ -41,9 +41,13 @@ class MinionModel {
 typedef EventListenerFunction = Event -> snow.api.Promise;
 
 enum Action {
-    Move(model :MinionModel, hex :Hex);
-    Attack(attackerModel :MinionModel, defenderModel :MinionModel);
+    MinionAction(model :MinionModel, action :MinionAction);
     EndTurn();
+}
+
+enum MinionAction {
+    Move(hex :Hex);
+    Attack(defenderModel :MinionModel);
 }
 
 enum Event {
@@ -128,9 +132,15 @@ class BattleModel {
 
     function handle_action(action :Action) {
         switch (action) {
-            case Move(minion, hex): handle_move(minion, hex);
-            case Attack(attacker, defender): handle_attack(attacker, defender);
+            case MinionAction(model, action): handle_minion_action(model, action);
             case EndTurn: emit(TurnStarted((currentPlayerId++) % 2));
+        }
+    }
+
+    function handle_minion_action(model :MinionModel, action :MinionAction) {
+        switch (action) {
+            case Move(hex): handle_move(model, hex);
+            case Attack(defender): handle_attack(model, defender);
         }
     }
 
@@ -155,22 +165,22 @@ class BattleModel {
         if (attacker.power <= 0) remove_minion(attacker);
     }
 
-    public function get_minion_moves(model :MinionModel) :Array<Action> {
+    public function get_minion_moves(model :MinionModel) :Array<MinionAction> {
         return model.hex.ring(1).map(function(hex) {
-            if (is_walkable(hex)) return Move(model, hex);
+            if (is_walkable(hex)) return Move(hex);
             return null;
         }).filter(function(action) { return (action != null); });
     }
 
-    public function get_minion_attacks(model :MinionModel) :Array<Action> {
+    public function get_minion_attacks(model :MinionModel) :Array<MinionAction> {
         return model.hex.ring(1).map(function(hex) {
             var other = get_minion(hex);
-            if (other != null && other.playerId != model.playerId) return Attack(model, other);
+            if (other != null && other.playerId != model.playerId) return Attack(other);
             return null;
         }).filter(function(action) { return (action != null); });
     }
 
-    public function get_minion_actions(model :MinionModel) :Array<Action> {
+    public function get_minion_actions(model :MinionModel) :Array<MinionAction> {
         return get_minion_moves(model).concat(get_minion_attacks(model));
     }
 
