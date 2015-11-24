@@ -56,6 +56,7 @@ class MinionActionsState extends State {
                     var pos = battleMap.hex_to_pos(other.hex);
                     var radius = (mouse_hex.key == other.hex.key ? 20 : 10);
                     Luxe.draw.circle({ x: pos.x, y: pos.y, r: radius, immediate: true, depth: 15, color: new Color(1, 0, 0) });
+                case _: // Nothing
             }
         }
     }
@@ -76,6 +77,7 @@ class MinionActionsState extends State {
                         battleModel.do_action(Attack(model, other));
                         return;
                     }
+                case _: // nothing
             }
         }
     }

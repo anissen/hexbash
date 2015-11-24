@@ -43,6 +43,7 @@ typedef EventListenerFunction = Event -> snow.api.Promise;
 enum Action {
     Move(model :MinionModel, hex :Hex);
     Attack(attackerModel :MinionModel, defenderModel :MinionModel);
+    EndTurn();
 }
 
 enum Event {
@@ -52,6 +53,7 @@ enum Event {
     MinionAttacked(attackerModel :MinionModel, defenderModel :MinionModel);
     MinionDamaged(model :MinionModel, damage :Int);
     MinionDied(model :MinionModel);
+    TurnStarted(playerId :Int);
 }
 
 class BattleModel {
@@ -61,12 +63,14 @@ class BattleModel {
     var minions :Array<MinionModel>;
     var random :luxe.utils.Random;
     var listeners :List<EventListenerFunction>;
+    var currentPlayerId :Int;
 
     public function new() {
         listeners = new List();
         random = new luxe.utils.Random(42);
         hexes = new Map();
         minions = [];
+        currentPlayerId = 0;
 
         actions = new MessageQueue({ serializable: true });
         actions.on = handle_action;
@@ -126,6 +130,7 @@ class BattleModel {
         switch (action) {
             case Move(minion, hex): handle_move(minion, hex);
             case Attack(attacker, defender): handle_attack(attacker, defender);
+            case EndTurn: emit(TurnStarted((currentPlayerId++) % 2));
         }
     }
 

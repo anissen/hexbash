@@ -38,6 +38,7 @@ class BattleState extends State {
     var hexMap :Map<String, HexTile>;
     var battleModel :BattleModel;
     var battleMap :BattleMap;
+    var currentPlayer :Int;
 
     public function new() {
         super({ name: StateId });
@@ -64,6 +65,7 @@ class BattleState extends State {
             case MinionDamaged(model, damage): damage_minion(model, damage);
             case MinionAttacked(attacker, defender): attack_minion(attacker, defender);
             case MinionDied(model): remove_minion(model);
+            case TurnStarted(playerId): turn_started(playerId);
         };
     }
 
@@ -98,6 +100,15 @@ class BattleState extends State {
         var minion = minion_from_model(model);
         minion.destroy();
         minionMap.remove(model.id);
+        return Promise.resolve();
+    }
+
+    function turn_started(playerId :Int) :Promise {
+        trace('Turn started for player $playerId');
+        currentPlayer = playerId;
+        if (currentPlayer == 1) {
+            
+        }
         return Promise.resolve();
     }
 
@@ -200,7 +211,9 @@ class BattleState extends State {
             for (i in 0 ... path.length - 1 /* don't move on top of minion2 */) {
                 battleModel.do_action(core.Models.Action.Move(minionModel, path[i]));
             }
-        } /* else if (event.keycode == luxe.Input.Key.key_r) {
+        } else if (event.keycode == luxe.Input.Key.enter) {
+            battleModel.do_action(core.Models.Action.EndTurn);
+        }/* else if (event.keycode == luxe.Input.Key.key_r) {
             battleModel.replay();
         } */
     }
