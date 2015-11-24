@@ -136,16 +136,25 @@ class HexTools {
         return { cost_so_far: cost_so_far, came_from: came_from };
     }
 
-    static public function find_path(start :Hex, goal :Hex, maxMovement :Int, maxMagnitude :Int, is_walkable :Hex -> Bool) :Array<Hex> {
-        var bfs = breadthFirstSearch(start, maxMovement, maxMagnitude, is_walkable);
+    static public function find_path(start :Hex, goal :Hex, maxMovement :Int, maxMagnitude :Int, is_walkable :Hex -> Bool, exclude_goal :Bool = false) :Array<Hex> {
+
+        var walkable_func = is_walkable;
+        if (exclude_goal) {
+            walkable_func = function(hex) {
+                if (hex.key == goal.key) return true; // ignore walkable status of goal
+                return is_walkable(hex);
+            };
+        }
+        var bfs = breadthFirstSearch(start, maxMovement, maxMagnitude, walkable_func);
         var path = [];
-        var p = goal;
+        var p = (exclude_goal ? bfs.came_from[goal.key] : goal);
         while (p != null) {
             path.push(p);
             p = bfs.came_from[p.key];
         }
         if (path.pop() != start) return [];
         path.reverse();
+        // if (exclude_goal) path.pop();
         return path;
     }
 }
