@@ -130,11 +130,13 @@ class BattleState extends State {
     }
 
     function setup_map() {
-        battleModel.add_minion(new MinionModel('Hero', 0, 5, new Hex(-1, 2, 0)));
+        var playerId = 0;
+        battleModel.add_minion(new MinionModel('Hero', playerId, 13, new Hex(-1, 2, 0)));
 
-        battleModel.add_minion(new MinionModel('Enemy', 1, 8, new Hex(1, -2, 0)));
-        battleModel.add_minion(new MinionModel('Enemy Minion 1', 1, 3, new Hex(0, -2, 0)));
-        battleModel.add_minion(new MinionModel('Enemy Minion 2', 1, 3, new Hex(2, -2, 0)));
+        var enemyId = 1;
+        battleModel.add_minion(new MinionModel('Enemy', enemyId, 8, new Hex(1, -2, 0)));
+        battleModel.add_minion(new MinionModel('Enemy Minion 1', enemyId, 3, new Hex(0, -2, 0)));
+        battleModel.add_minion(new MinionModel('Enemy Minion 2', enemyId, 3, new Hex(2, -2, 0)));
     }
 
     function setup_hand() {
@@ -152,6 +154,7 @@ class BattleState extends State {
     override public function onmousedown(event :luxe.Input.MouseEvent) {
         /* HACK */
         for (minion in minionMap.iterator()) {
+            if (minion.model.playerId != 0) continue; // Only open actions for own minions
             var pos = Luxe.camera.screen_point_to_world(event.pos);
             if (Luxe.utils.geometry.point_in_geometry(pos, minion.geometry)) {
                 Main.states.enable(MinionActionsState.StateId, { model: minion.model, battleModel: battleModel, battleMap: battleMap });
