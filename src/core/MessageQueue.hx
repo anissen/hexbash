@@ -5,6 +5,7 @@ typedef MessageQueueOptions = { serializable :Bool };
 
 class MessageQueue<T> {
     public var on :T->Void;
+    public var finished :Void->Void;
     var queue :Array<T>;
     var processing :Bool;
     var processed :Array<T>;
@@ -15,6 +16,7 @@ class MessageQueue<T> {
         processed = [];
         processing = false;
         on = null;
+        finished = null;
 
         var has_serializable_property = options != null;
         serializable = has_serializable_property ? options.serializable : false;
@@ -33,6 +35,7 @@ class MessageQueue<T> {
             if (on != null) on(a);
         }
         processing = false;
+        if (finished != null) finished();
     }
 
     public function serialize() :String {

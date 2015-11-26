@@ -106,9 +106,31 @@ class BattleState extends State {
     function turn_started(playerId :Int) :Promise {
         trace('Turn started for player $playerId');
         currentPlayer = playerId;
+        // var action_promises = [];
+        var promise = battleModel.actions_finished;
         if (currentPlayer == 1) {
+            for (model in battleModel.get_minions()) {
+                if (model.playerId != 1) continue;
 
+                function do_minion_action() {
+                    var playerMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
+                    if (playerMinions.length == 0) return;
+                    var randomPlayerMinion = playerMinions[0]; // playerMinions[Math.floor(playerMinions.length * Math.random())];
+                    var path = model.hex.find_path(randomPlayerMinion.hex, 100, 6, battleModel.is_walkable, true);
+                    if (path.length == 0) return;
+                    // trace('is next move for model ${model.id} (${path[0].key}) walkable: ${battleModel.is_walkable(path[0])}');
+                    battleModel.do_action(MinionAction(model, core.Models.MinionAction.Move(path[0])));
+                }
+                promise = promise.then(new Promise(function(resolve) {
+                    do_minion_action();
+                    resolve();
+                }));
+            }
         }
+        promise.then(new Promise(function(resolve) {
+            battleModel.do_action(EndTurn);
+            resolve();
+        }));
         return Promise.resolve();
     }
 

@@ -68,6 +68,8 @@ class BattleModel {
     var random :luxe.utils.Random;
     var listeners :List<EventListenerFunction>;
     var currentPlayerId :Int;
+    var actions_finished_func :Void->Void;
+    public var actions_finished :Promise;
 
     public function new() {
         listeners = new List();
@@ -76,12 +78,18 @@ class BattleModel {
         minions = [];
         currentPlayerId = 0;
 
+        actions_finished = new Promise(function(resolve, reject) {
+            actions_finished_func = resolve;
+        });
+
         actions = new MessageQueue({ serializable: true });
         actions.on = handle_action;
+        actions.finished = actions_finished_func;
 
         events = new PromiseQueue();
         events.set_handler(function(event :Event) {
-            var promises :Array<Promise> = [ for (l in listeners) l(event) ];
+            var promises :Array<Promise> = [];
+            for (l in listeners) promises.push(l(event));
             return Promise.all(promises);
         });
     }
@@ -135,6 +143,7 @@ class BattleModel {
     }
 
     function handle_action(action :Action) {
+        trace('handle_action: $action');
         switch (action) {
             case MinionAction(model, action): handle_minion_action(model, action);
             case EndTurn: emit(TurnStarted((currentPlayerId++) % 2));
@@ -149,7 +158,8 @@ class BattleModel {
     }
 
     function handle_move(model :MinionModel, hex :Hex) {
-        if (get_minion(hex) != null) throw 'Destination hex is already occupied!';
+        trace('handle_move, modelId: ${model.id}, hex: ${hex.key}, is_walkable(${is_walkable(hex)})');
+        //if (get_minion(hex) != null) throw 'Destination hex is already occupied!';
         var from = model.hex;
         model.hex = hex;
         emit(MinionMoved(model, from, hex));
