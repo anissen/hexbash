@@ -106,8 +106,7 @@ class BattleState extends State {
     function turn_started(playerId :Int) :Promise {
         trace('Turn started for player $playerId');
         currentPlayer = playerId;
-        // var action_promises = [];
-        var promise = battleModel.actions_finished;
+        var action_promises = [];
         if (currentPlayer == 1) {
             for (model in battleModel.get_minions()) {
                 if (model.playerId != 1) continue;
@@ -121,16 +120,17 @@ class BattleState extends State {
                     // trace('is next move for model ${model.id} (${path[0].key}) walkable: ${battleModel.is_walkable(path[0])}');
                     battleModel.do_action(MinionAction(model, core.Models.MinionAction.Move(path[0])));
                 }
-                promise = promise.then(new Promise(function(resolve) {
+                action_promises.push(new Promise(function(resolve) {
                     do_minion_action();
                     resolve();
                 }));
             }
         }
-        promise.then(new Promise(function(resolve) {
+        action_promises.push(new Promise(function(resolve) {
             battleModel.do_action(EndTurn);
             resolve();
         }));
+        battleModel.actions_finished.then(Promise.all(action_promises));
         return Promise.resolve();
     }
 
