@@ -106,31 +106,44 @@ class BattleState extends State {
     function turn_started(playerId :Int) :Promise {
         trace('Turn started for player $playerId');
         currentPlayer = playerId;
-        var action_promises = [];
-        if (currentPlayer == 1) {
-            for (model in battleModel.get_minions()) {
-                if (model.playerId != 1) continue;
-
-                function do_minion_action() {
-                    var playerMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
-                    if (playerMinions.length == 0) return;
-                    var randomPlayerMinion = playerMinions[0]; // playerMinions[Math.floor(playerMinions.length * Math.random())];
-                    var path = model.hex.find_path(randomPlayerMinion.hex, 100, 6, battleModel.is_walkable, true);
-                    if (path.length == 0) return;
-                    // trace('is next move for model ${model.id} (${path[0].key}) walkable: ${battleModel.is_walkable(path[0])}');
-                    battleModel.do_action(MinionAction(model, core.Models.MinionAction.Move(path[0])));
-                }
-                action_promises.push(new Promise(function(resolve) {
-                    do_minion_action();
-                    resolve();
-                }));
-            }
-        }
-        action_promises.push(new Promise(function(resolve) {
+        if (currentPlayer == 1) { // AI
             battleModel.do_action(EndTurn);
-            resolve();
-        }));
-        battleModel.actions_finished.then(Promise.all(action_promises));
+        }
+        return Promise.resolve();
+    }
+
+    function ai_tick() :Promise {
+
+        // TODO: Handle this by doing one action, then evaluating the next, etc..
+
+        var model = null;
+        var actions = [];
+        for (m in battleModel.get_minions()) {
+            if (m.playerId != currentPlayer) continue;
+            if (m.actions <= 0) continue;
+            model = m;
+            actions = battleModel.get_minion_actions(m);
+            if (actions.length > 0) break;
+        }
+        if (model == null || actions.length == 0) {
+            battleModel.do_action(EndTurn);
+            return Promise.resolve();
+        }
+
+        var playerMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
+        if (playerMinions.length == 0) {
+            battleModel.do_action(EndTurn);
+            return Promise.resolve();
+        }
+        var randomPlayerMinion = playerMinions[0]; // playerMinions[Math.floor(playerMinions.length * Math.random())];
+        var path = model.hex.find_path(randomPlayerMinion.hex, 100, 6, battleModel.is_walkable, true);
+        if (path.length == 0) {
+            battleModel.do_action(EndTurn);
+            return Promise.resolve();
+        }
+        // trace('is next move for model ${model.id} (${path[0].key}) walkable: ${battleModel.is_walkable(path[0])}');
+        battleModel.do_action(MinionAction(model, core.Models.MinionAction.Move(path[0])));
+
         return Promise.resolve();
     }
 

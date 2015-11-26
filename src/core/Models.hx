@@ -24,6 +24,7 @@ class MinionModel {
     public var playerId :Int;
     public var power :Int;
     public var hex :Hex;
+    public var actions :Int;
 
     public function new(title :String, playerId :Int, power :Int, hex :Hex, ?id :Int) {
         this.id = (id != null ? id : Id++);
@@ -31,6 +32,7 @@ class MinionModel {
         this.playerId = playerId;
         this.power = power;
         this.hex = hex;
+        this.actions = 1;
     }
 
     // public function clone() {
@@ -146,8 +148,17 @@ class BattleModel {
         trace('handle_action: $action');
         switch (action) {
             case MinionAction(model, action): handle_minion_action(model, action);
-            case EndTurn: emit(TurnStarted((currentPlayerId++) % 2));
+            case EndTurn: handle_start_turn();
         }
+    }
+
+    function handle_start_turn() {
+        currentPlayerId = (currentPlayerId + 1) % 2;
+        for (m in minions) {
+            if (m.playerId != currentPlayerId) continue;
+            m.actions = 1;
+        }
+        emit(TurnStarted(currentPlayerId));
     }
 
     function handle_minion_action(model :MinionModel, action :MinionAction) {
