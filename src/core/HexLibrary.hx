@@ -14,10 +14,10 @@ class Point
 }
 
 class Hex {
-    public function new(q :Int, r :Int, s :Int) {
+    public function new(q :Int, r :Int, ?s :Int) {
         this.q = q;
         this.r = r;
-        this.s = s;
+        this.s = (s != null ? s : -q - r);
     }
     public var q :Int;
     public var r :Int;
@@ -154,7 +154,6 @@ class HexTools {
         }
         if (path.pop() != start) return [];
         path.reverse();
-        // if (exclude_goal) path.pop();
         return path;
     }
 }
