@@ -162,6 +162,7 @@ class BattleModel {
     }
 
     function handle_minion_action(model :MinionModel, action :MinionAction) {
+        model.actions--;
         switch (action) {
             case Move(hex): handle_move(model, hex);
             case Attack(defender): handle_attack(model, defender);

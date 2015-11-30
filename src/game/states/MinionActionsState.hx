@@ -61,6 +61,13 @@ class MinionActionsState extends State {
         }
     }
 
+    function select_action(action :core.Models.MinionAction) {
+        battleModel.do_action(MinionAction(model, action));
+        if (model.actions <= 0) {
+            Main.states.disable(StateId);
+        }
+    }
+
     override public function onmouseup(event :luxe.Input.MouseEvent) {
         if (!has_data) return;
         var pos = Luxe.camera.screen_point_to_world(event.pos);
@@ -69,12 +76,12 @@ class MinionActionsState extends State {
             switch (action) {
                 case Move(hex):
                     if (mouse_hex.key == hex.key) {
-                        battleModel.do_action(MinionAction(model, Move(hex)));
+                        select_action(Move(hex));
                         return;
                     }
                 case Attack(other):
                     if (mouse_hex.key == other.hex.key) {
-                        battleModel.do_action(MinionAction(model, Attack(other)));
+                        select_action(Attack(other));
                         return;
                     }
             }
@@ -86,20 +93,18 @@ class MinionActionsState extends State {
             var moves = battleModel.get_minion_moves(model);
             if (moves.length == 0) return;
             var randomMove = moves[Math.floor(moves.length * Math.random())];
-            battleModel.do_action(MinionAction(model, randomMove));
+            select_action(randomMove);
         } else if (event.keycode == luxe.Input.Key.key_a) {
             var attacks = battleModel.get_minion_attacks(model);
             if (attacks.length == 0) return;
             var randomAttack = attacks[Math.floor(attacks.length * Math.random())];
-            battleModel.do_action(MinionAction(model, randomAttack));
+            select_action(randomAttack);
         } else if (event.keycode == luxe.Input.Key.key_p) {
             var enemyMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
             if (enemyMinions.length == 0) return;
             var randomEnemy = enemyMinions[Math.floor(enemyMinions.length * Math.random())];
             var path = model.hex.find_path(randomEnemy.hex, 100, 6, battleModel.is_walkable, true);
-            for (p in path) {
-                battleModel.do_action(MinionAction(model, core.Models.MinionAction.Move(p)));
-            }
+            for (p in path) select_action(Move(p));
         }
     }
 }

@@ -177,7 +177,9 @@ class BattleState extends State {
 
     function setup_map() {
         var playerId = 0;
-        battleModel.add_minion(new MinionModel('Hero', playerId, 13, new Hex(-1, 2)));
+        var hero = new MinionModel('Hero', playerId, 13, new Hex(-1, 2));
+        hero.actions = 2;
+        battleModel.add_minion(hero);
         battleModel.add_minion(new MinionModel('Hero Minion 1', playerId, 2, new Hex(-2, 2)));
 
         var enemyId = 1;
@@ -202,6 +204,7 @@ class BattleState extends State {
         /* HACK */
         for (model in battleModel.get_minions()) {
             if (model.playerId != 0) continue; // Only open actions for own minions
+            if (model.actions <= 0) continue;
             var pos = Luxe.camera.screen_point_to_world(event.pos);
             var minion = minionMap[model.id];
             if (Luxe.utils.geometry.point_in_geometry(pos, minion.geometry)) {
