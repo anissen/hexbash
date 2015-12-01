@@ -26,18 +26,18 @@ class MinionModel {
     public var hex :Hex;
     public var actions :Int;
 
-    public function new(title :String, playerId :Int, power :Int, hex :Hex, ?id :Int) {
+    public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, ?id :Int) {
         this.id = (id != null ? id : Id++);
         this.title = title;
         this.playerId = playerId;
         this.power = power;
         this.hex = hex;
-        this.actions = 1;
+        this.actions = actions;
     }
 
-    // public function clone() {
-    //     return new MinionModel(title, playerId, power, hex, id);
-    // }
+    public function clone() {
+        return new MinionModel(title, playerId, power, hex, actions, id);
+    }
 }
 
 typedef EventListenerFunction = Event -> snow.api.Promise;
@@ -62,31 +62,51 @@ enum Event {
     TurnStarted(playerId :Int);
 }
 
+class BattleGameState {
+    public var minions :Array<MinionModel>;
+    public var currentPlayerId :Int;
+    public var random :luxe.utils.Random;
+
+    public function new() {
+        minions = [];
+        currentPlayerId = 0;
+        random = new luxe.utils.Random(42);
+    }
+
+    public function clone() :BattleGameState {
+        var newGameState = new BattleGameState();
+        newGameState.minions = [ for (model in minions) model.clone() ];
+        newGameState.currentPlayerId = currentPlayerId;
+        newGameState.random = new luxe.utils.Random(random.seed);
+        return newGameState;
+    }
+}
+
 class BattleModel {
+    var hexes :Map<String, Hex>;
     var actions :MessageQueue<Action>;
     var events :PromiseQueue<Event>;
-    var hexes :Map<String, Hex>;
-    var minions :Array<MinionModel>;
-    var random :luxe.utils.Random;
     var listeners :List<EventListenerFunction>;
-    var currentPlayerId :Int;
-    var actions_finished_func :Void->Void;
-    public var actions_finished :Promise;
+
+    var state :BattleGameState;
+    // var actions_finished_func :Void->Void;
+    // public var actions_finished :Promise;
 
     public function new() {
         listeners = new List();
-        random = new luxe.utils.Random(42);
+        // minions = [];
         hexes = new Map();
-        minions = [];
-        currentPlayerId = 0;
 
-        actions_finished = new Promise(function(resolve, reject) {
-            actions_finished_func = resolve;
-        });
+        state = new BattleGameState();
+
+
+        // actions_finished = new Promise(function(resolve, reject) {
+        //     actions_finished_func = resolve;
+        // });
 
         actions = new MessageQueue({ serializable: true });
         actions.on = handle_action;
-        actions.finished = actions_finished_func;
+        // actions.finished = actions_finished_func;
 
         events = new PromiseQueue();
         events.set_handler(function(event :Event) {
@@ -105,43 +125,15 @@ class BattleModel {
         mapHexes.map(add_hex);
     }
 
-    function add_hex(hex :Hex) {
-        hexes.set(hex.key, hex);
-        emit(HexAdded(hex));
-    }
-
-    public function has_hex(hex :Hex) {
-        return hexes.exists(hex.key);
-    }
-
-    public function get_minion(hex :Hex) :MinionModel {
-        for (m in minions) {
-            if (m.hex.key == hex.key) return m;
-        }
-        return null;
-    }
-
-    public function add_minion(m :MinionModel) {
-        minions.push(m);
-        emit(MinionAdded(m));
-    }
-
-    public function remove_minion(m :MinionModel) {
-        minions.remove(m);
-        emit(MinionDied(m));
-    }
-
-    public function get_minions() :Array<MinionModel> {
-        return minions;
-    }
-
     public function replay() {
         // reset();
         actions.deserialize(actions.serialize());
     }
 
-    public function do_action(action :Action) {
-        actions.emit([action]);
+    public function clone() :BattleModel {
+        var newGameModel = new BattleModel();
+        newGameModel.state = state.clone();
+        return newGameModel;
     }
 
     function handle_action(action :Action) {
@@ -153,12 +145,12 @@ class BattleModel {
     }
 
     function handle_start_turn() {
-        currentPlayerId = (currentPlayerId + 1) % 2;
-        for (m in minions) {
-            if (m.playerId != currentPlayerId) continue;
+        state.currentPlayerId = (state.currentPlayerId + 1) % 2;
+        for (m in state.minions) {
+            if (m.playerId != state.currentPlayerId) continue;
             m.actions = 1;
         }
-        emit(TurnStarted(currentPlayerId));
+        emit(TurnStarted(state.currentPlayerId));
     }
 
     function handle_minion_action(model :MinionModel, action :MinionAction) {
@@ -170,7 +162,7 @@ class BattleModel {
     }
 
     function handle_move(model :MinionModel, hex :Hex) {
-        trace('handle_move, modelId: ${model.id}, hex: ${hex.key}, is_walkable(${is_walkable(hex)})');
+        // trace('handle_move, modelId: ${model.id}, hex: ${hex.key}, is_walkable(${is_walkable(hex)})');
         //if (get_minion(hex) != null) throw 'Destination hex is already occupied!';
         var from = model.hex;
         model.hex = hex;
@@ -210,12 +202,38 @@ class BattleModel {
         return get_minion_attacks(model).concat(get_minion_moves(model));
     }
 
-    function emit(event :Event) :Void {
-        events.handle(event);
+    public function get_minion(hex :Hex) :MinionModel {
+        for (m in state.minions) {
+            if (m.hex.key == hex.key) return m;
+        }
+        return null;
     }
 
-    public function listen(func: EventListenerFunction) {
-        listeners.add(func);
+    public function add_hex(hex :Hex) {
+        hexes.set(hex.key, hex);
+        emit(HexAdded(hex));
+    }
+
+    public function has_hex(hex :Hex) {
+        return hexes.exists(hex.key);
+    }
+
+    public function add_minion(m :MinionModel) {
+        state.minions.push(m);
+        emit(MinionAdded(m));
+    }
+
+    public function remove_minion(m :MinionModel) {
+        state.minions.remove(m);
+        emit(MinionDied(m));
+    }
+
+    public function get_minions() :Array<MinionModel> {
+        return state.minions;
+    }
+
+    public function emit(event :Event) :Void {
+        events.handle(event);
     }
 
     public function is_walkable(hex :Hex) {
@@ -226,5 +244,13 @@ class BattleModel {
 
     public function get_path(start :Hex, end :Hex) :Array<Hex> {
         return start.find_path(end, 100, 6, is_walkable);
+    }
+
+    public function do_action(action :Action) {
+        actions.emit([action]);
+    }
+
+    public function listen(func: EventListenerFunction) {
+        listeners.add(func);
     }
 }
