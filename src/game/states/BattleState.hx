@@ -117,10 +117,37 @@ class BattleState extends State {
         return Promise.resolve();
     }
 
+    function get_ai_action_for_model(battleModel :BattleModel, model :MinionModel) :Action {
+        // simple AI:
+        // 1. Attacks enemy if possible
+        // 2. Moves towards enemy hero if possible
+        // 3. Performs random available action
+
+        var attackActions = battleModel.get_minion_attacks(model.id);
+        if (attackActions.length > 0) {
+            return MinionAction(model.id, attackActions[Math.floor(attackActions.length * Math.random())]);
+        }
+
+        var playerMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
+        if (playerMinions.length > 0) {
+            var firstPlayerMinion = playerMinions[0];
+            var path = model.hex.find_path(firstPlayerMinion.hex, 100, 6, battleModel.is_walkable, true);
+            if (path.length > 0) {
+                return MinionAction(model.id, core.Models.MinionAction.Move(path[0]));
+            }
+        }
+
+        var actions = battleModel.get_minion_actions(model.id);
+        if (actions.length > 0) {
+            return MinionAction(model.id, actions[Math.floor(actions.length * Math.random())]);
+        }
+
+        return null;
+    }
+
     function do_ai_actions() {
         var newBattleModel = battleModel;
         var chosenActions = [];
-        var maxActions = 3;
         while (true) {
             var model = null;
             var actions = [];
@@ -134,32 +161,18 @@ class BattleState extends State {
             if (model == null || actions.length == 0) break;
 
             // has minion with available actions
-            var randomAction = MinionAction(model.id, actions[Math.floor(actions.length * Math.random())]);
-            chosenActions.push(randomAction);
-            if (chosenActions.length == maxActions) break;
+            var ai_action = get_ai_action_for_model(newBattleModel, model);
+            if (ai_action == null) break;
+            chosenActions.push(ai_action);
 
             newBattleModel = newBattleModel.clone();
-            newBattleModel.do_action(randomAction);
+            newBattleModel.do_action(ai_action);
         }
 
         for (action in chosenActions) {
             battleModel.do_action(action);
         }
         battleModel.do_action(EndTurn);
-
-        // var playerMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
-        // if (playerMinions.length == 0) {
-        //     battleModel.do_action(EndTurn);
-        //     return;
-        // }
-        // var randomPlayerMinion = playerMinions[0]; // playerMinions[Math.floor(playerMinions.length * Math.random())];
-        // var path = model.hex.find_path(randomPlayerMinion.hex, 100, 6, battleModel.is_walkable, true);
-        // if (path.length == 0) {
-        //     battleModel.do_action(EndTurn);
-        //     return;
-        // }
-        // // trace('is next move for model ${model.id} (${path[0].key}) walkable: ${battleModel.is_walkable(path[0])}');
-        // battleModel.do_action(MinionAction(model, core.Models.MinionAction.Move(path[0])));
     }
 
     function minion_from_model(modelId :Int) {

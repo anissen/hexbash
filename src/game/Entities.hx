@@ -88,7 +88,6 @@ typedef MinionOptions = {
     model :MinionModel
 };
 class Minion extends Visual {
-    //public var model :MinionModel;
     var power :Int;
     var powerText :luxe.Text;
 
@@ -98,7 +97,6 @@ class Minion extends Visual {
         if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 30 });
         super(_options);
 
-        //model = _options.model;
         power = _options.model.power;
 
         powerText = new luxe.Text({

@@ -198,7 +198,7 @@ class BattleModel {
 
     public function get_minion_attacks(modelId :Int) :Array<MinionAction> {
         var model = get_minion_from_id(modelId);
-        trace('modelId: $modelId, model: $model');
+        // trace('modelId: $modelId, model: $model');
         return model.hex.ring(1).map(function(hex) {
             var other = get_minion(hex);
             if (other != null && other.playerId != model.playerId) return Attack(other.id);
