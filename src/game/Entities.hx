@@ -88,7 +88,8 @@ typedef MinionOptions = {
     model :MinionModel
 };
 class Minion extends Visual {
-    public var model :MinionModel;
+    //public var model :MinionModel;
+    var power :Int;
     var powerText :luxe.Text;
 
     public function new(options :MinionOptions) {
@@ -97,10 +98,11 @@ class Minion extends Visual {
         if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 30 });
         super(_options);
 
-        model = _options.model;
+        //model = _options.model;
+        power = _options.model.power;
 
         powerText = new luxe.Text({
-            text: '' + model.power,
+            text: '' + power,
             align: luxe.Text.TextAlign.center,
             align_vertical: luxe.Text.TextAlign.center,
             parent: this,
@@ -108,7 +110,8 @@ class Minion extends Visual {
         });
     }
 
-    public function set_power(power :Int) {
+    public function damage(damage :Int) {
+        power -= damage;
         powerText.text = '' + power;
     }
 }

@@ -43,27 +43,27 @@ class MinionModel {
 typedef EventListenerFunction = Event -> snow.api.Promise;
 
 enum Action {
-    MinionAction(model :MinionModel, action :MinionAction);
+    MinionAction(modelId :Int, action :MinionAction);
     EndTurn();
 }
 
 enum MinionAction {
     Move(hex :Hex);
-    Attack(defenderModel :MinionModel);
+    Attack(defenderModelId :Int);
 }
 
 enum Event {
     HexAdded(hex :Hex);
-    MinionAdded(model :MinionModel);
-    MinionMoved(model :MinionModel, from :Hex, to :Hex);
-    MinionAttacked(attackerModel :MinionModel, defenderModel :MinionModel);
-    MinionDamaged(model :MinionModel, damage :Int);
-    MinionDied(model :MinionModel);
+    MinionAdded(modelId :Int);
+    MinionMoved(modelId :Int, from :Hex, to :Hex);
+    MinionAttacked(attackerModelId :Int, defenderModelId :Int);
+    MinionDamaged(modelId :Int, damage :Int);
+    MinionDied(modelId :Int);
     TurnStarted(playerId :Int);
 }
 
 class BattleGameState {
-    public var minions :Array<MinionModel>;
+    public var minions :Array<MinionModel>; // TODO: Make into a map<int, model>
     public var currentPlayerId :Int;
     public var random :luxe.utils.Random;
 
@@ -132,6 +132,7 @@ class BattleModel {
 
     public function clone() :BattleModel {
         var newGameModel = new BattleModel();
+        newGameModel.hexes = hexes;
         newGameModel.state = state.clone();
         return newGameModel;
     }
@@ -139,7 +140,7 @@ class BattleModel {
     function handle_action(action :Action) {
         trace('handle_action: $action');
         switch (action) {
-            case MinionAction(model, action): handle_minion_action(model, action);
+        case MinionAction(modelId, action): handle_minion_action(modelId, action);
             case EndTurn: handle_start_turn();
         }
     }
@@ -153,53 +154,60 @@ class BattleModel {
         emit(TurnStarted(state.currentPlayerId));
     }
 
-    function handle_minion_action(model :MinionModel, action :MinionAction) {
+    function handle_minion_action(modelId :Int, action :MinionAction) {
+        var model = get_minion_from_id(modelId);
         model.actions--;
         switch (action) {
-            case Move(hex): handle_move(model, hex);
-            case Attack(defender): handle_attack(model, defender);
+            case Move(hex): handle_move(modelId, hex);
+            case Attack(defenderId): handle_attack(modelId, defenderId);
         }
     }
 
-    function handle_move(model :MinionModel, hex :Hex) {
+    function handle_move(modelId :Int, hex :Hex) {
         // trace('handle_move, modelId: ${model.id}, hex: ${hex.key}, is_walkable(${is_walkable(hex)})');
         //if (get_minion(hex) != null) throw 'Destination hex is already occupied!';
+        var model = get_minion_from_id(modelId);
         var from = model.hex;
         model.hex = hex;
-        emit(MinionMoved(model, from, hex));
+        emit(MinionMoved(modelId, from, hex));
     }
 
-    function handle_attack(attacker :MinionModel, defender :MinionModel) {
-        emit(MinionAttacked(attacker, defender));
+    function handle_attack(attackerId :Int, defenderId :Int) {
+        var attacker = get_minion_from_id(attackerId);
+        var defender = get_minion_from_id(defenderId);
+        emit(MinionAttacked(attackerId, defenderId));
 
         var minPower = Math.floor(Math.min(attacker.power, defender.power));
         defender.power -= minPower;
-        emit(MinionDamaged(defender, minPower));
+        emit(MinionDamaged(defenderId, minPower));
 
         attacker.power -= minPower;
-        emit(MinionDamaged(attacker, minPower));
+        emit(MinionDamaged(attackerId, minPower));
 
-        if (defender.power <= 0) remove_minion(defender);
-        if (attacker.power <= 0) remove_minion(attacker);
+        if (defender.power <= 0) remove_minion(defenderId);
+        if (attacker.power <= 0) remove_minion(attackerId);
     }
 
-    public function get_minion_moves(model :MinionModel) :Array<MinionAction> {
+    public function get_minion_moves(modelId :Int) :Array<MinionAction> {
+        var model = get_minion_from_id(modelId);
         return model.hex.ring(1).map(function(hex) {
             if (is_walkable(hex)) return Move(hex);
             return null;
         }).filter(function(action) { return (action != null); });
     }
 
-    public function get_minion_attacks(model :MinionModel) :Array<MinionAction> {
+    public function get_minion_attacks(modelId :Int) :Array<MinionAction> {
+        var model = get_minion_from_id(modelId);
+        trace('modelId: $modelId, model: $model');
         return model.hex.ring(1).map(function(hex) {
             var other = get_minion(hex);
-            if (other != null && other.playerId != model.playerId) return Attack(other);
+            if (other != null && other.playerId != model.playerId) return Attack(other.id);
             return null;
         }).filter(function(action) { return (action != null); });
     }
 
-    public function get_minion_actions(model :MinionModel) :Array<MinionAction> {
-        return get_minion_attacks(model).concat(get_minion_moves(model));
+    public function get_minion_actions(modelId :Int) :Array<MinionAction> {
+        return get_minion_attacks(modelId).concat(get_minion_moves(modelId));
     }
 
     public function get_minion(hex :Hex) :MinionModel {
@@ -218,18 +226,28 @@ class BattleModel {
         return hexes.exists(hex.key);
     }
 
-    public function add_minion(m :MinionModel) {
-        state.minions.push(m);
-        emit(MinionAdded(m));
+    public function add_minion(minion :MinionModel) {
+        state.minions.push(minion);
+        emit(MinionAdded(minion.id));
     }
 
-    public function remove_minion(m :MinionModel) {
-        state.minions.remove(m);
-        emit(MinionDied(m));
+    public function remove_minion(minionId :Int) {
+        state.minions.remove(get_minion_from_id(minionId));
+        emit(MinionDied(minionId));
     }
 
     public function get_minions() :Array<MinionModel> {
         return state.minions;
+    }
+
+    public function get_minion_from_id(id :Int) :MinionModel {
+        for (m in state.minions) {
+            if (m.id == id) return m;
+        }
+        return null;
+        // return minion from minion map
+
+        // TODO: Consider a simpler solution that avoids cloning the game state altogether
     }
 
     public function emit(event :Event) :Void {

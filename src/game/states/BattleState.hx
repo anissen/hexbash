@@ -60,11 +60,11 @@ class BattleState extends State {
     function handle_event(event :Event) :Promise {
         return switch (event) {
             case HexAdded(hex): add_hex(hex);
-            case MinionAdded(model): add_minion(model);
-            case MinionMoved(model, from, to): move_minion(model, from, to);
-            case MinionDamaged(model, damage): damage_minion(model, damage);
-            case MinionAttacked(attacker, defender): attack_minion(attacker, defender);
-            case MinionDied(model): remove_minion(model);
+            case MinionAdded(modelId): add_minion(modelId);
+            case MinionMoved(modelId, from, to): move_minion(modelId, from, to);
+            case MinionDamaged(modelId, damage): damage_minion(modelId, damage);
+            case MinionAttacked(attackerId, defenderId): attack_minion(attackerId, defenderId);
+            case MinionDied(modelId): remove_minion(modelId);
             case TurnStarted(playerId): turn_started(playerId);
         };
     }
@@ -82,7 +82,8 @@ class BattleState extends State {
         return popIn.promise;
     }
 
-    function add_minion(model :MinionModel) :Promise {
+    function add_minion(modelId :Int) :Promise {
+        var model = battleModel.get_minion_from_id(modelId);
         var minionPos = Layout.hexToPixel(battleMap.layout, model.hex);
         var minion = new Minion({
             model: model,
@@ -96,90 +97,102 @@ class BattleState extends State {
         return popIn.promise;
     }
 
-    function remove_minion(model :MinionModel) :Promise {
-        var minion = minion_from_model(model);
+    function remove_minion(modelId :Int) :Promise {
+        var minion = minion_from_model(modelId);
         minion.destroy();
-        minionMap.remove(model.id);
+        minionMap.remove(modelId);
         return Promise.resolve();
     }
 
     function turn_started(playerId :Int) :Promise {
         trace('Turn started for player $playerId');
+        if (Main.states.enabled(MinionActionsState.StateId)) {
+            Main.states.disable(MinionActionsState.StateId);
+        }
+
         currentPlayer = playerId;
         if (currentPlayer == 1) { // AI
-            battleModel.do_action(EndTurn);
+            do_ai_actions();
         }
         return Promise.resolve();
     }
 
-    function ai_tick() :Promise {
+    function do_ai_actions() {
+        var newBattleModel = battleModel;
+        var chosenActions = [];
+        var maxActions = 3;
+        while (true) {
+            var model = null;
+            var actions = [];
+            for (m in newBattleModel.get_minions()) {
+                if (m.playerId != currentPlayer) continue;
+                if (m.actions <= 0) continue;
+                model = m;
+                actions = newBattleModel.get_minion_actions(m.id);
+                if (actions.length > 0) break;
+            }
+            if (model == null || actions.length == 0) break;
 
-        // TODO: Handle this by doing one action, then evaluating the next, etc..
+            // has minion with available actions
+            var randomAction = MinionAction(model.id, actions[Math.floor(actions.length * Math.random())]);
+            chosenActions.push(randomAction);
+            if (chosenActions.length == maxActions) break;
 
-        var model = null;
-        var actions = [];
-        for (m in battleModel.get_minions()) {
-            if (m.playerId != currentPlayer) continue;
-            if (m.actions <= 0) continue;
-            model = m;
-            actions = battleModel.get_minion_actions(m);
-            if (actions.length > 0) break;
-        }
-        if (model == null || actions.length == 0) {
-            battleModel.do_action(EndTurn);
-            return Promise.resolve();
+            newBattleModel = newBattleModel.clone();
+            newBattleModel.do_action(randomAction);
         }
 
-        var playerMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
-        if (playerMinions.length == 0) {
-            battleModel.do_action(EndTurn);
-            return Promise.resolve();
+        for (action in chosenActions) {
+            battleModel.do_action(action);
         }
-        var randomPlayerMinion = playerMinions[0]; // playerMinions[Math.floor(playerMinions.length * Math.random())];
-        var path = model.hex.find_path(randomPlayerMinion.hex, 100, 6, battleModel.is_walkable, true);
-        if (path.length == 0) {
-            battleModel.do_action(EndTurn);
-            return Promise.resolve();
-        }
-        // trace('is next move for model ${model.id} (${path[0].key}) walkable: ${battleModel.is_walkable(path[0])}');
-        battleModel.do_action(MinionAction(model, core.Models.MinionAction.Move(path[0])));
+        battleModel.do_action(EndTurn);
 
-        return Promise.resolve();
+        // var playerMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
+        // if (playerMinions.length == 0) {
+        //     battleModel.do_action(EndTurn);
+        //     return;
+        // }
+        // var randomPlayerMinion = playerMinions[0]; // playerMinions[Math.floor(playerMinions.length * Math.random())];
+        // var path = model.hex.find_path(randomPlayerMinion.hex, 100, 6, battleModel.is_walkable, true);
+        // if (path.length == 0) {
+        //     battleModel.do_action(EndTurn);
+        //     return;
+        // }
+        // // trace('is next move for model ${model.id} (${path[0].key}) walkable: ${battleModel.is_walkable(path[0])}');
+        // battleModel.do_action(MinionAction(model, core.Models.MinionAction.Move(path[0])));
     }
 
-    function minion_from_model(model :MinionModel) {
-        return minionMap.get(model.id);
+    function minion_from_model(modelId :Int) {
+        return minionMap.get(modelId);
     }
 
-    function move_minion(model :MinionModel, from :Hex, to :Hex) :Promise {
+    function move_minion(modelId :Int, from :Hex, to :Hex) :Promise {
         // trace('move_minion: from $from to $to');
-        var minion = minion_from_model(model);
+        var minion = minion_from_model(modelId);
         minion.pos = battleMap.hex_to_pos(from);
         var pos = battleMap.hex_to_pos(to); // TODO: Rename to pos_from_hex
         return Actuate.tween(minion.pos, 0.3, { x: pos.x, y: pos.y }).toPromise();
     }
 
-    function damage_minion(model :MinionModel, damage :Int) :Promise {
+    function damage_minion(modelId :Int, damage :Int) :Promise {
         // trace('damage_minion: $damage damage');
-        var minion = minion_from_model(model);
+        var minion = minion_from_model(modelId);
         return new Promise(function(resolve) {
             Actuate.tween(minion.color, 0.2, { r: 1.0, g: 1.0, b: 1.0 }).reflect().repeat(1)
-                .onComplete(function() { minion.set_power(model.power); resolve(); });
+                .onComplete(function() { minion.damage(damage); resolve(); });
         });
     }
 
-    function attack_minion(attackerModel :MinionModel, defenderModel :MinionModel) :Promise {
+    function attack_minion(attackerModelId :Int, defenderModelId :Int) :Promise {
         // trace('attack_minion: $attackerModel attacks $defenderModel');
-        var attacker = minion_from_model(attackerModel);
-        var defender = minion_from_model(defenderModel);
+        var attacker = minion_from_model(attackerModelId);
+        var defender = minion_from_model(defenderModelId);
         return Actuate.tween(attacker.pos, 0.2, { x: defender.pos.x, y: defender.pos.y }).reflect().repeat(1).toPromise();
     }
 
     function setup_map() {
         var playerId = 0;
-        var hero = new MinionModel('Hero', playerId, 13, new Hex(-1, 2));
-        hero.actions = 2;
-        battleModel.add_minion(hero);
+        battleModel.add_minion(new MinionModel('Hero', playerId, 13, new Hex(-1, 2), 2));
         battleModel.add_minion(new MinionModel('Hero Minion 1', playerId, 2, new Hex(-2, 2)));
 
         var enemyId = 1;

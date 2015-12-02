@@ -47,22 +47,23 @@ class MinionActionsState extends State {
         if (!has_data) return;
         var pos = Luxe.camera.screen_point_to_world(Luxe.screen.cursor.pos);
         var mouse_hex = battleMap.pos_to_hex(pos);
-        for (action in battleModel.get_minion_actions(model)) {
+        for (action in battleModel.get_minion_actions(model.id)) {
             switch (action) {
                 case Move(hex):
                     var pos = battleMap.hex_to_pos(hex);
                     var radius = (mouse_hex.key == hex.key ? 20 : 10);
                     Luxe.draw.circle({ x: pos.x, y: pos.y, r: radius, immediate: true, depth: 15 });
-                case Attack(other):
-                    var pos = battleMap.hex_to_pos(other.hex);
-                    var radius = (mouse_hex.key == other.hex.key ? 20 : 10);
+                case Attack(defenderId):
+                    var defender = battleModel.get_minion_from_id(defenderId);
+                    var pos = battleMap.hex_to_pos(defender.hex);
+                    var radius = (mouse_hex.key == defender.hex.key ? 20 : 10);
                     Luxe.draw.circle({ x: pos.x, y: pos.y, r: radius, immediate: true, depth: 15, color: new Color(1, 0, 0) });
             }
         }
     }
 
     function select_action(action :core.Models.MinionAction) {
-        battleModel.do_action(MinionAction(model, action));
+        battleModel.do_action(MinionAction(model.id, action));
         if (model.actions <= 0) {
             Main.states.disable(StateId);
         }
@@ -72,16 +73,17 @@ class MinionActionsState extends State {
         if (!has_data) return;
         var pos = Luxe.camera.screen_point_to_world(event.pos);
         var mouse_hex = battleMap.pos_to_hex(pos);
-        for (action in battleModel.get_minion_actions(model)) {
+        for (action in battleModel.get_minion_actions(model.id)) {
             switch (action) {
                 case Move(hex):
                     if (mouse_hex.key == hex.key) {
                         select_action(Move(hex));
                         return;
                     }
-                case Attack(other):
-                    if (mouse_hex.key == other.hex.key) {
-                        select_action(Attack(other));
+                case Attack(defenderId):
+                    var defender = battleModel.get_minion_from_id(defenderId);
+                    if (mouse_hex.key == defender.hex.key) {
+                        select_action(Attack(defenderId));
                         return;
                     }
             }
@@ -90,12 +92,12 @@ class MinionActionsState extends State {
 
     override public function onkeyup(event :luxe.Input.KeyEvent) {
         if (event.keycode == luxe.Input.Key.key_m) {
-            var moves = battleModel.get_minion_moves(model);
+            var moves = battleModel.get_minion_moves(model.id);
             if (moves.length == 0) return;
             var randomMove = moves[Math.floor(moves.length * Math.random())];
             select_action(randomMove);
         } else if (event.keycode == luxe.Input.Key.key_a) {
-            var attacks = battleModel.get_minion_attacks(model);
+            var attacks = battleModel.get_minion_attacks(model.id);
             if (attacks.length == 0) return;
             var randomAttack = attacks[Math.floor(attacks.length * Math.random())];
             select_action(randomAttack);
