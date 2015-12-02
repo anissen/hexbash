@@ -234,6 +234,9 @@ class BattleState extends State {
             var pos = Luxe.camera.screen_point_to_world(event.pos);
             var minion = minionMap[model.id];
             if (Luxe.utils.geometry.point_in_geometry(pos, minion.geometry)) {
+                if (Main.states.enabled(MinionActionsState.StateId)) {
+                    Main.states.disable(MinionActionsState.StateId);
+                }
                 Main.states.enable(MinionActionsState.StateId, { model: model, battleModel: battleModel, battleMap: battleMap });
                 return;
             }
