@@ -109,8 +109,13 @@ class Minion extends Visual {
         update_text();
     }
 
-    public function damage(damage :Int) {
-        power -= damage;
+    public function damage(amount :Int) {
+        power -= amount;
+        update_text();
+    }
+
+    public function heal(amount :Int) {
+        power += amount;
         update_text();
     }
 
@@ -131,6 +136,12 @@ class Hero extends Minion {
         super(_options);
     }
 
+    override public function heal(amount :Int) {
+        power += amount;
+        if (power > max_power) power = max_power;
+        update_text();
+    }
+
     override function update_text() {
         powerText.text = '$power/$max_power';
     }
@@ -145,6 +156,7 @@ typedef CardOptions = {
 class Card extends luxe.Sprite {
     var _options :CardOptions;
     var text :luxe.Text;
+    static var Count :Int = 0;
 
     public function new(options :CardOptions) {
         _options = options;

@@ -225,15 +225,30 @@ class BattleState extends State {
     }
 
     function setup_hand() {
-        function create_minion(hex) {
-            battleModel.add_minion(new MinionModel('Minion', 0, 2, hex));
+        function create_minion(power :Int, hex :Hex) {
+            battleModel.add_minion(new MinionModel('Minion', 0, power, hex));
         }
 
-        var cardCount = 3;
+        function drink_potion(power :Int, hex :Hex) {
+            // playerHero.power += power;
+            minionMap[playerHero.id].heal(power); // HACK -- only updates Entity, not model
+        }
+
+        var deck :Array<game.Entities.CardOptions> = [
+            { text: 'Imp', effect: create_minion.bind(3) },
+            { text: 'Rat', effect: create_minion.bind(1) },
+            { text: 'Rat', effect: create_minion.bind(1) },
+            { text: 'Small Potion', effect: drink_potion.bind(3) },
+            { text: 'Big Potion', effect: drink_potion.bind(6) }
+        ];
+
+        var cardCount = 4;
         for (i in 0 ... cardCount) {
+            var randomCard = deck[Math.floor(deck.length * Math.random())];
+            deck.remove(randomCard);
             var card = new Card({
-                text: 'Imp',
-                effect: create_minion,
+                text: randomCard.text,
+                effect: randomCard.effect,
                 pos: new Vector(200 + 120 * i, 600),
                 depth: 3,
                 scene: levelScene
