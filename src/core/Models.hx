@@ -48,6 +48,7 @@ enum Action {
 }
 
 enum MinionAction {
+    Nothing;
     Move(hex :Hex);
     Attack(defenderModelId :Int);
 }
@@ -158,6 +159,7 @@ class BattleModel {
         var model = get_minion_from_id(modelId);
         model.actions--;
         switch (action) {
+            case Nothing: /* Do nothing */
             case Move(hex): handle_move(modelId, hex);
             case Attack(defenderId): handle_attack(modelId, defenderId);
         }
@@ -207,7 +209,7 @@ class BattleModel {
     }
 
     public function get_minion_actions(modelId :Int) :Array<MinionAction> {
-        return get_minion_attacks(modelId).concat(get_minion_moves(modelId));
+        return get_minion_attacks(modelId).concat(get_minion_moves(modelId)).concat([Nothing]);
     }
 
     public function get_minion(hex :Hex) :MinionModel {

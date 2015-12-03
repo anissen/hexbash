@@ -49,6 +49,7 @@ class MinionActionsState extends State {
         var mouse_hex = battleMap.pos_to_hex(pos);
         for (action in battleModel.get_minion_actions(model.id)) {
             switch (action) {
+                case Nothing:
                 case Move(hex):
                     var pos = battleMap.hex_to_pos(hex);
                     var radius = (mouse_hex.key == hex.key ? 20 : 10);
@@ -75,6 +76,7 @@ class MinionActionsState extends State {
         var mouse_hex = battleMap.pos_to_hex(pos);
         for (action in battleModel.get_minion_actions(model.id)) {
             switch (action) {
+                case Nothing:
                 case Move(hex):
                     if (mouse_hex.key == hex.key) {
                         select_action(Move(hex));

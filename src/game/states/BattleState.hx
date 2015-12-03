@@ -117,7 +117,7 @@ class BattleState extends State {
         return Promise.resolve();
     }
 
-    function get_ai_action_for_model(battleModel :BattleModel, model :MinionModel) :Action {
+    function get_ai_minion_action(battleModel :BattleModel, model :MinionModel) :MinionAction {
         // simple AI:
         // 1. Attacks enemy if possible
         // 2. Moves towards enemy hero if possible
@@ -125,7 +125,7 @@ class BattleState extends State {
 
         var attackActions = battleModel.get_minion_attacks(model.id);
         if (attackActions.length > 0) {
-            return MinionAction(model.id, attackActions[Math.floor(attackActions.length * Math.random())]);
+            return attackActions[Math.floor(attackActions.length * Math.random())];
         }
 
         var playerMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
@@ -133,16 +133,16 @@ class BattleState extends State {
             var firstPlayerMinion = playerMinions[0];
             var path = model.hex.find_path(firstPlayerMinion.hex, 100, 6, battleModel.is_walkable, true);
             if (path.length > 0) {
-                return MinionAction(model.id, core.Models.MinionAction.Move(path[0]));
+                return Move(path[0]);
             }
         }
 
         var actions = battleModel.get_minion_actions(model.id);
         if (actions.length > 0) {
-            return MinionAction(model.id, actions[Math.floor(actions.length * Math.random())]);
+            return actions[Math.floor(actions.length * Math.random())];
         }
 
-        return null;
+        return Nothing;
     }
 
     function do_ai_actions() {
@@ -161,8 +161,8 @@ class BattleState extends State {
             if (model == null || actions.length == 0) break;
 
             // has minion with available actions
-            var ai_action = get_ai_action_for_model(newBattleModel, model);
-            if (ai_action == null) break;
+            var minion_action = get_ai_minion_action(newBattleModel, model);
+            var ai_action = MinionAction(model.id, minion_action);
             chosenActions.push(ai_action);
 
             newBattleModel = newBattleModel.clone();
