@@ -138,19 +138,32 @@ class Hero extends Minion {
 
 typedef CardOptions = {
     > luxe.options.SpriteOptions,
-    effect: Hex->Void
+    text :String,
+    effect : Hex->Void
 }
 
 class Card extends luxe.Sprite {
     var _options :CardOptions;
+    var text :luxe.Text;
 
     public function new(options :CardOptions) {
         _options = options;
+        if (_options.name == null) _options.name = 'card.' + Luxe.utils.uniqueid();
         if (_options.color == null) _options.color = new Color(0, 0.5, 0.5);
         if (_options.geometry == null) _options.geometry = Luxe.draw.box({
             rect: new luxe.Rectangle(0, 0, 100, 150)
         });
         super(_options);
+
+        text = new luxe.Text({
+            text: _options.text,
+            pos: new Vector(50, 20),
+            point_size: 18,
+            align: luxe.Text.TextAlign.center,
+            align_vertical: luxe.Text.TextAlign.center,
+            parent: this,
+            depth: _options.depth + 0.01
+        });
     }
 
     public function trigger(hex :Hex) {

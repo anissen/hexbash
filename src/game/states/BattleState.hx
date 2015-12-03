@@ -40,6 +40,7 @@ class BattleState extends State {
     var battleModel :BattleModel;
     var battleMap :BattleMap;
     var currentPlayer :Int;
+    var playerHero :MinionModel;
 
     public function new() {
         super({ name: StateId });
@@ -208,7 +209,8 @@ class BattleState extends State {
     function setup_map() {
         // TODO: Load from file
         var playerId = 0;
-        battleModel.add_minion(new MinionModel('Hero', playerId, 13, new Hex(-1, 2), null, true));
+        playerHero = new MinionModel('Hero', playerId, 13, new Hex(-1, 2), null, true);
+        battleModel.add_minion(playerHero);
         battleModel.add_minion(new MinionModel('Hero Minion 1', playerId, 2, new Hex(-2, 2)));
 
         var enemyId = 1;
@@ -219,22 +221,44 @@ class BattleState extends State {
 
     function setup_hand() {
         function create_minion(hex) {
-            battleModel.add_minion(new MinionModel('Minion', 0, 3, hex));
+            battleModel.add_minion(new MinionModel('Minion', 0, 2, hex));
         }
 
         var cardCount = 3;
         for (i in 0 ... cardCount) {
-            var card = new Card({ pos: new Vector(200 + 120 * i, 600), depth: 3, effect: create_minion });
+            var card = new Card({
+                text: 'Imp',
+                effect: create_minion,
+                pos: new Vector(200 + 120 * i, 600),
+                depth: 3,
+                scene: levelScene
+            });
             card.add(new PopIn());
         }
     }
 
     override public function onmouseup(event :luxe.Input.MouseEvent) {
+        var pos = Luxe.camera.screen_point_to_world(event.pos);
+
+        /* HACK */
+        var cards :Array<Card> = cast levelScene.get_named_like('card', []);
+        for (card in cards) {
+            if (Luxe.utils.geometry.point_in_geometry(pos, card.geometry)) {
+                // Find random hex around the hero
+                var hexes = playerHero.hex.reachable(battleModel.is_walkable);
+                if (hexes.length == 0) break;
+                var randomHex = hexes[Math.floor(hexes.length * Math.random())];
+                // battleModel.do_action(CastCard(randomHex));
+                card.trigger(randomHex);
+                card.destroy();
+                break;
+            }
+        }
+
         /* HACK */
         for (model in battleModel.get_minions()) {
             if (model.playerId != 0) continue; // Only open actions for own minions
             if (model.actions <= 0) continue;
-            var pos = Luxe.camera.screen_point_to_world(event.pos);
             var minion = minionMap[model.id];
             if (Luxe.utils.geometry.point_in_geometry(pos, minion.geometry)) {
                 if (Main.states.enabled(MinionActionsState.StateId)) {
