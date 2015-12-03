@@ -93,32 +93,46 @@ class Minion extends Visual {
 
     public function new(options :MinionOptions) {
         var _options = options;
-        if (_options.color == null) _options.color = new Color(0, 0.5, 0.5);
-        if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 30 });
-        super(_options);
-
         power = _options.model.power;
 
+        if (_options.color == null) _options.color = new Color(0, 0.5, 0.5);
+        if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 28 });
+        super(_options);
+
         powerText = new luxe.Text({
-            text: '' + power,
+            point_size: 28,
             align: luxe.Text.TextAlign.center,
             align_vertical: luxe.Text.TextAlign.center,
             parent: this,
             depth: _options.depth + 0.01
         });
+        update_text();
     }
 
     public function damage(damage :Int) {
         power -= damage;
+        update_text();
+    }
+
+    function update_text() {
         powerText.text = '' + power;
     }
 }
 
 class Hero extends Minion {
+    var max_power :Int;
+
     public function new(options :MinionOptions) {
         var _options = options;
-        if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 45 });
+
+        max_power = _options.model.power;
+
+        if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 35 });
         super(_options);
+    }
+
+    override function update_text() {
+        powerText.text = '$power/$max_power';
     }
 }
 

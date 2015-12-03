@@ -16,6 +16,7 @@ import core.Models;
 import core.PromiseQueue;
 import game.Entities.Card;
 import game.Entities.Minion;
+import game.Entities.Hero;
 import game.Entities.HexTile;
 import game.Entities.BattleMap;
 import game.Components;
@@ -85,12 +86,13 @@ class BattleState extends State {
     function add_minion(modelId :Int) :Promise {
         var model = battleModel.get_minion_from_id(modelId);
         var minionPos = Layout.hexToPixel(battleMap.layout, model.hex);
-        var minion = new Minion({
+        var options :game.Entities.MinionOptions = {
             model: model,
             pos: new Vector(minionPos.x, minionPos.y),
             color: (model.playerId == 0 ? new Color(129/255, 83/255, 118/255) : new Color(229/255, 83/255, 118/255)),
             depth: 2
-        });
+        };
+        var minion = (model.hero ? new Hero(options) : new Minion(options));
         minionMap.set(model.id, minion);
         var popIn = new PopIn();
         minion.add(popIn);
@@ -204,12 +206,13 @@ class BattleState extends State {
     }
 
     function setup_map() {
+        // TODO: Load from file
         var playerId = 0;
-        battleModel.add_minion(new MinionModel('Hero', playerId, 13, new Hex(-1, 2), 2));
+        battleModel.add_minion(new MinionModel('Hero', playerId, 13, new Hex(-1, 2), null, true));
         battleModel.add_minion(new MinionModel('Hero Minion 1', playerId, 2, new Hex(-2, 2)));
 
         var enemyId = 1;
-        battleModel.add_minion(new MinionModel('Enemy', enemyId, 8, new Hex(1, -2)));
+        battleModel.add_minion(new MinionModel('Enemy', enemyId, 8, new Hex(1, -2), null, true));
         battleModel.add_minion(new MinionModel('Enemy Minion 1', enemyId, 3, new Hex(0, -2)));
         battleModel.add_minion(new MinionModel('Enemy Minion 2', enemyId, 3, new Hex(2, -2)));
     }

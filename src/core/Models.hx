@@ -17,7 +17,7 @@ BattleState
 Model-View separation between LevelMap, minions, Cards
 */
 
-class MinionModel {
+class MinionModel { // TODO: Make a hero type as well?
     static var Id :Int = 0;
     public var id :Int;
     public var title :String;
@@ -25,18 +25,20 @@ class MinionModel {
     public var power :Int;
     public var hex :Hex;
     public var actions :Int;
+    public var hero :Bool;
 
-    public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, ?id :Int) {
+    public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
         this.id = (id != null ? id : Id++);
         this.title = title;
         this.playerId = playerId;
         this.power = power;
         this.hex = hex;
         this.actions = actions;
+        this.hero = hero;
     }
 
     public function clone() {
-        return new MinionModel(title, playerId, power, hex, actions, id);
+        return new MinionModel(title, playerId, power, hex, actions, hero, id);
     }
 }
 
