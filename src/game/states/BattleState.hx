@@ -133,11 +133,16 @@ class BattleState extends State {
 
         var playerMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
         if (playerMinions.length > 0) {
-            var firstPlayerMinion = playerMinions[0];
-            var path = model.hex.find_path(firstPlayerMinion.hex, 100, 6, battleModel.is_walkable, true);
-            if (path.length > 0) {
-                return Move(path[0]);
+            var playerMinion = playerMinions[0];
+
+            var playerHero = playerMinions.filter(function(m) { return m.hero; });
+            if (playerHero.length > 0) {
+                playerMinion = playerHero[0];
             }
+
+            // TODO: Disregard player minions when finding the path to hero
+            var path = model.hex.find_path(playerMinion.hex, 100, 6, battleModel.is_walkable, true);
+            if (path.length > 0) return Move(path[0]);
         }
 
         var actions = battleModel.get_minion_actions(model.id);
@@ -187,7 +192,7 @@ class BattleState extends State {
         var minion = minion_from_model(modelId);
         minion.pos = battleMap.hex_to_pos(from);
         var pos = battleMap.hex_to_pos(to); // TODO: Rename to pos_from_hex
-        return Actuate.tween(minion.pos, 0.3, { x: pos.x, y: pos.y }).toPromise();
+        return Actuate.tween(minion.pos, 0.2, { x: pos.x, y: pos.y }).toPromise();
     }
 
     function damage_minion(modelId :Int, damage :Int) :Promise {
@@ -209,7 +214,7 @@ class BattleState extends State {
     function setup_map() {
         // TODO: Load from file
         var playerId = 0;
-        playerHero = new MinionModel('Hero', playerId, 13, new Hex(-1, 2), null, true);
+        playerHero = new MinionModel('Hero', playerId, 10, new Hex(-1, 2), null, true);
         battleModel.add_minion(playerHero);
         battleModel.add_minion(new MinionModel('Hero Minion 1', playerId, 2, new Hex(-2, 2)));
 
