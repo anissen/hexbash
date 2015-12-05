@@ -194,6 +194,7 @@ class BattleModel {
 
     public function get_minion_moves(modelId :Int) :Array<MinionAction> {
         var model = get_minion_from_id(modelId);
+        if (model.actions <= 0) return [];
         return model.hex.ring(1).map(function(hex) {
             if (is_walkable(hex)) return Move(hex);
             return null;
@@ -202,6 +203,7 @@ class BattleModel {
 
     public function get_minion_attacks(modelId :Int) :Array<MinionAction> {
         var model = get_minion_from_id(modelId);
+        if (model.actions <= 0) return [];
         // trace('modelId: $modelId, model: $model');
         return model.hex.ring(1).map(function(hex) {
             var other = get_minion(hex);

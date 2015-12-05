@@ -280,7 +280,7 @@ class BattleState extends State {
         /* HACK */
         for (model in battleModel.get_minions()) {
             if (model.playerId != 0) continue; // Only open actions for own minions
-            if (model.actions <= 0) continue;
+            // if (model.actions <= 0) continue;
             var minion = minionMap[model.id];
             if (Luxe.utils.geometry.point_in_geometry(pos, minion.geometry)) {
                 if (Main.states.enabled(MinionActionsState.StateId)) {
