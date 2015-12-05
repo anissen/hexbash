@@ -276,7 +276,6 @@ class BattleState extends State {
                 var hexes = playerHero.hex.reachable(battleModel.is_walkable);
                 if (hexes.length == 0) break;
                 var randomHex = hexes[Math.floor(hexes.length * Math.random())];
-                // battleModel.do_action(CastCard(randomHex));
                 card.trigger(randomHex);
                 card.destroy();
                 break;
@@ -286,7 +285,6 @@ class BattleState extends State {
         /* HACK */
         for (model in battleModel.get_minions()) {
             if (model.playerId != 0) continue; // Only open actions for own minions
-            // if (model.actions <= 0) continue;
             var minion = minionMap[model.id];
             if (Luxe.utils.geometry.point_in_geometry(pos, minion.geometry)) {
                 if (Main.states.enabled(MinionActionsState.StateId)) {

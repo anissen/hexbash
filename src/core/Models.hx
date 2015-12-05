@@ -4,19 +4,6 @@ import snow.api.Promise;
 import core.HexLibrary;
 using core.HexLibrary.HexTools;
 
-/*
-Idea:
-BattleState
-    HAS a BattleMap
-    HAS cards
-    HAS entities
-    States:
-    -> MinionActionState
-    -> CardCastState
-
-Model-View separation between LevelMap, minions, Cards
-*/
-
 class MinionModel { // TODO: Make a hero type as well?
     static var Id :Int = 0;
     public var id :Int;
@@ -92,24 +79,14 @@ class BattleModel {
     var listeners :List<EventListenerFunction>;
 
     var state :BattleGameState;
-    // var actions_finished_func :Void->Void;
-    // public var actions_finished :Promise;
 
     public function new() {
         listeners = new List();
-        // minions = [];
         hexes = new Map();
-
         state = new BattleGameState();
-
-
-        // actions_finished = new Promise(function(resolve, reject) {
-        //     actions_finished_func = resolve;
-        // });
 
         actions = new MessageQueue({ serializable: true });
         actions.on = handle_action;
-        // actions.finished = actions_finished_func;
 
         events = new PromiseQueue();
         events.set_handler(function(event :Event) {
@@ -169,7 +146,7 @@ class BattleModel {
 
     function handle_move(modelId :Int, hex :Hex) {
         // trace('handle_move, modelId: ${model.id}, hex: ${hex.key}, is_walkable(${is_walkable(hex)})');
-        //if (get_minion(hex) != null) throw 'Destination hex is already occupied!';
+        if (get_minion(hex) != null) throw 'Destination hex is already occupied!';
         var model = get_minion_from_id(modelId);
         var from = model.hex;
         model.hex = hex;
