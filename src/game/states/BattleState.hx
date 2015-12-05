@@ -140,8 +140,14 @@ class BattleState extends State {
                 playerMinion = playerHero[0];
             }
 
-            // TODO: Disregard player minions when finding the path to hero
-            var path = model.hex.find_path(playerMinion.hex, 100, 6, battleModel.is_walkable, true);
+            // hex i walkable if it exists and a) is unoccupied or b) is occupied by an enemy (to be killed)
+            function walkable(hex :Hex) :Bool {
+                if (!battleModel.has_hex(hex)) return false;
+                var minion = battleModel.get_minion(hex);
+                return (minion == null || minion.playerId != model.playerId);
+            }
+
+            var path = model.hex.find_path(playerMinion.hex, 100, 6, walkable, true);
             if (path.length > 0) return Move(path[0]);
         }
 
