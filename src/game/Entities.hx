@@ -150,6 +150,7 @@ class Hero extends Minion {
 typedef CardOptions = {
     > luxe.options.SpriteOptions,
     text :String,
+    ?cost :Int,
     effect : Hex->Void
 }
 
@@ -168,7 +169,7 @@ class Card extends luxe.Sprite {
         super(_options);
 
         text = new luxe.Text({
-            text: _options.text,
+            text: _options.text + (_options.cost != null ? ' (${_options.cost})' : ''),
             pos: new Vector(50, 20),
             point_size: 18,
             align: luxe.Text.TextAlign.center,

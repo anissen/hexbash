@@ -225,7 +225,8 @@ class BattleState extends State {
     }
 
     function setup_hand() {
-        function create_minion(power :Int, hex :Hex) {
+        function create_minion(power :Int, cost :Int, hex :Hex) {
+            minionMap[playerHero.id].damage(cost); // HACK -- only updates Entity, not model
             battleModel.add_minion(new MinionModel('Minion', 0, power, hex));
         }
 
@@ -235,9 +236,9 @@ class BattleState extends State {
         }
 
         var deck :Array<game.Entities.CardOptions> = [
-            { text: 'Imp', effect: create_minion.bind(3) },
-            { text: 'Rat', effect: create_minion.bind(1) },
-            { text: 'Rat', effect: create_minion.bind(1) },
+            { text: 'Imp', cost: 3, effect: create_minion.bind(3, 3) },
+            { text: 'Rat', cost: 2, effect: create_minion.bind(1, 2) },
+            { text: 'Rat', cost: 2, effect: create_minion.bind(1, 2) },
             { text: 'Small Potion', effect: drink_potion.bind(3) },
             { text: 'Big Potion', effect: drink_potion.bind(6) }
         ];
@@ -248,6 +249,7 @@ class BattleState extends State {
             deck.remove(randomCard);
             var card = new Card({
                 text: randomCard.text,
+                cost: randomCard.cost,
                 effect: randomCard.effect,
                 pos: new Vector(200 + 120 * i, 600),
                 depth: 3,
