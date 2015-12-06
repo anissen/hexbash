@@ -14,9 +14,9 @@ import snow.api.Promise;
 
 import core.Models;
 import core.PromiseQueue;
-import game.Entities.Card;
-import game.Entities.Minion;
-import game.Entities.Hero;
+import game.Entities.CardEntity;
+import game.Entities.MinionEntity;
+import game.Entities.HeroEntity;
 import game.Entities.HexTile;
 import game.Entities.BattleMap;
 import game.Components;
@@ -35,7 +35,8 @@ class TweenTools {
 class BattleState extends State {
     static public var StateId :String = 'BattleState';
     var levelScene :Scene;
-    var minionMap :Map<Int, Minion>;
+    var minionMap :Map<Int, MinionEntity>;
+    var cardMap :Map<Int, CardEntity>;
     var hexMap :Map<String, HexTile>;
     var battleModel :BattleModel;
     var battleMap :BattleMap;
@@ -49,6 +50,7 @@ class BattleState extends State {
         levelScene = new Scene();
         hexMap = new Map();
         minionMap = new Map();
+        cardMap = new Map();
     }
 
     override function init() {
@@ -56,7 +58,8 @@ class BattleState extends State {
         battleModel.load_map();
 
         setup_map();
-        setup_hand();
+        setup_cards();
+        battleModel.start_game();
     }
 
     function handle_event(event :Event) :Promise {
@@ -68,6 +71,8 @@ class BattleState extends State {
             case MinionAttacked(attackerId, defenderId): attack_minion(attackerId, defenderId);
             case MinionDied(modelId): remove_minion(modelId);
             case TurnStarted(playerId): turn_started(playerId);
+            case CardPlayed(cardId): play_card(cardId);
+            case CardDrawn(cardId): draw_card(cardId);
         };
     }
 
@@ -93,7 +98,7 @@ class BattleState extends State {
             color: (model.playerId == 0 ? new Color(129/255, 83/255, 118/255) : new Color(229/255, 83/255, 118/255)),
             depth: 2
         };
-        var minion = (model.hero ? new Hero(options) : new Minion(options));
+        var minion = (model.hero ? new HeroEntity(options) : new MinionEntity(options));
         minionMap.set(model.id, minion);
         var popIn = new PopIn();
         minion.add(popIn);
@@ -104,6 +109,30 @@ class BattleState extends State {
         var minion = minion_from_model(modelId);
         minion.destroy();
         minionMap.remove(modelId);
+        return Promise.resolve();
+    }
+
+    function draw_card(cardId :Int) :Promise {
+        var card = battleModel.get_card_from_id(cardId);
+        var cardEntity = new CardEntity({
+            text: card.title,
+            cost: card.power,
+            effect: function(hex) { /* nothing */ }, // card.effect,
+            pos: new Vector(600, 600),
+            depth: 3,
+            scene: levelScene
+        });
+        cardMap.set(card.id, cardEntity);
+        var i = 0;
+        for (c in cardMap) {
+            luxe.tween.Actuate.tween(c.pos, 0.3, { x: 600 - 120 * (i++) });
+        }
+        var popIn = new PopIn();
+        cardEntity.add(popIn);
+        return popIn.promise;
+    }
+
+    function play_card(cardId :Int) :Promise {
         return Promise.resolve();
     }
 
@@ -189,8 +218,12 @@ class BattleState extends State {
         battleModel.do_action(EndTurn);
     }
 
-    function minion_from_model(modelId :Int) {
-        return minionMap.get(modelId);
+    function minion_from_model(minionId :Int) {
+        return minionMap.get(minionId);
+    }
+
+    function card_from_model(cardId :Int) {
+        return cardMap.get(cardId);
     }
 
     function move_minion(modelId :Int, from :Hex, to :Hex) :Promise {
@@ -230,7 +263,7 @@ class BattleState extends State {
         battleModel.add_minion(new MinionModel('Enemy Minion 2', enemyId, 3, new Hex(2, -2)));
     }
 
-    function setup_hand() {
+    function setup_cards() {
         function create_minion(power :Int, cost :Int, hex :Hex) {
             minionMap[playerHero.id].damage(cost); // HACK -- only updates Entity, not model
             battleModel.add_minion(new MinionModel('Minion', 0, power, hex));
@@ -249,35 +282,42 @@ class BattleState extends State {
             { text: 'Big Potion', effect: drink_potion.bind(6) }
         ];
 
-        var cardCount = 4;
-        for (i in 0 ... cardCount) {
-            var randomCard = deck[Math.floor(deck.length * Math.random())];
-            deck.remove(randomCard);
-            var card = new Card({
-                text: randomCard.text,
-                cost: randomCard.cost,
-                effect: randomCard.effect,
-                pos: new Vector(200 + 120 * i, 600),
-                depth: 3,
-                scene: levelScene
-            });
-            card.add(new PopIn());
+        for (card in deck) {
+            battleModel.add_card_to_deck(new CardModel(card.text, 0, card.cost));
         }
+
+        // var cardCount = 4;
+        // for (i in 0 ... cardCount) {
+        //     var randomCard = deck[Math.floor(deck.length * Math.random())];
+        //     deck.remove(randomCard);
+        //     var card = new Card({
+        //         text: randomCard.text,
+        //         cost: randomCard.cost,
+        //         effect: randomCard.effect,
+        //         pos: new Vector(200 + 120 * i, 600),
+        //         depth: 3,
+        //         scene: levelScene
+        //     });
+        //     card.add(new PopIn());
+        // }
     }
 
     override public function onmouseup(event :luxe.Input.MouseEvent) {
         var pos = Luxe.camera.screen_point_to_world(event.pos);
 
         /* HACK */
-        var cards :Array<Card> = cast levelScene.get_named_like('card', []);
-        for (card in cards) {
-            if (Luxe.utils.geometry.point_in_geometry(pos, card.geometry)) {
+        for (cardId in cardMap.keys()) {
+            var cardEntity = cardMap[cardId];
+            if (Luxe.utils.geometry.point_in_geometry(pos, cardEntity.geometry)) {
+                // Cast card
+                battleModel.do_action(PlayCard(cardId));
+
                 // Find random hex around the hero
-                var hexes = playerHero.hex.reachable(battleModel.is_walkable);
-                if (hexes.length == 0) break;
-                var randomHex = hexes[Math.floor(hexes.length * Math.random())];
-                card.trigger(randomHex);
-                card.destroy();
+                // var hexes = playerHero.hex.reachable(battleModel.is_walkable);
+                // if (hexes.length == 0) break;
+                // var randomHex = hexes[Math.floor(hexes.length * Math.random())];
+                // cardEntity.trigger(randomHex);
+                // cardEntity.destroy();
                 break;
             }
         }

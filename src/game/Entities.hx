@@ -87,7 +87,7 @@ typedef MinionOptions = {
     > VisualOptions,
     model :MinionModel
 };
-class Minion extends Visual {
+class MinionEntity extends Visual {
     var power :Int;
     var powerText :luxe.Text;
 
@@ -124,7 +124,7 @@ class Minion extends Visual {
     }
 }
 
-class Hero extends Minion {
+class HeroEntity extends MinionEntity {
     var max_power :Int;
 
     public function new(options :MinionOptions) {
@@ -154,7 +154,7 @@ typedef CardOptions = {
     effect : Hex->Void
 }
 
-class Card extends luxe.Sprite {
+class CardEntity extends luxe.Sprite {
     var _options :CardOptions;
     var text :luxe.Text;
     static var Count :Int = 0;

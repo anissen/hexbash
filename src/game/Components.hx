@@ -7,8 +7,8 @@ import luxe.Vector;
 import luxe.Color;
 import luxe.Rectangle;
 
-import game.Entities.Card;
-import game.Entities.Minion;
+import game.Entities.CardEntity;
+import game.Entities.MinionEntity;
 
 class PopIn extends Component {
     public var promise :snow.api.Promise;
