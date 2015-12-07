@@ -150,17 +150,17 @@ class HeroEntity extends MinionEntity {
 typedef CardOptions = {
     > luxe.options.SpriteOptions,
     text :String,
-    ?cost :Int,
-    effect : Hex->Void
+    ?cost :Int
+    // effect : Hex->Void
 }
 
 class CardEntity extends luxe.Sprite {
-    var _options :CardOptions;
+    // var _options :CardOptions;
     var text :luxe.Text;
     static var Count :Int = 0;
 
     public function new(options :CardOptions) {
-        _options = options;
+        var _options = options;
         if (_options.name == null) _options.name = 'card.' + Luxe.utils.uniqueid();
         if (_options.color == null) _options.color = new Color(0, 0.5, 0.5);
         if (_options.geometry == null) _options.geometry = Luxe.draw.box({
@@ -179,7 +179,7 @@ class CardEntity extends luxe.Sprite {
         });
     }
 
-    public function trigger(hex :Hex) {
-        _options.effect(hex);
-    }
+    // public function trigger(hex :Hex) {
+    //     _options.effect(hex);
+    // }
 }

@@ -29,22 +29,31 @@ class MinionModel { // TODO: Make a hero type as well?
     }
 }
 
+enum CardType {
+    Minion(name :String, cost :Int);
+    Potion(power :Int);
+}
+
+// enum PlayAt {
+//     Tile(hex :Hex);
+// }
+
 class CardModel {
     static var Id :Int = 0;
     public var id :Int;
     public var title :String;
     public var playerId :Int;
-    public var power :Int;
+    public var cardType :CardType;
 
-    public function new(title :String, playerId :Int, power :Int, ?id :Int) {
+    public function new(title :String, playerId :Int, cardType :CardType, ?id :Int) {
         this.id = (id != null ? id : Id++);
         this.title = title;
         this.playerId = playerId;
-        this.power = power;
+        this.cardType = cardType;
     }
 
     public function clone() :CardModel {
-        return new CardModel(title, playerId, power, id);
+        return new CardModel(title, playerId, cardType, id);
     }
 }
 
@@ -72,7 +81,7 @@ typedef EventListenerFunction = Event -> snow.api.Promise;
 
 enum Action {
     MinionAction(modelId :Int, action :MinionAction);
-    PlayCard(cardId :Int);
+    PlayCard(cardId :Int /*, playAt: PlayAt */);
     EndTurn();
 }
 
@@ -82,17 +91,13 @@ enum MinionAction {
     Attack(defenderModelId :Int);
 }
 
-// enum CardAction {
-//     Minion(name :String);
-//     Potion(power :Int);
-// }
-
 enum Event {
     HexAdded(hex :Hex);
     MinionAdded(modelId :Int);
     MinionMoved(modelId :Int, from :Hex, to :Hex);
     MinionAttacked(attackerModelId :Int, defenderModelId :Int);
-    MinionDamaged(modelId :Int, damage :Int);
+    MinionDamaged(modelId :Int, amount :Int);
+    MinionHealed(modelId :Int, amount :Int);
     MinionDied(modelId :Int);
     TurnStarted(playerId :Int);
     CardPlayed(cardId :Int);
@@ -189,7 +194,7 @@ class BattleModel {
         trace('handle_action: $action');
         switch (action) {
             case MinionAction(modelId, action): handle_minion_action(modelId, action);
-            case PlayCard(cardId): handle_play_card(cardId);
+        case PlayCard(cardId /*, playAt */): handle_play_card(cardId /*, playAt */);
             case EndTurn: handle_start_turn();
         }
     }
@@ -245,13 +250,32 @@ class BattleModel {
         if (attacker.power <= 0) remove_minion(attackerId);
     }
 
-    function handle_play_card(cardId :Int) {
+    function handle_play_card(cardId :Int /*, playAt :PlayAt */) {
         var hero = get_hero(state.currentPlayerId);
         var card = get_card_from_id(cardId);
-        hero.power -= card.power;
-        emit(MinionDamaged(hero.id, card.power));
 
         emit(CardPlayed(cardId));
+        switch (card.cardType) {
+            case Potion(power): handle_drink_potion(hero, power);
+            case Minion(name, cost): handle_play_minion(hero, name, cost /*, playAt*/);
+        }
+    }
+
+    function handle_drink_potion(hero :MinionModel, power :Int) {
+        hero.power += power;
+        emit(MinionHealed(hero.id, power));
+    }
+
+    function handle_play_minion(hero :MinionModel, name :String, cost :Int /*, playAt :PlayAt */) {
+        hero.power -= cost;
+        emit(MinionDamaged(hero.id, cost));
+
+        var nearbyHexes = hero.hex.reachable(is_walkable);
+        var randomHex = nearbyHexes[Math.floor(nearbyHexes.length * Math.random())];
+        add_minion(new MinionModel(name, 0, cost, randomHex));
+        // switch (playAt) {
+        //     case Tile(hex): add_minion(new MinionModel(name, 0, cost, hex));
+        // }
     }
 
     function get_hero(playerId :Int) :MinionModel { // HACK

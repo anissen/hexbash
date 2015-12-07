@@ -67,7 +67,8 @@ class BattleState extends State {
             case HexAdded(hex): add_hex(hex);
             case MinionAdded(modelId): add_minion(modelId);
             case MinionMoved(modelId, from, to): move_minion(modelId, from, to);
-            case MinionDamaged(modelId, damage): damage_minion(modelId, damage);
+            case MinionDamaged(modelId, amount): damage_minion(modelId, amount);
+            case MinionHealed(modelId, amount): heal_minion(modelId, amount);
             case MinionAttacked(attackerId, defenderId): attack_minion(attackerId, defenderId);
             case MinionDied(modelId): remove_minion(modelId);
             case TurnStarted(playerId): turn_started(playerId);
@@ -114,10 +115,14 @@ class BattleState extends State {
 
     function draw_card(cardId :Int) :Promise {
         var card = battleModel.get_card_from_id(cardId);
+        var cost = switch (card.cardType) {
+            case Minion(_, cost): cost;
+            case Potion(power): power;
+        };
         var cardEntity = new CardEntity({
             text: card.title,
-            cost: card.power,
-            effect: function(hex) { /* nothing */ }, // card.effect,
+            cost: cost,
+            //effect: function(hex) { /* nothing */ }, // card.effect,
             pos: new Vector(600, 600),
             depth: 3,
             scene: levelScene
@@ -133,6 +138,9 @@ class BattleState extends State {
     }
 
     function play_card(cardId :Int) :Promise {
+        var cardEntity = card_from_model(cardId);
+        cardMap.remove(cardId);
+        cardEntity.destroy();
         return Promise.resolve();
     }
 
@@ -234,12 +242,19 @@ class BattleState extends State {
         return Actuate.tween(minion.pos, 0.2, { x: pos.x, y: pos.y }).toPromise();
     }
 
-    function damage_minion(modelId :Int, damage :Int) :Promise {
-        // trace('damage_minion: $damage damage');
+    function damage_minion(modelId :Int, amount :Int) :Promise {
         var minion = minion_from_model(modelId);
         return new Promise(function(resolve) {
-            Actuate.tween(minion.color, 0.2, { r: 1.0, g: 1.0, b: 1.0 }).reflect().repeat(1)
-                .onComplete(function() { minion.damage(damage); resolve(); });
+            Actuate.tween(minion.color, 0.1, { r: 1.0, g: 1.0, b: 1.0 }).reflect().repeat(1)
+                .onComplete(function() { minion.damage(amount); resolve(); });
+        });
+    }
+
+    function heal_minion(modelId :Int, amount :Int) :Promise {
+        var minion = minion_from_model(modelId);
+        return new Promise(function(resolve) {
+            Actuate.tween(minion.color, 0.1, { r: 0.0, g: 1.0, b: 0.0 }).reflect().repeat(1)
+                .onComplete(function() { minion.heal(amount); resolve(); });
         });
     }
 
@@ -264,42 +279,40 @@ class BattleState extends State {
     }
 
     function setup_cards() {
-        function create_minion(power :Int, cost :Int, hex :Hex) {
-            minionMap[playerHero.id].damage(cost); // HACK -- only updates Entity, not model
-            battleModel.add_minion(new MinionModel('Minion', 0, power, hex));
+        // function create_minion(power :Int, cost :Int, hex :Hex) {
+        //     minionMap[playerHero.id].damage(cost); // HACK -- only updates Entity, not model
+        //     battleModel.add_minion(new MinionModel('Minion', 0, power, hex));
+        // }
+        //
+        // function drink_potion(power :Int, hex :Hex) {
+        //     // playerHero.power += power;
+        //     minionMap[playerHero.id].heal(power); // HACK -- only updates Entity, not model
+        // }
+
+        function minion_card(text :String, power :Int) {
+            return CardType.Minion(text, power);
         }
 
-        function drink_potion(power :Int, hex :Hex) {
-            // playerHero.power += power;
-            minionMap[playerHero.id].heal(power); // HACK -- only updates Entity, not model
-        }
+        // var deck :Array<game.Entities.CardOptions> = [
+        //     { text: 'Imp', cost: 3, /* effect: create_minion.bind(3, 3) */},
+        //     { text: 'Rat', cost: 2, /* effect: create_minion.bind(1, 2) */},
+        //     { text: 'Rat', cost: 2, /* effect: create_minion.bind(1, 2) */},
+        //     { text: 'Small Potion', /* effect: drink_potion.bind(3) */},
+        //     { text: 'Big Potion', /* effect: drink_potion.bind(6) */ }
+        // ];
 
-        var deck :Array<game.Entities.CardOptions> = [
-            { text: 'Imp', cost: 3, effect: create_minion.bind(3, 3) },
-            { text: 'Rat', cost: 2, effect: create_minion.bind(1, 2) },
-            { text: 'Rat', cost: 2, effect: create_minion.bind(1, 2) },
-            { text: 'Small Potion', effect: drink_potion.bind(3) },
-            { text: 'Big Potion', effect: drink_potion.bind(6) }
+        // TODO: Remove the requirement of a separate card text
+        var deck = [
+            { text: 'Imp', card_type: CardType.Minion('Imp', 3) },
+            { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
+            { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
+            { text: 'Small Potion', card_type: CardType.Potion(3) },
+            { text: 'Big Potion', card_type: CardType.Potion(6) }
         ];
 
         for (card in deck) {
-            battleModel.add_card_to_deck(new CardModel(card.text, 0, card.cost));
+            battleModel.add_card_to_deck(new CardModel(card.text, 0, card.card_type));
         }
-
-        // var cardCount = 4;
-        // for (i in 0 ... cardCount) {
-        //     var randomCard = deck[Math.floor(deck.length * Math.random())];
-        //     deck.remove(randomCard);
-        //     var card = new Card({
-        //         text: randomCard.text,
-        //         cost: randomCard.cost,
-        //         effect: randomCard.effect,
-        //         pos: new Vector(200 + 120 * i, 600),
-        //         depth: 3,
-        //         scene: levelScene
-        //     });
-        //     card.add(new PopIn());
-        // }
     }
 
     override public function onmouseup(event :luxe.Input.MouseEvent) {
