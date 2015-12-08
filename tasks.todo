@@ -1,6 +1,5 @@
 
 # To-do
 
-[x] Can only control own minions
-[x] Can end turn
-[ ] Enemy player does random stuff then ends turn
+[ ] Refactor: Split into files
+[ ] Refactor: Clean up code

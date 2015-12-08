@@ -306,8 +306,8 @@ class BattleState extends State {
             { text: 'Imp', card_type: CardType.Minion('Imp', 3) },
             { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
             { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
-            { text: 'Small Potion', card_type: CardType.Potion(3) },
-            { text: 'Big Potion', card_type: CardType.Potion(6) }
+            { text: 'Potion', card_type: CardType.Potion(3) }
+            // { text: 'Big Potion', card_type: CardType.Potion(6) }
         ];
 
         for (card in deck) {
