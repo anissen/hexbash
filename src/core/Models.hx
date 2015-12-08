@@ -151,13 +151,11 @@ class BattleModel {
         });
     }
 
-    public function load_map() {
-        var map_radius :Int = 3;
-        var mapHexes = MapFactory.create_hexagon_map(map_radius);
-        mapHexes = mapHexes.filter(function(hex) {
-            return (hex.key != '0,0' && hex.key != '-2,0' && hex.key != '2,0');
-        });
-        mapHexes.map(add_hex);
+    public function load_map(seed :Int) {
+        var battle = BattleFactory.Generate(seed);
+        battle.hexes.map(add_hex);
+        state = battle.gameState;
+        state.minions.map(add_minion);
     }
 
     public function start_game() {

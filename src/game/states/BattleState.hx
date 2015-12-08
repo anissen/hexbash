@@ -55,10 +55,7 @@ class BattleState extends State {
 
     override function init() {
         battleModel.listen(handle_event);
-        battleModel.load_map();
-
-        setup_map();
-        setup_cards();
+        battleModel.load_map(42);
         battleModel.start_game();
     }
 
@@ -267,34 +264,6 @@ class BattleState extends State {
         var attacker = minion_from_model(attackerModelId);
         var defender = minion_from_model(defenderModelId);
         return Actuate.tween(attacker.pos, 0.2, { x: defender.pos.x, y: defender.pos.y }).reflect().repeat(1).toPromise();
-    }
-
-    function setup_map() {
-        // TODO: Load from file
-        var playerId = 0;
-        playerHero = new MinionModel('Hero', playerId, 10, new Hex(-1, 2), null, true);
-        battleModel.add_minion(playerHero);
-        battleModel.add_minion(new MinionModel('Hero Minion 1', playerId, 2, new Hex(-2, 2)));
-
-        var enemyId = 1;
-        battleModel.add_minion(new MinionModel('Enemy', enemyId, 8, new Hex(1, -2), null, true));
-        battleModel.add_minion(new MinionModel('Enemy Minion 1', enemyId, 3, new Hex(0, -2)));
-        battleModel.add_minion(new MinionModel('Enemy Minion 2', enemyId, 3, new Hex(2, -2)));
-    }
-
-    function setup_cards() {
-        // TODO: Remove the requirement of a separate card text
-        var deck = [
-            { text: 'Imp', card_type: CardType.Minion('Imp', 3) },
-            { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
-            { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
-            { text: 'Potion', card_type: CardType.Potion(1) },
-            { text: 'Potion', card_type: CardType.Potion(3) }
-        ];
-
-        for (card in deck) {
-            battleModel.add_card_to_deck(new CardModel(card.text, 0, card.card_type));
-        }
     }
 
     override public function onmouseup(event :luxe.Input.MouseEvent) {
