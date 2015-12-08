@@ -34,10 +34,6 @@ enum CardType {
     Potion(power :Int);
 }
 
-// enum PlayAt {
-//     Tile(hex :Hex);
-// }
-
 class CardModel {
     static var Id :Int = 0;
     public var id :Int;
@@ -81,7 +77,7 @@ typedef EventListenerFunction = Event -> snow.api.Promise;
 
 enum Action {
     MinionAction(modelId :Int, action :MinionAction);
-    PlayCard(cardId :Int /*, playAt: PlayAt */);
+    PlayCard(cardId :Int);
     EndTurn();
 }
 
@@ -106,7 +102,6 @@ enum Event {
 
 class BattleGameState {
     public var minions :Array<MinionModel>; // TODO: Make into a map<int, model>
-    //public var cards :Array<CardModel>; // TODO: Make into a map<int, model>
     public var currentPlayerId :Int;
     public var random :luxe.utils.Random;
 
@@ -115,7 +110,6 @@ class BattleGameState {
 
     public function new() {
         minions = [];
-        // cards = [];
         playerDeck = [];
         playerHand = [];
         currentPlayerId = 0;
@@ -125,7 +119,6 @@ class BattleGameState {
     public function clone() :BattleGameState {
         var newGameState = new BattleGameState();
         newGameState.minions = [ for (model in minions) model.clone() ];
-        // newGameState.cards = [ for (card in cards) card.clone() ];
         newGameState.playerDeck = [ for (card in playerDeck) card.clone() ];
         newGameState.playerHand = [ for (card in playerHand) card.clone() ];
         newGameState.currentPlayerId = currentPlayerId;
@@ -191,10 +184,9 @@ class BattleModel {
     }
 
     function handle_action(action :Action) {
-        trace('handle_action: $action');
         switch (action) {
             case MinionAction(modelId, action): handle_minion_action(modelId, action);
-        case PlayCard(cardId /*, playAt */): handle_play_card(cardId /*, playAt */);
+            case PlayCard(cardId): handle_play_card(cardId);
             case EndTurn: handle_start_turn();
         }
     }
@@ -226,7 +218,6 @@ class BattleModel {
     }
 
     function handle_move(modelId :Int, hex :Hex) {
-        // trace('handle_move, modelId: ${model.id}, hex: ${hex.key}, is_walkable(${is_walkable(hex)})');
         if (get_minion(hex) != null) throw 'Destination hex is already occupied!';
         var model = get_minion_from_id(modelId);
         var from = model.hex;
@@ -250,14 +241,14 @@ class BattleModel {
         if (attacker.power <= 0) remove_minion(attackerId);
     }
 
-    function handle_play_card(cardId :Int /*, playAt :PlayAt */) {
+    function handle_play_card(cardId :Int) {
         var hero = get_hero(state.currentPlayerId);
         var card = get_card_from_id(cardId);
 
         emit(CardPlayed(cardId));
         switch (card.cardType) {
             case Potion(power): handle_drink_potion(hero, power);
-            case Minion(name, cost): handle_play_minion(hero, name, cost /*, playAt*/);
+            case Minion(name, cost): handle_play_minion(hero, name, cost);
         }
     }
 
@@ -266,16 +257,13 @@ class BattleModel {
         emit(MinionHealed(hero.id, power));
     }
 
-    function handle_play_minion(hero :MinionModel, name :String, cost :Int /*, playAt :PlayAt */) {
+    function handle_play_minion(hero :MinionModel, name :String, cost :Int) {
         hero.power -= cost;
         emit(MinionDamaged(hero.id, cost));
 
         var nearbyHexes = hero.hex.reachable(is_walkable);
         var randomHex = nearbyHexes[Math.floor(nearbyHexes.length * Math.random())];
         add_minion(new MinionModel(name, 0, cost, randomHex));
-        // switch (playAt) {
-        //     case Tile(hex): add_minion(new MinionModel(name, 0, cost, hex));
-        // }
     }
 
     function get_hero(playerId :Int) :MinionModel { // HACK
@@ -297,7 +285,6 @@ class BattleModel {
     public function get_minion_attacks(modelId :Int) :Array<MinionAction> {
         var model = get_minion_from_id(modelId);
         if (model.actions <= 0) return [];
-        // trace('modelId: $modelId, model: $model');
         return model.hex.ring(1).map(function(hex) {
             var other = get_minion(hex);
             if (other != null && other.playerId != model.playerId) return Attack(other.id);
@@ -349,8 +336,6 @@ class BattleModel {
         }
         return null;
         // return minion from minion map
-
-        // TODO: Consider a simpler solution that avoids cloning the game state altogether
     }
 
     public function get_card_from_id(id :Int) :CardModel {

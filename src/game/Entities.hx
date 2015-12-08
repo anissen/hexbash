@@ -151,11 +151,9 @@ typedef CardOptions = {
     > luxe.options.SpriteOptions,
     text :String,
     ?cost :Int
-    // effect : Hex->Void
 }
 
 class CardEntity extends luxe.Sprite {
-    // var _options :CardOptions;
     var text :luxe.Text;
     static var Count :Int = 0;
 
@@ -178,8 +176,4 @@ class CardEntity extends luxe.Sprite {
             depth: _options.depth + 0.01
         });
     }
-
-    // public function trigger(hex :Hex) {
-    //     _options.effect(hex);
-    // }
 }

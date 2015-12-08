@@ -122,7 +122,6 @@ class BattleState extends State {
         var cardEntity = new CardEntity({
             text: card.title,
             cost: cost,
-            //effect: function(hex) { /* nothing */ }, // card.effect,
             pos: new Vector(600, 600),
             depth: 3,
             scene: levelScene
@@ -145,7 +144,6 @@ class BattleState extends State {
     }
 
     function turn_started(playerId :Int) :Promise {
-        trace('Turn started for player $playerId');
         if (Main.states.enabled(MinionActionsState.StateId)) {
             Main.states.disable(MinionActionsState.StateId);
         }
@@ -157,7 +155,8 @@ class BattleState extends State {
         return Promise.resolve();
     }
 
-    function get_ai_minion_action(battleModel :BattleModel, model :MinionModel) :MinionAction {
+    function get_ai_minion_action(battleModel :BattleModel, model :MinionModel) :MinionAction { // TODO: Move this into a separate file
+
         // simple AI:
         // 1. Attacks enemy if possible
         // 2. Moves towards enemy hero if possible
@@ -203,7 +202,7 @@ class BattleState extends State {
         return Nothing;
     }
 
-    function do_ai_actions() {
+    function do_ai_actions() { // TODO: Move this into a separate file
         var newBattleModel = battleModel;
         var chosenActions = [];
         while (true) {
@@ -242,7 +241,6 @@ class BattleState extends State {
     }
 
     function move_minion(modelId :Int, from :Hex, to :Hex) :Promise {
-        // trace('move_minion: from $from to $to');
         var minion = minion_from_model(modelId);
         minion.pos = battleMap.hex_to_pos(from);
         var pos = battleMap.hex_to_pos(to); // TODO: Rename to pos_from_hex
@@ -266,7 +264,6 @@ class BattleState extends State {
     }
 
     function attack_minion(attackerModelId :Int, defenderModelId :Int) :Promise {
-        // trace('attack_minion: $attackerModel attacks $defenderModel');
         var attacker = minion_from_model(attackerModelId);
         var defender = minion_from_model(defenderModelId);
         return Actuate.tween(attacker.pos, 0.2, { x: defender.pos.x, y: defender.pos.y }).reflect().repeat(1).toPromise();
@@ -286,35 +283,13 @@ class BattleState extends State {
     }
 
     function setup_cards() {
-        // function create_minion(power :Int, cost :Int, hex :Hex) {
-        //     minionMap[playerHero.id].damage(cost); // HACK -- only updates Entity, not model
-        //     battleModel.add_minion(new MinionModel('Minion', 0, power, hex));
-        // }
-        //
-        // function drink_potion(power :Int, hex :Hex) {
-        //     // playerHero.power += power;
-        //     minionMap[playerHero.id].heal(power); // HACK -- only updates Entity, not model
-        // }
-
-        function minion_card(text :String, power :Int) {
-            return CardType.Minion(text, power);
-        }
-
-        // var deck :Array<game.Entities.CardOptions> = [
-        //     { text: 'Imp', cost: 3, /* effect: create_minion.bind(3, 3) */},
-        //     { text: 'Rat', cost: 2, /* effect: create_minion.bind(1, 2) */},
-        //     { text: 'Rat', cost: 2, /* effect: create_minion.bind(1, 2) */},
-        //     { text: 'Small Potion', /* effect: drink_potion.bind(3) */},
-        //     { text: 'Big Potion', /* effect: drink_potion.bind(6) */ }
-        // ];
-
         // TODO: Remove the requirement of a separate card text
         var deck = [
             { text: 'Imp', card_type: CardType.Minion('Imp', 3) },
             { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
             { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
+            { text: 'Potion', card_type: CardType.Potion(1) },
             { text: 'Potion', card_type: CardType.Potion(3) }
-            // { text: 'Big Potion', card_type: CardType.Potion(6) }
         ];
 
         for (card in deck) {
@@ -329,15 +304,7 @@ class BattleState extends State {
         for (cardId in cardMap.keys()) {
             var cardEntity = cardMap[cardId];
             if (Luxe.utils.geometry.point_in_geometry(pos, cardEntity.geometry)) {
-                // Cast card
                 battleModel.do_action(PlayCard(cardId));
-
-                // Find random hex around the hero
-                // var hexes = playerHero.hex.reachable(battleModel.is_walkable);
-                // if (hexes.length == 0) break;
-                // var randomHex = hexes[Math.floor(hexes.length * Math.random())];
-                // cardEntity.trigger(randomHex);
-                // cardEntity.destroy();
                 break;
             }
         }
@@ -359,8 +326,6 @@ class BattleState extends State {
     override public function onkeyup(event :luxe.Input.KeyEvent) {
         if (event.keycode == luxe.Input.Key.enter) {
             battleModel.do_action(core.Models.Action.EndTurn);
-        }/* else if (event.keycode == luxe.Input.Key.key_r) {
-            battleModel.replay();
-        } */
+        }
     }
 }
