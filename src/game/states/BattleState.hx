@@ -165,6 +165,13 @@ class BattleState extends State {
 
         var attackActions = battleModel.get_minion_attacks(model.id);
         if (attackActions.length > 0) {
+            // Attack hero if available
+            for (attack in attackActions) {
+                switch (attack) {
+                    case Attack(defenderId): if (battleModel.get_minion_from_id(defenderId).hero) return attack;
+                    case _:
+                }
+            }
             return attackActions[Math.floor(attackActions.length * Math.random())];
         }
 
