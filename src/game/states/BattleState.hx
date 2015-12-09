@@ -22,6 +22,7 @@ import game.Entities.BattleMap;
 import game.Components;
 
 using core.HexLibrary.HexTools;
+using core.ArrayTools;
 using game.states.BattleState.TweenTools;
 
 class TweenTools {
@@ -41,7 +42,6 @@ class BattleState extends State {
     var battleModel :BattleModel;
     var battleMap :BattleMap;
     var currentPlayer :Int;
-    var playerHero :MinionModel;
 
     public function new() {
         super({ name: StateId });
@@ -55,7 +55,7 @@ class BattleState extends State {
 
     override function init() {
         battleModel.listen(handle_event);
-        battleModel.load_map(42);
+        battleModel.load_map(87634.34);
         battleModel.start_game();
     }
 
@@ -97,7 +97,7 @@ class BattleState extends State {
             depth: 2
         };
         var minion = (model.hero ? new HeroEntity(options) : new MinionEntity(options));
-        minionMap.set(model.id, minion);
+        minionMap.set(modelId, minion);
         var popIn = new PopIn();
         minion.add(popIn);
         return popIn.promise;
@@ -159,6 +159,10 @@ class BattleState extends State {
         // 2. Moves towards enemy hero if possible
         // 3. Performs random available action
 
+        function random_int(v :Int) {
+            return battleModel.get_random().int(v);
+        }
+
         var attackActions = battleModel.get_minion_attacks(model.id);
         if (attackActions.length > 0) {
             // Attack hero if available
@@ -168,7 +172,7 @@ class BattleState extends State {
                     case _:
                 }
             }
-            return attackActions[Math.floor(attackActions.length * Math.random())];
+            return attackActions.random();
         }
 
         var playerMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
@@ -282,7 +286,7 @@ class BattleState extends State {
         for (model in battleModel.get_minions()) {
             if (model.playerId != 0) continue; // Only open actions for own minions
             var minion = minionMap[model.id];
-            if (Luxe.utils.geometry.point_in_geometry(pos, minion.geometry)) {
+            if (minion != null && Luxe.utils.geometry.point_in_geometry(pos, minion.geometry)) {
                 if (Main.states.enabled(MinionActionsState.StateId)) {
                     Main.states.disable(MinionActionsState.StateId);
                 }

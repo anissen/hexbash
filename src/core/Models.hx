@@ -151,11 +151,11 @@ class BattleModel {
         });
     }
 
-    public function load_map(seed :Int) {
+    public function load_map(seed :Float) {
         var battle = BattleFactory.Generate(seed);
         battle.hexes.map(add_hex);
         state = battle.gameState;
-        state.minions.map(add_minion);
+        state.minions.map(function(m) { emit(MinionAdded(m.id)); });
     }
 
     public function start_game() {
@@ -258,6 +258,8 @@ class BattleModel {
     function handle_play_minion(hero :MinionModel, name :String, cost :Int) {
         hero.power -= cost;
         emit(MinionDamaged(hero.id, cost));
+
+        if (hero.power <= 0) remove_minion(hero.id);
 
         var nearbyHexes = hero.hex.reachable(is_walkable);
         var randomHex = nearbyHexes[Math.floor(nearbyHexes.length * Math.random())];
