@@ -3,6 +3,7 @@ package core;
 import snow.api.Promise;
 import core.HexLibrary;
 using core.HexLibrary.HexTools;
+using core.ArrayTools;
 
 class MinionModel { // TODO: Make a hero type as well?
     static var Id :Int = 0;
@@ -262,7 +263,7 @@ class BattleModel {
         if (hero.power <= 0) remove_minion(hero.id);
 
         var nearbyHexes = hero.hex.reachable(is_walkable);
-        var randomHex = nearbyHexes[Math.floor(nearbyHexes.length * Math.random())];
+        var randomHex = nearbyHexes.random(function(v :Int) { return state.random.int(v); });
         add_minion(new MinionModel(name, 0, cost, randomHex));
     }
 
@@ -271,6 +272,10 @@ class BattleModel {
             if (model.playerId == playerId && model.hero) return model;
         }
         return null;
+    }
+
+    public function get_random() :luxe.utils.Random {
+        return state.random;
     }
 
     public function get_minion_moves(modelId :Int) :Array<MinionAction> {

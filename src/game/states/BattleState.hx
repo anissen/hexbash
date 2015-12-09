@@ -172,7 +172,7 @@ class BattleState extends State {
                     case _:
                 }
             }
-            return attackActions.random();
+            return attackActions.random(random_int);
         }
 
         var playerMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
@@ -197,7 +197,7 @@ class BattleState extends State {
 
         var actions = battleModel.get_minion_actions(model.id);
         if (actions.length > 0) {
-            return actions[Math.floor(actions.length * Math.random())];
+            return actions.random(random_int);
         }
 
         return Nothing;

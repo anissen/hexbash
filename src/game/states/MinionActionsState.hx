@@ -22,6 +22,7 @@ import game.Components;
 
 using Lambda;
 using core.HexLibrary.HexTools;
+using core.ArrayTools;
 
 class MinionActionsState extends State {
     static public var StateId :String = 'MinionActionsState';
@@ -93,20 +94,23 @@ class MinionActionsState extends State {
     }
 
     override public function onkeyup(event :luxe.Input.KeyEvent) {
+        function random_int(v :Int) {
+            return battleModel.get_random().int(v);
+        }
         if (event.keycode == luxe.Input.Key.key_m) {
             var moves = battleModel.get_minion_moves(model.id);
             if (moves.length == 0) return;
-            var randomMove = moves[Math.floor(moves.length * Math.random())];
+            var randomMove = moves.random(random_int);
             select_action(randomMove);
         } else if (event.keycode == luxe.Input.Key.key_a) {
             var attacks = battleModel.get_minion_attacks(model.id);
             if (attacks.length == 0) return;
-            var randomAttack = attacks[Math.floor(attacks.length * Math.random())];
+            var randomAttack = attacks.random(random_int);
             select_action(randomAttack);
         } else if (event.keycode == luxe.Input.Key.key_p) {
             var enemyMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
             if (enemyMinions.length == 0) return;
-            var randomEnemy = enemyMinions[Math.floor(enemyMinions.length * Math.random())];
+            var randomEnemy = enemyMinions.random(random_int);
             var path = model.hex.find_path(randomEnemy.hex, 100, 6, battleModel.is_walkable, true);
             for (p in path) select_action(Move(p));
         }

@@ -8,7 +8,7 @@ import core.Models.CardModel;
 import core.Models.CardType;
 
 using core.HexLibrary.HexTools;
-// using core.ArrayTools;
+using core.ArrayTools;
 
 typedef BattleInstanceModel = {
     hexes :Array<Hex>,
@@ -76,11 +76,11 @@ class BattleFactory {
             { text: 'Potion', card_type: CardType.Potion(3) }
         ];
 
-        // function random_int(v :Int) {
-        //     return random.int(v);
-        // }
+        function random_int(v :Int) {
+            return random.int(v);
+        }
         var deck = [];
-        for (card in cards/*.shuffle(random_int)*/) {
+        for (card in cards.shuffle(random_int)) {
             deck.push(new CardModel(card.text, 0, card.card_type));
         }
         return deck;
