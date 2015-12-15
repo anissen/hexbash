@@ -69,9 +69,14 @@ class BattleFactory {
         // TODO: Remove the requirement of a separate card text
         var cards = [
             { text: 'Imp', card_type: CardType.Minion('Imp', 3) },
+            { text: 'Imp', card_type: CardType.Minion('Imp', 4) },
+            { text: 'Rat', card_type: CardType.Minion('Rat', 1) },
             { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
-            { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
+            { text: 'Sword', card_type: CardType.Sword(2) },
+            { text: 'Sword', card_type: CardType.Sword(3) },
+            { text: 'Sword', card_type: CardType.Sword(4) },
             { text: 'Potion', card_type: CardType.Potion(1) },
+            { text: 'Potion', card_type: CardType.Potion(2) },
             { text: 'Potion', card_type: CardType.Potion(3) }
         ];
 
