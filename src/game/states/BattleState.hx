@@ -68,6 +68,7 @@ class BattleState extends State {
             case MinionHealed(modelId, amount): heal_minion(modelId, amount);
             case MinionAttacked(attackerId, defenderId): attack_minion(attackerId, defenderId);
             case MinionDied(modelId): remove_minion(modelId);
+            case SwordEquiped(heroId, power): equip_sword(heroId, power);
             case TurnStarted(playerId): turn_started(playerId);
             case CardPlayed(cardId): play_card(cardId);
             case CardDrawn(cardId): draw_card(cardId);
@@ -115,6 +116,7 @@ class BattleState extends State {
         var cost = switch (card.cardType) {
             case Minion(_, cost): cost;
             case Potion(power): power;
+            case Sword(power): power;
         };
         var cardEntity = new CardEntity({
             text: card.title,
@@ -148,6 +150,7 @@ class BattleState extends State {
         currentPlayer = playerId;
         if (currentPlayer == 1) { // AI
             do_ai_actions();
+            create_ai_minion(); // TODO: Replace with a play card action
         }
         return Promise.resolve();
     }
@@ -241,7 +244,6 @@ class BattleState extends State {
         for (action in chosenActions) {
             battleModel.do_action(action);
         }
-        create_ai_minion(); // TODO: Replace with a play card action
 
         battleModel.do_action(EndTurn);
     }
@@ -275,6 +277,12 @@ class BattleState extends State {
             Actuate.tween(minion.color, 0.1, { r: 0.0, g: 1.0, b: 0.0 }).reflect().repeat(1)
                 .onComplete(function() { minion.heal(amount); resolve(); });
         });
+    }
+
+    function equip_sword(heroId, power) :Promise {
+        var hero :HeroEntity = cast minion_from_model(heroId);
+        hero.set_sword(power);
+        return Promise.resolve();
     }
 
     function attack_minion(attackerModelId :Int, defenderModelId :Int) :Promise {

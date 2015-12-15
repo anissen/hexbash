@@ -126,6 +126,7 @@ class MinionEntity extends Visual {
 
 class HeroEntity extends MinionEntity {
     var max_power :Int;
+    var swordText :luxe.Text;
 
     public function new(options :MinionOptions) {
         var _options = options;
@@ -134,6 +135,15 @@ class HeroEntity extends MinionEntity {
 
         if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 35 });
         super(_options);
+
+        swordText = new luxe.Text({
+            pos: new Vector(-40, 20),
+            point_size: 20,
+            align: luxe.Text.TextAlign.center,
+            align_vertical: luxe.Text.TextAlign.center,
+            parent: this,
+            depth: _options.depth + 0.01
+        });
     }
 
     override public function heal(amount :Int) {
@@ -144,6 +154,10 @@ class HeroEntity extends MinionEntity {
 
     override function update_text() {
         powerText.text = '$power/$max_power';
+    }
+
+    public function set_sword(power :Int) {
+        swordText.text = (power > 0 ? '$power' : '');
     }
 }
 
