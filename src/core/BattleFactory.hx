@@ -24,11 +24,11 @@ class BattleFactory {
     }
 
     static function get_map() {
-        var map_radius :Int = 3;
-        var mapHexes = MapFactory.create_hexagon_map(map_radius);
-        return mapHexes.filter(function(hex) {
-            return (hex.key != '0,0' && hex.key != '-2,0' && hex.key != '2,0');
-        });
+        // var mapHexes = MapFactory.create_custom_map();
+        // return mapHexes.filter(function(hex) {
+        //     return (hex.key != '0,0' && hex.key != '-2,0' && hex.key != '2,0');
+        // });
+        return MapFactory.create_custom_map();
     }
 
     static function get_minions(random :luxe.utils.Random) {
@@ -50,7 +50,6 @@ class BattleFactory {
         }
         var reachableHexes = enemyHero.hex.reachable(walkable);
         for (i in 0 ... random.int(0, reachableHexes.length)) {
-        // for (i in 0 ... reachableHexes.length) {
             minions.push(new MinionModel('Enemy Minion ${i + 1}', enemyId, random.int(1, 6), reachableHexes[i]));
         }
 

@@ -3,6 +3,13 @@ package core;
 import core.HexLibrary;
 
 class MapFactory {
+    static public function create_custom_map() :Array<Hex> {
+        var hexes = create_hexagon_map(2);
+        hexes.push(new Hex(1, -2));
+        hexes.push(new Hex(-1, 2));
+        return hexes;
+    }
+
     static public function create_hexagon_map(radius :Int = 3) :Array<Hex> {
         var hexes = [];
         for (q in -radius + 1 ... radius) {
