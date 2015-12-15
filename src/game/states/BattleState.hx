@@ -203,6 +203,17 @@ class BattleState extends State {
         return Nothing;
     }
 
+    function create_ai_minion() {
+        var ai_heroes = battleModel.get_minions().filter(function(m) { return m.playerId == currentPlayer && m.hero; });
+        if (ai_heroes.length == 0) return;
+
+        var ai_hero = ai_heroes[0];
+        var reachableHexes = ai_hero.hex.reachable(battleModel.is_walkable);
+        for (i in 0 ... battleModel.get_random().int(reachableHexes.length)) {
+            battleModel.add_minion(new MinionModel('Enemy Minion ${i + 1}', currentPlayer, battleModel.get_random().int(1, 6), reachableHexes[i]));
+        }
+    }
+
     function do_ai_actions() { // TODO: Move this into a separate file
         var newBattleModel = battleModel;
         var chosenActions = [];
@@ -230,6 +241,8 @@ class BattleState extends State {
         for (action in chosenActions) {
             battleModel.do_action(action);
         }
+        create_ai_minion(); // TODO: Replace with a play card action
+
         battleModel.do_action(EndTurn);
     }
 
