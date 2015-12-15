@@ -30,9 +30,24 @@ class MinionModel { // TODO: Make a hero type as well?
     }
 }
 
+class HeroModel extends MinionModel {
+    public var max_power :Int;
+    public var sword :Int = 0;
+    public var shield :Int = 0;
+
+    public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
+        super(title, playerId, power, hex, actions, true, id);
+    }
+
+    override public function clone() :HeroModel {
+        return new HeroModel(title, playerId, power, hex, actions, hero, id);
+    }
+}
+
 enum CardType {
     Minion(name :String, cost :Int);
     Potion(power :Int);
+    Sword(power :Int);
 }
 
 class CardModel {
@@ -96,6 +111,7 @@ enum Event {
     MinionDamaged(modelId :Int, amount :Int);
     MinionHealed(modelId :Int, amount :Int);
     MinionDied(modelId :Int);
+    SwordEquiped(heroId :Int, power :Int);
     TurnStarted(playerId :Int);
     CardPlayed(cardId :Int);
     CardDrawn(cardId :Int);
@@ -229,15 +245,28 @@ class BattleModel {
         var defender = get_minion_from_id(defenderId);
         emit(MinionAttacked(attackerId, defenderId));
 
-        var minPower = Math.floor(Math.min(attacker.power, defender.power));
-        defender.power -= minPower;
-        emit(MinionDamaged(defenderId, minPower));
+        if (attacker.hero && (cast attacker :HeroModel).sword > 0) { // HACK
+            var attackerHero :HeroModel = cast attacker;
+            var swordPower = attackerHero.sword;
 
-        attacker.power -= minPower;
-        emit(MinionDamaged(attackerId, minPower));
+            defender.power -= swordPower;
+            emit(MinionDamaged(defenderId, swordPower));
 
-        if (defender.power <= 0) remove_minion(defenderId);
-        if (attacker.power <= 0) remove_minion(attackerId);
+            attackerHero.sword = 0;
+            emit(SwordEquiped(attackerHero.id, 0)); // HACK, should be SwordUsed or somesuch
+
+            if (defender.power <= 0) remove_minion(defenderId);
+        } else {
+            var minPower = Math.floor(Math.min(attacker.power, defender.power));
+            defender.power -= minPower;
+            emit(MinionDamaged(defenderId, minPower));
+
+            attacker.power -= minPower;
+            emit(MinionDamaged(attackerId, minPower));
+
+            if (defender.power <= 0) remove_minion(defenderId);
+            if (attacker.power <= 0) remove_minion(attackerId);
+        }
     }
 
     function handle_play_card(cardId :Int) {
@@ -248,6 +277,7 @@ class BattleModel {
         switch (card.cardType) {
             case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);
+            case Sword(power): handle_play_sword(hero, power);
         }
     }
 
@@ -263,13 +293,23 @@ class BattleModel {
         if (hero.power <= 0) remove_minion(hero.id);
 
         var nearbyHexes = hero.hex.reachable(is_walkable);
+        if (nearbyHexes.length == 0) return; // should not happen
         var randomHex = nearbyHexes.random(function(v :Int) { return state.random.int(v); });
         add_minion(new MinionModel(name, 0, cost, randomHex));
     }
 
-    function get_hero(playerId :Int) :MinionModel { // HACK
+    function handle_play_sword(hero :HeroModel, power :Int) {
+        hero.power -= power;
+        emit(MinionDamaged(hero.id, power));
+
+        if (hero.power <= 0) remove_minion(hero.id);
+        hero.sword = power;
+        emit(SwordEquiped(hero.id, power));
+    }
+
+    function get_hero(playerId :Int) :HeroModel { // HACK, should be a property of player
         for (model in state.minions) {
-            if (model.playerId == playerId && model.hero) return model;
+            if (model.playerId == playerId && model.hero) return cast model;
         }
         return null;
     }
