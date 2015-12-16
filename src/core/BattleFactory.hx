@@ -2,6 +2,7 @@
 package core;
 
 import core.HexLibrary;
+import core.Models.HeroModel;
 import core.Models.MinionModel;
 import core.Models.BattleGameState;
 import core.Models.CardModel;
@@ -35,9 +36,9 @@ class BattleFactory {
         // TODO: Load from file
         var playerId = 0;
         var enemyId = 1;
-        var enemyHero = new MinionModel('Enemy', enemyId, 8, new Hex(1, -2), null, true);
-        var minions = [
-            new MinionModel('Hero', playerId, 10, new Hex(-1, 2), null, true),
+        var enemyHero = new HeroModel('Enemy', enemyId, 8, new Hex(1, -2));
+        var minions :Array<MinionModel> = [
+            new HeroModel('Hero', playerId, 10, new Hex(-1, 2)),
             enemyHero
         ];
 

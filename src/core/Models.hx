@@ -14,6 +14,18 @@ class MinionModel { // TODO: Make a hero type as well?
     public var hex :Hex;
     public var actions :Int;
     public var hero :Bool;
+    @:isVar public var sword(default, set) :Int = 0;
+    @:isVar public var shield(default, set) :Int = 0;
+
+    function set_sword(power :Int) {
+		if (power != 0) throw 'Minion cannot have sword';
+        return 0;
+	}
+
+    function set_shield(power :Int) {
+		if (power != 0) throw 'Minion cannot have shield';
+        return 0;
+	}
 
     public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
         this.id = (id != null ? id : Id++);
@@ -32,8 +44,14 @@ class MinionModel { // TODO: Make a hero type as well?
 
 class HeroModel extends MinionModel {
     public var max_power :Int;
-    public var sword :Int = 0;
-    public var shield :Int = 0;
+
+    override function set_sword(power :Int) {
+		return sword = power;
+	}
+
+    override function set_shield(power :Int) {
+		return shield = power;
+	}
 
     public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
         super(title, playerId, power, hex, actions, true, id);
@@ -245,61 +263,37 @@ class BattleModel {
     function handle_attack(attackerId :Int, defenderId :Int) {
         var attacker = get_minion_from_id(attackerId);
         var defender = get_minion_from_id(defenderId);
-        emit(MinionAttacked(attackerId, defenderId));
 
-        if (attacker.hero && (cast attacker :HeroModel).sword > 0) { // HACK
-            var attackerHero :HeroModel = cast attacker;
-            var swordPower = attackerHero.sword;
+        function damage_minion(minion :MinionModel, damage :Int) {
+            var shieldDamage = Math.floor(Math.min(damage, defender.shield));
+            minion.shield -= shieldDamage;
+            damage -= shieldDamage;
+            if (minion.hero) emit(ShieldEquiped(minion.id, minion.shield)); // HACK, should be ShieldDamaged and maybe ShieldDestroyed
 
-            if (defender.hero && (cast defender :HeroModel).shield > 0) { // HACK
-                var defenderHero :HeroModel = cast defender;
-                var shieldPower = defenderHero.shield;
-                if (swordPower > shieldPower) {
-                    var damage = (swordPower - shieldPower);
-                    defenderHero.power -= damage;
-                    defenderHero.shield = 0;
-                    emit(ShieldEquiped(defenderId, 0)); // HACK
-                    emit(MinionDamaged(defenderId, damage)); // HACK
-                } else {
-                    defenderHero.shield -= swordPower;
-                    emit(ShieldEquiped(defenderId, defenderHero.shield)); // HACK
-                }
-            } else {
-                defender.power -= swordPower;
-                emit(MinionDamaged(defenderId, swordPower));
-            }
-
-            attackerHero.sword = 0;
-            emit(SwordEquiped(attackerHero.id, 0)); // HACK, should be SwordUsed or somesuch
-
-            if (defender.power <= 0) remove_minion(defenderId);
-        } else {
-            var minPower = Math.floor(Math.min(attacker.power, defender.power));
-
-            if (defender.hero && (cast defender :HeroModel).shield > 0) { // HACK
-                var defenderHero :HeroModel = cast defender;
-                var shieldPower = defenderHero.shield;
-                if (minPower > shieldPower) {
-                    var damage = (minPower - shieldPower);
-                    defenderHero.power -= damage;
-                    defenderHero.shield = 0;
-                    emit(ShieldEquiped(defenderId, 0)); // HACK
-                    emit(MinionDamaged(defenderId, damage)); // HACK
-                } else {
-                    defenderHero.shield -= minPower;
-                    emit(ShieldEquiped(defenderId, defenderHero.shield)); // HACK
-                }
-            } else {
-                defender.power -= minPower;
-                emit(MinionDamaged(defenderId, minPower));
-            }
-
-            attacker.power -= minPower;
-            emit(MinionDamaged(attackerId, minPower));
-
-            if (defender.power <= 0) remove_minion(defenderId);
-            if (attacker.power <= 0) remove_minion(attackerId);
+            minion.power -= damage;
+            emit(MinionDamaged(minion.id, damage));
         }
+
+        var minPower = Math.floor(Math.min(defender.power, attacker.power));
+        emit(MinionAttacked(attackerId, defenderId));
+        if (attacker.sword > 0) {
+            damage_minion(defender, attacker.sword);
+            attacker.sword = 0;
+            if (attacker.hero) emit(SwordEquiped(attacker.id, 0)); // HACK, should be SwordDestroyed
+        } else {
+            damage_minion(defender, minPower);
+
+            emit(MinionAttacked(defenderId, attackerId));
+            if (defender.sword > 0) {
+                damage_minion(attacker, defender.sword);
+                defender.sword = 0;
+                if (defender.hero) emit(SwordEquiped(defender.id, 0)); // HACK, should be SwordDestroyed
+            } else {
+                damage_minion(attacker, minPower);
+            }
+        }
+        if (defender.power <= 0) remove_minion(defenderId);
+        if (attacker.power <= 0) remove_minion(attackerId);
     }
 
     function handle_play_card(cardId :Int) {
@@ -324,7 +318,10 @@ class BattleModel {
         hero.power -= cost;
         emit(MinionDamaged(hero.id, cost));
 
-        if (hero.power <= 0) remove_minion(hero.id);
+        if (hero.power <= 0) {
+            remove_minion(hero.id);
+            return;
+        }
 
         var nearbyHexes = hero.hex.reachable(is_walkable);
         if (nearbyHexes.length == 0) return; // should not happen
@@ -336,7 +333,10 @@ class BattleModel {
         hero.power -= power;
         emit(MinionDamaged(hero.id, power));
 
-        if (hero.power <= 0) remove_minion(hero.id);
+        if (hero.power <= 0) {
+            remove_minion(hero.id);
+            return;
+        }
         hero.sword = power;
         emit(SwordEquiped(hero.id, power));
     }
@@ -345,7 +345,10 @@ class BattleModel {
         hero.power -= power;
         emit(MinionDamaged(hero.id, power));
 
-        if (hero.power <= 0) remove_minion(hero.id);
+        if (hero.power <= 0) {
+            remove_minion(hero.id);
+            return;
+        }
         hero.shield = power;
         emit(ShieldEquiped(hero.id, power));
     }
