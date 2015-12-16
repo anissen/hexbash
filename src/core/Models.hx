@@ -48,6 +48,7 @@ enum CardType {
     Minion(name :String, cost :Int);
     Potion(power :Int);
     Sword(power :Int);
+    Shield(power :Int);
 }
 
 class CardModel {
@@ -112,6 +113,7 @@ enum Event {
     MinionHealed(modelId :Int, amount :Int);
     MinionDied(modelId :Int);
     SwordEquiped(heroId :Int, power :Int);
+    ShieldEquiped(heroId :Int, power :Int);
     TurnStarted(playerId :Int);
     CardPlayed(cardId :Int);
     CardDrawn(cardId :Int);
@@ -249,8 +251,23 @@ class BattleModel {
             var attackerHero :HeroModel = cast attacker;
             var swordPower = attackerHero.sword;
 
-            defender.power -= swordPower;
-            emit(MinionDamaged(defenderId, swordPower));
+            if (defender.hero && (cast defender :HeroModel).shield > 0) { // HACK
+                var defenderHero :HeroModel = cast defender;
+                var shieldPower = defenderHero.shield;
+                if (swordPower > shieldPower) {
+                    var damage = (swordPower - shieldPower);
+                    defenderHero.power -= damage;
+                    defenderHero.shield = 0;
+                    emit(ShieldEquiped(defenderId, 0)); // HACK
+                    emit(MinionDamaged(defenderId, damage)); // HACK
+                } else {
+                    defenderHero.shield -= swordPower;
+                    emit(ShieldEquiped(defenderId, defenderHero.shield)); // HACK
+                }
+            } else {
+                defender.power -= swordPower;
+                emit(MinionDamaged(defenderId, swordPower));
+            }
 
             attackerHero.sword = 0;
             emit(SwordEquiped(attackerHero.id, 0)); // HACK, should be SwordUsed or somesuch
@@ -258,8 +275,24 @@ class BattleModel {
             if (defender.power <= 0) remove_minion(defenderId);
         } else {
             var minPower = Math.floor(Math.min(attacker.power, defender.power));
-            defender.power -= minPower;
-            emit(MinionDamaged(defenderId, minPower));
+
+            if (defender.hero && (cast defender :HeroModel).shield > 0) { // HACK
+                var defenderHero :HeroModel = cast defender;
+                var shieldPower = defenderHero.shield;
+                if (minPower > shieldPower) {
+                    var damage = (minPower - shieldPower);
+                    defenderHero.power -= damage;
+                    defenderHero.shield = 0;
+                    emit(ShieldEquiped(defenderId, 0)); // HACK
+                    emit(MinionDamaged(defenderId, damage)); // HACK
+                } else {
+                    defenderHero.shield -= minPower;
+                    emit(ShieldEquiped(defenderId, defenderHero.shield)); // HACK
+                }
+            } else {
+                defender.power -= minPower;
+                emit(MinionDamaged(defenderId, minPower));
+            }
 
             attacker.power -= minPower;
             emit(MinionDamaged(attackerId, minPower));
@@ -278,6 +311,7 @@ class BattleModel {
             case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);
             case Sword(power): handle_play_sword(hero, power);
+            case Shield(power): handle_play_shield(hero, power);
         }
     }
 
@@ -305,6 +339,15 @@ class BattleModel {
         if (hero.power <= 0) remove_minion(hero.id);
         hero.sword = power;
         emit(SwordEquiped(hero.id, power));
+    }
+
+    function handle_play_shield(hero :HeroModel, power :Int) {
+        hero.power -= power;
+        emit(MinionDamaged(hero.id, power));
+
+        if (hero.power <= 0) remove_minion(hero.id);
+        hero.shield = power;
+        emit(ShieldEquiped(hero.id, power));
     }
 
     function get_hero(playerId :Int) :HeroModel { // HACK, should be a property of player

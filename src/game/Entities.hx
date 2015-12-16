@@ -127,6 +127,7 @@ class MinionEntity extends Visual {
 class HeroEntity extends MinionEntity {
     var max_power :Int;
     var swordText :luxe.Text;
+    var shieldText :luxe.Text;
 
     public function new(options :MinionOptions) {
         var _options = options;
@@ -137,7 +138,18 @@ class HeroEntity extends MinionEntity {
         super(_options);
 
         swordText = new luxe.Text({
-            pos: new Vector(-40, 20),
+            pos: new Vector(-30, 20),
+            color: new Color(1, 0, 0),
+            point_size: 20,
+            align: luxe.Text.TextAlign.center,
+            align_vertical: luxe.Text.TextAlign.center,
+            parent: this,
+            depth: _options.depth + 0.01
+        });
+
+        shieldText = new luxe.Text({
+            pos: new Vector(30, 20),
+            color: new Color(0, 1, 0),
             point_size: 20,
             align: luxe.Text.TextAlign.center,
             align_vertical: luxe.Text.TextAlign.center,
@@ -158,6 +170,10 @@ class HeroEntity extends MinionEntity {
 
     public function set_sword(power :Int) {
         swordText.text = (power > 0 ? '$power' : '');
+    }
+
+    public function set_shield(power :Int) {
+        shieldText.text = (power > 0 ? '$power' : '');
     }
 }
 
