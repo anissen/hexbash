@@ -14,18 +14,6 @@ class MinionModel { // TODO: Make a hero type as well?
     public var hex :Hex;
     public var actions :Int;
     public var hero :Bool;
-    @:isVar public var sword(default, set) :Int = 0;
-    @:isVar public var shield(default, set) :Int = 0;
-
-    function set_sword(power :Int) {
-		if (power != 0) throw 'Minion cannot have sword';
-        return 0;
-	}
-
-    function set_shield(power :Int) {
-		if (power != 0) throw 'Minion cannot have shield';
-        return 0;
-	}
 
     public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
         this.id = (id != null ? id : Id++);
@@ -45,14 +33,6 @@ class MinionModel { // TODO: Make a hero type as well?
 class HeroModel extends MinionModel {
     public var max_power :Int;
 
-    override function set_sword(power :Int) {
-		return sword = power;
-	}
-
-    override function set_shield(power :Int) {
-		return shield = power;
-	}
-
     public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
         super(title, playerId, power, hex, actions, true, id);
     }
@@ -65,8 +45,6 @@ class HeroModel extends MinionModel {
 enum CardType {
     Minion(name :String, cost :Int);
     Potion(power :Int);
-    Sword(power :Int);
-    Shield(power :Int);
 }
 
 class CardModel {
@@ -130,8 +108,6 @@ enum Event {
     MinionDamaged(modelId :Int, amount :Int);
     MinionHealed(modelId :Int, amount :Int);
     MinionDied(modelId :Int);
-    SwordEquiped(heroId :Int, power :Int);
-    ShieldEquiped(heroId :Int, power :Int);
     TurnStarted(playerId :Int);
     CardPlayed(cardId :Int);
     CardDrawn(cardId :Int);
@@ -258,40 +234,22 @@ class BattleModel {
         var from = model.hex;
         model.hex = hex;
         emit(MinionMoved(modelId, from, hex));
+        
     }
 
     function handle_attack(attackerId :Int, defenderId :Int) {
         var attacker = get_minion_from_id(attackerId);
         var defender = get_minion_from_id(defenderId);
 
-        function damage_minion(minion :MinionModel, damage :Int) {
-            var shieldDamage = Math.floor(Math.min(damage, defender.shield));
-            minion.shield -= shieldDamage;
-            damage -= shieldDamage;
-            if (minion.hero) emit(ShieldEquiped(minion.id, minion.shield)); // HACK, should be ShieldDamaged and maybe ShieldDestroyed
-
-            minion.power -= damage;
-            emit(MinionDamaged(minion.id, damage));
-        }
-
         var minPower = Math.floor(Math.min(defender.power, attacker.power));
         emit(MinionAttacked(attackerId, defenderId));
-        if (attacker.sword > 0) {
-            damage_minion(defender, attacker.sword);
-            attacker.sword = 0;
-            if (attacker.hero) emit(SwordEquiped(attacker.id, 0)); // HACK, should be SwordDestroyed
-        } else {
-            damage_minion(defender, minPower);
+        emit(MinionAttacked(defenderId, attackerId));
 
-            emit(MinionAttacked(defenderId, attackerId));
-            if (defender.sword > 0) {
-                damage_minion(attacker, defender.sword);
-                defender.sword = 0;
-                if (defender.hero) emit(SwordEquiped(defender.id, 0)); // HACK, should be SwordDestroyed
-            } else {
-                damage_minion(attacker, minPower);
-            }
-        }
+        defender.power -= minPower;
+        attacker.power -= minPower;
+        emit(MinionDamaged(defenderId, minPower));
+        emit(MinionDamaged(attackerId, minPower));
+
         if (defender.power <= 0) remove_minion(defenderId);
         if (attacker.power <= 0) remove_minion(attackerId);
     }
@@ -304,8 +262,6 @@ class BattleModel {
         switch (card.cardType) {
             case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);
-            case Sword(power): handle_play_sword(hero, power);
-            case Shield(power): handle_play_shield(hero, power);
         }
     }
 
@@ -327,30 +283,6 @@ class BattleModel {
         if (nearbyHexes.length == 0) return; // should not happen
         var randomHex = nearbyHexes.random(function(v :Int) { return state.random.int(v); });
         add_minion(new MinionModel(name, 0, cost, randomHex));
-    }
-
-    function handle_play_sword(hero :HeroModel, power :Int) {
-        hero.power -= power;
-        emit(MinionDamaged(hero.id, power));
-
-        if (hero.power <= 0) {
-            remove_minion(hero.id);
-            return;
-        }
-        hero.sword = power;
-        emit(SwordEquiped(hero.id, power));
-    }
-
-    function handle_play_shield(hero :HeroModel, power :Int) {
-        hero.power -= power;
-        emit(MinionDamaged(hero.id, power));
-
-        if (hero.power <= 0) {
-            remove_minion(hero.id);
-            return;
-        }
-        hero.shield = power;
-        emit(ShieldEquiped(hero.id, power));
     }
 
     function get_hero(playerId :Int) :HeroModel { // HACK, should be a property of player

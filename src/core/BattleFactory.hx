@@ -73,12 +73,6 @@ class BattleFactory {
             { text: 'Imp', card_type: CardType.Minion('Imp', 4) },
             { text: 'Rat', card_type: CardType.Minion('Rat', 1) },
             { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
-            { text: 'Sword', card_type: CardType.Sword(2) },
-            { text: 'Sword', card_type: CardType.Sword(3) },
-            { text: 'Sword', card_type: CardType.Sword(4) },
-            { text: 'Shield', card_type: CardType.Shield(2) },
-            { text: 'Shield', card_type: CardType.Shield(3) },
-            { text: 'Shield', card_type: CardType.Shield(4) },
             { text: 'Potion', card_type: CardType.Potion(1) },
             { text: 'Potion', card_type: CardType.Potion(2) },
             { text: 'Potion', card_type: CardType.Potion(3) }
