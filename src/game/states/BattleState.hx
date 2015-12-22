@@ -71,6 +71,7 @@ class BattleState extends State {
             case TurnStarted(playerId): turn_started(playerId);
             case CardPlayed(cardId): play_card(cardId);
             case CardDrawn(cardId): draw_card(cardId);
+            case CardDiscarded(cardId): discard_card(cardId);
         };
     }
 
@@ -134,6 +135,13 @@ class BattleState extends State {
     }
 
     function play_card(cardId :Int) :Promise {
+        var cardEntity = card_from_model(cardId);
+        cardMap.remove(cardId);
+        cardEntity.destroy();
+        return Promise.resolve();
+    }
+
+    function discard_card(cardId :Int) :Promise {
         var cardEntity = card_from_model(cardId);
         cardMap.remove(cardId);
         cardEntity.destroy();

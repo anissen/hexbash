@@ -110,6 +110,7 @@ enum Event {
     MinionDied(modelId :Int);
     TurnStarted(playerId :Int);
     CardPlayed(cardId :Int);
+    CardDiscarded(cardId :Int);
     CardDrawn(cardId :Int);
 }
 
@@ -173,7 +174,21 @@ class BattleModel {
 
     public function start_game() {
         // draw cards for player
-        for (i in 0 ... 3) {
+        draw_new_hand();
+    }
+
+    function discard_hand() {
+        for (card in state.playerHand) {
+            emit(CardDiscarded(card.id));
+        }
+        state.playerHand = [];
+    }
+
+    function draw_new_hand() {
+        discard_hand();
+
+        var hand_size = 3;
+        for (i in 0 ... hand_size) {
             var card = state.playerDeck.pop();
             if (card != null) {
                 state.playerHand.push(card);
@@ -198,8 +213,14 @@ class BattleModel {
         switch (action) {
             case MinionAction(modelId, action): handle_minion_action(modelId, action);
             case PlayCard(cardId): handle_play_card(cardId);
-            case EndTurn: handle_start_turn();
+            case EndTurn: handle_end_turn(); handle_start_turn();
         }
+    }
+
+    function handle_end_turn() {
+        // // draw cards for player
+        // draw_new_hand();
+        discard_hand();
     }
 
     function handle_start_turn() {
@@ -210,11 +231,12 @@ class BattleModel {
         }
         emit(TurnStarted(state.currentPlayerId));
         if (state.currentPlayerId == 0) { // HACK
-            var card = state.playerDeck.pop();
-            if (card != null) {
-                state.playerHand.push(card);
-                emit(CardDrawn(card.id));
-            }
+            // var card = state.playerDeck.pop();
+            // if (card != null) {
+            //     state.playerHand.push(card);
+            //     emit(CardDrawn(card.id));
+            // }
+            draw_new_hand();
         }
     }
 
@@ -254,6 +276,7 @@ class BattleModel {
         var card = get_card_from_id(cardId);
 
         emit(CardPlayed(cardId));
+        state.playerHand.remove(card);
         switch (card.cardType) {
             case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);

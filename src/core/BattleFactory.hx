@@ -84,6 +84,7 @@ class BattleFactory {
         var deck = [];
         for (card in cards.shuffle(random_int)) {
             deck.push(new CardModel(card.text, 0, card.card_type));
+            deck.push(new CardModel(card.text, 0, card.card_type)); // take two of each card
         }
         return deck;
     }
