@@ -234,24 +234,19 @@ class BattleModel {
         var from = model.hex;
         model.hex = hex;
         emit(MinionMoved(modelId, from, hex));
-        
     }
 
     function handle_attack(attackerId :Int, defenderId :Int) {
         var attacker = get_minion_from_id(attackerId);
         var defender = get_minion_from_id(defenderId);
 
-        var minPower = Math.floor(Math.min(defender.power, attacker.power));
         emit(MinionAttacked(attackerId, defenderId));
-        emit(MinionAttacked(defenderId, attackerId));
 
-        defender.power -= minPower;
-        attacker.power -= minPower;
-        emit(MinionDamaged(defenderId, minPower));
-        emit(MinionDamaged(attackerId, minPower));
+        var damage = attacker.power;
+        defender.power -= damage;
+        emit(MinionDamaged(defenderId, damage));
 
         if (defender.power <= 0) remove_minion(defenderId);
-        if (attacker.power <= 0) remove_minion(attackerId);
     }
 
     function handle_play_card(cardId :Int) {
