@@ -196,7 +196,7 @@ class BattleModel {
     function draw_new_hand() {
         discard_hand();
 
-        var hand_size = 2;
+        var hand_size = 3;
         for (i in 0 ... hand_size) {
             draw_card();
         }
@@ -238,7 +238,10 @@ class BattleModel {
         emit(TurnStarted(state.currentPlayerId));
         if (state.currentPlayerId == 0) { // HACK
             // draw_card();
-            draw_new_hand();
+            // draw_new_hand();
+            for (i in 0 ... (3 - state.playerHand.length)) { // draw so that hand has 3 cards
+                draw_card();
+            }
         }
     }
 
@@ -279,12 +282,13 @@ class BattleModel {
 
         emit(CardPlayed(cardId));
         state.playerHand.remove(card);
+        state.playerDeck.unshift(card); // try adding played card back into deck as a mechanic
         switch (card.cardType) {
             case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);
         }
 
-        if (state.playerHand.length == 0) {
+        if (state.playerHand.length <= 1) {
             handle_action(EndTurn);
         }
     }
@@ -295,7 +299,7 @@ class BattleModel {
         emit(CardDiscarded(cardId));
         state.playerHand.remove(card);
 
-        if (state.playerHand.length == 0) {
+        if (state.playerHand.length <= 1) {
             handle_action(EndTurn);
         }
     }

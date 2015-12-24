@@ -225,7 +225,7 @@ class BattleState extends State {
         // trace('ai_hero: ' + ai_hero);
         var reachableHexes = ai_hero.hex.reachable(battleModel.is_walkable);
         var randomHex = reachableHexes.random(random_int);
-        battleModel.add_minion(new MinionModel('Enemy Minion', currentPlayer, battleModel.get_random().int(1, 8), randomHex));
+        battleModel.add_minion(new MinionModel('Enemy Minion', currentPlayer, battleModel.get_random().int(1, 7), randomHex));
     }
 
     function do_ai_actions() { // TODO: Move this into a separate file
@@ -326,9 +326,9 @@ class BattleState extends State {
         }
     }
 
-    override public function onkeyup(event :luxe.Input.KeyEvent) {
-        if (event.keycode == luxe.Input.Key.enter) {
-            battleModel.do_action(core.Models.Action.EndTurn);
-        }
-    }
+    // override public function onkeyup(event :luxe.Input.KeyEvent) {
+    //     if (event.keycode == luxe.Input.Key.enter) {
+    //         battleModel.do_action(core.Models.Action.EndTurn);
+    //     }
+    // }
 }

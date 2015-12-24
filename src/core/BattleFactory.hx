@@ -25,7 +25,7 @@ class BattleFactory {
     }
 
     static function get_map() {
-        // var mapHexes = MapFactory.create_custom_map();
+        // var mapHexes = MapFactory.create_hexagon_map(3);
         // return mapHexes.filter(function(hex) {
         //     return (hex.key != '0,0' && hex.key != '-2,0' && hex.key != '2,0');
         // });
@@ -84,7 +84,7 @@ class BattleFactory {
         var deck = [];
         for (card in cards.shuffle(random_int)) {
             deck.push(new CardModel(card.text, 0, card.card_type));
-            deck.push(new CardModel(card.text, 0, card.card_type)); // take two of each card
+            // deck.push(new CardModel(card.text, 0, card.card_type)); // take two of each card
         }
         return deck;
     }
