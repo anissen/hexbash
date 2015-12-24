@@ -91,6 +91,7 @@ typedef EventListenerFunction = Event -> snow.api.Promise;
 enum Action {
     MinionAction(modelId :Int, action :MinionAction);
     PlayCard(cardId :Int);
+    DiscardCard(cardId :Int);
     EndTurn();
 }
 
@@ -184,16 +185,20 @@ class BattleModel {
         state.playerHand = [];
     }
 
+    function draw_card() {
+        var card = state.playerDeck.pop();
+        if (card != null) {
+            state.playerHand.push(card);
+            emit(CardDrawn(card.id));
+        }
+    }
+
     function draw_new_hand() {
         discard_hand();
 
-        var hand_size = 3;
+        var hand_size = 2;
         for (i in 0 ... hand_size) {
-            var card = state.playerDeck.pop();
-            if (card != null) {
-                state.playerHand.push(card);
-                emit(CardDrawn(card.id));
-            }
+            draw_card();
         }
     }
 
@@ -213,6 +218,7 @@ class BattleModel {
         switch (action) {
             case MinionAction(modelId, action): handle_minion_action(modelId, action);
             case PlayCard(cardId): handle_play_card(cardId);
+            case DiscardCard(cardId): handle_discard_card(cardId);
             case EndTurn: handle_end_turn(); handle_start_turn();
         }
     }
@@ -220,7 +226,7 @@ class BattleModel {
     function handle_end_turn() {
         // // draw cards for player
         // draw_new_hand();
-        discard_hand();
+        // discard_hand();
     }
 
     function handle_start_turn() {
@@ -231,11 +237,7 @@ class BattleModel {
         }
         emit(TurnStarted(state.currentPlayerId));
         if (state.currentPlayerId == 0) { // HACK
-            // var card = state.playerDeck.pop();
-            // if (card != null) {
-            //     state.playerHand.push(card);
-            //     emit(CardDrawn(card.id));
-            // }
+            // draw_card();
             draw_new_hand();
         }
     }
@@ -280,6 +282,21 @@ class BattleModel {
         switch (card.cardType) {
             case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);
+        }
+
+        if (state.playerHand.length == 0) {
+            handle_action(EndTurn);
+        }
+    }
+
+    function handle_discard_card(cardId :Int) {
+        var card = get_card_from_id(cardId);
+
+        emit(CardDiscarded(cardId));
+        state.playerHand.remove(card);
+
+        if (state.playerHand.length == 0) {
+            handle_action(EndTurn);
         }
     }
 

@@ -214,13 +214,18 @@ class BattleState extends State {
 
     function create_ai_minion() {
         var ai_heroes = battleModel.get_minions().filter(function(m) { return m.playerId == currentPlayer && m.hero; });
+        // trace('ai_heroes.length: ' + ai_heroes.length);
         if (ai_heroes.length == 0) return;
 
-        var ai_hero = ai_heroes[0];
-        var reachableHexes = ai_hero.hex.reachable(battleModel.is_walkable);
-        for (i in 0 ... battleModel.get_random().int(reachableHexes.length)) {
-            battleModel.add_minion(new MinionModel('Enemy Minion ${i + 1}', currentPlayer, battleModel.get_random().int(1, 6), reachableHexes[i]));
+        function random_int(v :Int) {
+            return battleModel.get_random().int(v);
         }
+
+        var ai_hero = ai_heroes[0];
+        // trace('ai_hero: ' + ai_hero);
+        var reachableHexes = ai_hero.hex.reachable(battleModel.is_walkable);
+        var randomHex = reachableHexes.random(random_int);
+        battleModel.add_minion(new MinionModel('Enemy Minion', currentPlayer, battleModel.get_random().int(1, 8), randomHex));
     }
 
     function do_ai_actions() { // TODO: Move this into a separate file
@@ -298,7 +303,11 @@ class BattleState extends State {
         for (cardId in cardMap.keys()) {
             var cardEntity = cardMap[cardId];
             if (Luxe.utils.geometry.point_in_geometry(pos, cardEntity.geometry)) {
-                battleModel.do_action(PlayCard(cardId));
+                if (event.button == luxe.Input.MouseButton.left) {
+                    battleModel.do_action(PlayCard(cardId));
+                } else if (event.button == luxe.Input.MouseButton.right) {
+                    battleModel.do_action(DiscardCard(cardId));
+                }
                 break;
             }
         }
