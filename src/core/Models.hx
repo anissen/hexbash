@@ -45,6 +45,7 @@ class HeroModel extends MinionModel {
 enum CardType {
     Minion(name :String, cost :Int);
     Potion(power :Int);
+    Spell(effect :BattleModel->Array<Event>);
 }
 
 class CardModel {
@@ -286,6 +287,7 @@ class BattleModel {
         switch (card.cardType) {
             case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);
+            case Spell(effect): handle_play_spell(effect);
         }
 
         if (state.playerHand.length <= 1) {
@@ -322,6 +324,13 @@ class BattleModel {
         if (nearbyHexes.length == 0) return; // should not happen
         var randomHex = nearbyHexes.random(function(v :Int) { return state.random.int(v); });
         add_minion(new MinionModel(name, 0, cost, randomHex));
+    }
+
+    function handle_play_spell(effect :BattleModel->Array<Event>) {
+        var events = effect(this);
+        for (event in events) {
+            emit(event);
+        }
     }
 
     function get_hero(playerId :Int) :HeroModel { // HACK, should be a property of player
@@ -405,6 +414,10 @@ class BattleModel {
             if (c.id == id) return c;
         }
         return null;
+    }
+
+    public function get_current_player() :Int {
+        return state.currentPlayerId;
     }
 
     public function emit(event :Event) :Void {

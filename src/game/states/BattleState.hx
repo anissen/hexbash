@@ -116,6 +116,7 @@ class BattleState extends State {
         var cost = switch (card.cardType) {
             case Minion(_, cost): cost;
             case Potion(power): power;
+            case Spell(_): 0; // free for now
         };
         var cardEntity = new CardEntity({
             text: card.title,
