@@ -81,6 +81,19 @@ class BattleFactory {
             return [core.Models.Event.MinionDamaged(randomEnemy.id, 3)];
         }
 
+        function spell_boost(battleModel :core.Models.BattleModel) {
+            var heroes = battleModel.get_minions().filter(function(m) {
+                return m.playerId == battleModel.get_current_player() && m.hero;
+            });
+            var hero = heroes[0];
+            var allies = hero.hex.ring(1).map(function(h) {
+                var m = battleModel.get_minion(h);
+                if (m == null || m.playerId != battleModel.get_current_player()) return null;
+                return m;
+            }).filter(function(m) { return m != null; });
+            return [ for (a in allies) core.Models.Event.MinionHealed(a.id, 1) ];
+        }
+
         // TODO: Remove the requirement of a separate card text
         var cards = [
             { text: 'Imp', card_type: CardType.Minion('Imp', 3) },
@@ -90,7 +103,8 @@ class BattleFactory {
             { text: 'Potion', card_type: CardType.Potion(1) },
             { text: 'Potion', card_type: CardType.Potion(2) },
             { text: 'Potion', card_type: CardType.Potion(3) },
-            { text: 'Bam!', card_type: CardType.Spell(spell_bam) }
+            { text: 'Bam!', card_type: CardType.Spell(spell_bam) },
+            { text: 'Boost!', card_type: CardType.Spell(spell_boost) }
         ];
 
         function random_int(v :Int) {

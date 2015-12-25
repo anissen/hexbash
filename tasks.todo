@@ -5,4 +5,4 @@
 [ ] Refactor: Clean up code
 [ ] Implement simple spell cards
     [x] Deal 3 damage to random adjacent minion
-    [ ] +1 power to all adjacent allies
+    [x] +1 power to all adjacent allies
