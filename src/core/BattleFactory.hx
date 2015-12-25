@@ -78,7 +78,7 @@ class BattleFactory {
                 return m;
             }).filter(function(m) { return m != null; });
             var randomEnemy = enemies.random(function(v) { return battleModel.get_random().int(v); });
-            return [core.Models.Event.MinionDamaged(randomEnemy.id, 3)];
+            return [core.Models.Command.DamageMinion(randomEnemy.id, 3)];
         }
 
         function spell_boost(battleModel :core.Models.BattleModel) {
@@ -91,7 +91,7 @@ class BattleFactory {
                 if (m == null || m.playerId != battleModel.get_current_player()) return null;
                 return m;
             }).filter(function(m) { return m != null; });
-            return [ for (a in allies) core.Models.Event.MinionHealed(a.id, 1) ];
+            return [ for (a in allies) core.Models.Command.HealMinion(a.id, 1) ];
         }
 
         // TODO: Remove the requirement of a separate card text

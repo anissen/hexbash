@@ -45,7 +45,7 @@ class HeroModel extends MinionModel {
 enum CardType {
     Minion(name :String, cost :Int);
     Potion(power :Int);
-    Spell(effect :BattleModel->Array<Event>);
+    Spell(effect :BattleModel->Array<Command>);
 }
 
 class CardModel {
@@ -100,6 +100,11 @@ enum MinionAction {
     Nothing;
     Move(hex :Hex);
     Attack(defenderModelId :Int);
+}
+
+enum Command {
+    DamageMinion(modelId :Int, amount :Int);
+    HealMinion(modelId :Int, amount :Int);
 }
 
 enum Event {
@@ -270,11 +275,7 @@ class BattleModel {
 
         emit(MinionAttacked(attackerId, defenderId));
 
-        var damage = attacker.power;
-        defender.power -= damage;
-        emit(MinionDamaged(defenderId, damage));
-
-        if (defender.power <= 0) remove_minion(defenderId);
+        damage_minion(defenderId, attacker.power);
     }
 
     function handle_play_card(cardId :Int) {
@@ -307,18 +308,12 @@ class BattleModel {
     }
 
     function handle_drink_potion(hero :MinionModel, power :Int) {
-        hero.power += power;
-        emit(MinionHealed(hero.id, power));
+        heal_minion(hero.id, power);
     }
 
     function handle_play_minion(hero :MinionModel, name :String, cost :Int) {
-        hero.power -= cost;
-        emit(MinionDamaged(hero.id, cost));
-
-        if (hero.power <= 0) {
-            remove_minion(hero.id);
-            return;
-        }
+        damage_minion(hero.id, cost);
+        if (hero.power <= 0) return;
 
         var nearbyHexes = hero.hex.reachable(is_walkable);
         if (nearbyHexes.length == 0) return; // should not happen
@@ -326,10 +321,10 @@ class BattleModel {
         add_minion(new MinionModel(name, 0, cost, randomHex));
     }
 
-    function handle_play_spell(effect :BattleModel->Array<Event>) {
-        var events = effect(this);
-        for (event in events) {
-            emit(event);
+    function handle_play_spell(effect :BattleModel->Array<Command>) {
+        var commands = effect(this);
+        for (command in commands) {
+            do_command(command);
         }
     }
 
@@ -388,11 +383,6 @@ class BattleModel {
         emit(MinionAdded(minion.id));
     }
 
-    public function remove_minion(minionId :Int) {
-        state.minions.remove(get_minion_from_id(minionId));
-        emit(MinionDied(minionId));
-    }
-
     public function add_card_to_deck(card :CardModel) {
         state.playerDeck.push(card);
     }
@@ -420,8 +410,31 @@ class BattleModel {
         return state.currentPlayerId;
     }
 
-    public function emit(event :Event) :Void {
+    function emit(event :Event) :Void {
         events.handle(event);
+    }
+
+    function do_command(command :Command) :Void {
+        switch (command) {
+            case DamageMinion(modelId, amount): damage_minion(modelId, amount);
+            case HealMinion(modelId, amount): heal_minion(modelId, amount);
+        }
+    }
+
+    function damage_minion(modelId :Int, amount :Int) {
+        var model = get_minion_from_id(modelId);
+        model.power -= amount;
+        emit(MinionDamaged(modelId, amount));
+        if (model.power <= 0) {
+            state.minions.remove(get_minion_from_id(modelId));
+            emit(MinionDied(modelId));
+        }
+    }
+
+    function heal_minion(modelId :Int, amount :Int) {
+        var model = get_minion_from_id(modelId);
+        model.power += amount;
+        emit(MinionHealed(modelId, amount));
     }
 
     public function is_walkable(hex :Hex) {
