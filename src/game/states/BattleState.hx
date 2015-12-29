@@ -42,6 +42,7 @@ class BattleState extends State {
     var battleModel :BattleModel;
     var battleMap :BattleMap;
     var currentPlayer :Int;
+    var guiBatcher :phoenix.Batcher;
 
     public function new() {
         super({ name: StateId });
@@ -51,6 +52,7 @@ class BattleState extends State {
         hexMap = new Map();
         minionMap = new Map();
         cardMap = new Map();
+        guiBatcher = Luxe.renderer.create_batcher({ name: 'gui', layer: 4 });
     }
 
     override function init() {
@@ -121,14 +123,15 @@ class BattleState extends State {
         var cardEntity = new CardEntity({
             text: card.title,
             cost: cost,
-            pos: new Vector(600, 600),
+            pos: new Vector(550, 550),
+            batcher: guiBatcher,
             depth: 3,
             scene: levelScene
         });
         cardMap.set(card.id, cardEntity);
         var i = 0;
         for (c in cardMap) {
-            luxe.tween.Actuate.tween(c.pos, 0.3, { x: 600 - 120 * (i++) });
+            luxe.tween.Actuate.tween(c.pos, 0.3, { x: 550 - 120 * (i++) });
         }
         var popIn = new PopIn();
         cardEntity.add(popIn);
@@ -298,12 +301,13 @@ class BattleState extends State {
     }
 
     override public function onmouseup(event :luxe.Input.MouseEvent) {
-        var pos = Luxe.camera.screen_point_to_world(event.pos);
+        var screen_pos = event.pos;
+        var world_pos = Luxe.camera.screen_point_to_world(event.pos);
 
         /* HACK */
         for (cardId in cardMap.keys()) {
             var cardEntity = cardMap[cardId];
-            if (Luxe.utils.geometry.point_in_geometry(pos, cardEntity.geometry)) {
+            if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
                 if (event.button == luxe.Input.MouseButton.left) {
                     battleModel.do_action(PlayCard(cardId));
                 } else if (event.button == luxe.Input.MouseButton.right) {
@@ -317,7 +321,7 @@ class BattleState extends State {
         for (model in battleModel.get_minions()) {
             if (model.playerId != 0) continue; // Only open actions for own minions
             var minion = minionMap[model.id];
-            if (minion != null && Luxe.utils.geometry.point_in_geometry(pos, minion.geometry)) {
+            if (minion != null && Luxe.utils.geometry.point_in_geometry(world_pos, minion.geometry)) {
                 if (Main.states.enabled(MinionActionsState.StateId)) {
                     Main.states.disable(MinionActionsState.StateId);
                 }
@@ -327,9 +331,15 @@ class BattleState extends State {
         }
     }
 
-    // override public function onkeyup(event :luxe.Input.KeyEvent) {
-    //     if (event.keycode == luxe.Input.Key.enter) {
-    //         battleModel.do_action(core.Models.Action.EndTurn);
-    //     }
-    // }
+    override public function onkeyup(event :luxe.Input.KeyEvent) {
+        // if (event.keycode == luxe.Input.Key.enter) {
+        //     battleModel.do_action(core.Models.Action.EndTurn);
+        // }
+        if (event.keycode == luxe.Input.Key.minus) {
+            Luxe.camera.zoom -= 0.05;
+        }
+        if (event.keycode == luxe.Input.Key.period) {
+            Luxe.camera.zoom += 0.05;
+        }
+    }
 }

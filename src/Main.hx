@@ -19,8 +19,9 @@ class Main extends luxe.Game {
     override function ready() {
         // Optional, set a consistent scale camera mode for the entire game
 		// this is a luxe's wip feature
-		// Luxe.camera.size = new luxe.Vector(800, 600);
-		// Luxe.camera.size_mode = luxe.Camera.SizeMode.fit;
+		Luxe.camera.size = new luxe.Vector(600, 600);
+		Luxe.camera.size_mode = luxe.Camera.SizeMode.fit;
+		Luxe.camera.center = new luxe.Vector();
 
         luxe.tween.Actuate.defaultEase = luxe.tween.easing.Quad.easeInOut;
 

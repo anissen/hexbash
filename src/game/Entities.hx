@@ -49,7 +49,7 @@ class BattleMap extends luxe.Entity {
 
     override function init() {
         var size = new Point(hexSize + margin, hexSize + margin);
-        var origin = new Point(Luxe.screen.mid.x, Luxe.screen.mid.y - 100 /* displaced to show cards */);
+        var origin = new Point(0, 0); //Luxe.screen.mid.x, Luxe.screen.mid.y - 100 /* displaced to show cards */);
         layout = new Layout(Layout.pointy, size, origin);
     }
 
@@ -67,7 +67,7 @@ class BattleMap extends luxe.Entity {
 
     public function hex_to_pos(hex :Hex) :Vector {
         var point = Layout.hexToPixel(layout, hex);
-        return get_world_pos(new Vector(point.x, point.y));
+        return /* get_world_pos( */ new Vector(point.x, point.y);
     }
 
     override function onmousemove(event :MouseEvent) {
@@ -162,7 +162,8 @@ class CardEntity extends luxe.Sprite {
         if (_options.name == null) _options.name = 'card.' + Luxe.utils.uniqueid();
         if (_options.color == null) _options.color = new Color(0, 0.5, 0.5);
         if (_options.geometry == null) _options.geometry = Luxe.draw.box({
-            rect: new luxe.Rectangle(0, 0, 100, 150)
+            rect: new luxe.Rectangle(0, 0, 100, 150),
+            batcher: _options.batcher
         });
         super(_options);
 
@@ -173,6 +174,7 @@ class CardEntity extends luxe.Sprite {
             align: luxe.Text.TextAlign.center,
             align_vertical: luxe.Text.TextAlign.top,
             parent: this,
+            batcher: _options.batcher,
             depth: _options.depth + 0.01
         });
     }
