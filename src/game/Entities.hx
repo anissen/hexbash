@@ -21,11 +21,9 @@ class HexTile extends Visual {
     public var foreground :Visual;
 
     public function new(options :HexTileOptions) {
-        super({
-            pos: options.pos,
-            color: new Color(26/255, 43/255, 65/255),
-            geometry: Luxe.draw.ngon({ sides: 6, r: options.r, angle: 30, solid: true })
-        });
+        if (options.color == null) options.color = new Color(26/255, 43/255, 65/255);
+        if (options.geometry == null) options.geometry = Luxe.draw.ngon({ sides: 6, r: options.r, angle: 30, solid: true });
+        super(options);
 
         foreground = new Visual({
             color: new Color(52/255, 73/255, 103/255),

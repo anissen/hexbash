@@ -119,6 +119,8 @@ enum Event {
     CardPlayed(cardId :Int);
     CardDiscarded(cardId :Int);
     CardDrawn(cardId :Int);
+    GameWon();
+    GameLost();
 }
 
 class BattleGameState {
@@ -428,6 +430,12 @@ class BattleModel {
         if (model.power <= 0) {
             state.minions.remove(get_minion_from_id(modelId));
             emit(MinionDied(modelId));
+
+            if (get_hero(1 /* hack */) == null) {
+                emit(GameWon);
+            } else if (get_hero(0 /* hack */) == null) {
+                emit(GameLost);
+            }
         }
     }
 

@@ -49,15 +49,21 @@ class BattleState extends State {
         battleModel = new BattleModel();
         battleMap = new BattleMap();
         levelScene = new Scene();
-        hexMap = new Map();
-        minionMap = new Map();
-        cardMap = new Map();
         guiBatcher = Luxe.renderer.create_batcher({ name: 'gui', layer: 4 });
     }
 
     override function init() {
         battleModel.listen(handle_event);
-        battleModel.load_map(87634.34);
+        reset(87634.34);
+    }
+
+    function reset(seed :Float) {
+        levelScene.empty();
+        hexMap = new Map();
+        minionMap = new Map();
+        cardMap = new Map();
+
+        battleModel.load_map(seed);
         battleModel.start_game();
     }
 
@@ -74,6 +80,8 @@ class BattleState extends State {
             case CardPlayed(cardId): play_card(cardId);
             case CardDrawn(cardId): draw_card(cardId);
             case CardDiscarded(cardId): discard_card(cardId);
+            case GameWon: game_over(true);
+            case GameLost: game_over(false);
         };
     }
 
@@ -97,7 +105,8 @@ class BattleState extends State {
             model: model,
             pos: new Vector(minionPos.x, minionPos.y),
             color: (model.playerId == 0 ? new Color(129/255, 83/255, 118/255) : new Color(229/255, 83/255, 118/255)),
-            depth: 2
+            depth: 2,
+            scene: levelScene
         };
         var minion = (model.hero ? new HeroEntity(options) : new MinionEntity(options));
         minionMap.set(modelId, minion);
@@ -300,6 +309,12 @@ class BattleState extends State {
         return Actuate.tween(attacker.pos, 0.2, { x: defender.pos.x, y: defender.pos.y }).reflect().repeat(1).toPromise();
     }
 
+    function game_over(won :Bool) {
+        trace('Game Over - You ${won ? "Won" : "Lost"}!');
+        reset(battleModel.get_random().get());
+        return Promise.resolve();
+    }
+
     override public function onmouseup(event :luxe.Input.MouseEvent) {
         var screen_pos = event.pos;
         var world_pos = Luxe.camera.screen_point_to_world(event.pos);
@@ -332,14 +347,11 @@ class BattleState extends State {
     }
 
     override public function onkeyup(event :luxe.Input.KeyEvent) {
-        // if (event.keycode == luxe.Input.Key.enter) {
-        //     battleModel.do_action(core.Models.Action.EndTurn);
-        // }
-        if (event.keycode == luxe.Input.Key.minus) {
-            Luxe.camera.zoom -= 0.05;
-        }
-        if (event.keycode == luxe.Input.Key.period) {
-            Luxe.camera.zoom += 0.05;
+        switch (event.keycode) {
+            // case luxe.Input.Key.enter: battleModel.do_action(core.Models.Action.EndTurn);
+            case luxe.Input.Key.key_r: reset(1000 * Math.random());
+            case luxe.Input.Key.kp_minus: Luxe.camera.zoom -= 0.05;
+            case luxe.Input.Key.kp_period: Luxe.camera.zoom += 0.05;
         }
     }
 }
