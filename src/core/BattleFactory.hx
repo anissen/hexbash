@@ -25,10 +25,12 @@ class BattleFactory {
     }
 
     static function get_map() {
-        // var mapHexes = MapFactory.create_hexagon_map(3);
-        // return mapHexes.filter(function(hex) {
-        //     return (hex.key != '0,0' && hex.key != '-2,0' && hex.key != '2,0');
-        // });
+        // if (Math.random() < 0.5) {
+        //     var mapHexes = MapFactory.create_hexagon_map(3);
+        //     return mapHexes.filter(function(hex) {
+        //         return (hex.key != '0,0' && hex.key != '-2,0' && hex.key != '2,0');
+        //     });
+        // }
         return MapFactory.create_custom_map();
     }
 
@@ -94,6 +96,34 @@ class BattleFactory {
             return [ for (a in allies) core.Models.Command.HealMinion(a.id, 1) ];
         }
 
+        function spell_swap(battleModel :core.Models.BattleModel) {
+            var heroes = battleModel.get_minions().filter(function(m) {
+                return m.playerId == battleModel.get_current_player() && m.hero;
+            });
+            var hero = heroes[0];
+            var nearby = hero.hex.ring(1).map(function(h) {
+                return battleModel.get_minion(h);
+            }).filter(function(m) { return m != null; });
+            var randomMinion = nearby.random(function(v) { return battleModel.get_random().int(v); });
+
+            var diff = Math.floor(Math.abs(randomMinion.power - hero.power));
+            if (randomMinion.power > hero.power) {
+                return [
+                    core.Models.Command.HealMinion(hero.id, diff),
+                    core.Models.Command.DamageMinion(randomMinion.id, diff)
+                ];
+            }
+
+            if (randomMinion.power < hero.power) {
+                return [
+                    core.Models.Command.DamageMinion(hero.id, diff),
+                    core.Models.Command.HealMinion(randomMinion.id, diff)
+                ];
+            }
+
+            return [];
+        }
+
         // TODO: Remove the requirement of a separate card text
         var cards = [
             { text: 'Imp', card_type: CardType.Minion('Imp', 3) },
@@ -104,7 +134,8 @@ class BattleFactory {
             { text: 'Potion', card_type: CardType.Potion(2) },
             { text: 'Potion', card_type: CardType.Potion(3) },
             { text: 'Bam!', card_type: CardType.Spell(spell_bam) },
-            { text: 'Boost!', card_type: CardType.Spell(spell_boost) }
+            { text: 'Boost!', card_type: CardType.Spell(spell_boost) },
+            { text: 'Swap!', card_type: CardType.Spell(spell_swap) }
         ];
 
         function random_int(v :Int) {
