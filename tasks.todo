@@ -6,3 +6,11 @@
 [ ] Implement simple spell cards
     [x] Deal 3 damage to random adjacent minion
     [x] +1 power to all adjacent allies
+
+
+# Equipment/skills:
+[ ] Allow 1 additional action per minion (penalty: -1 power)
+[ ] Allow 2 additional action per minion (penalty: -1 power for first additional action, -2 for second additional action)
+[ ] Heal 1 when discarding
+[ ] Heal 2 when discarding
+[ ] Draw 1 extra card and gain one more backpack slot
