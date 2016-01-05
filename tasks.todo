@@ -1,12 +1,11 @@
 
 # To-do
-
+[ ] Spell cards have a cost
+[ ] Enemy can cast spells
+[ ] Ranged attackers
+[ ] Spell that moves a minion (jump)
 [ ] Refactor: Split into files
 [ ] Refactor: Clean up code
-[ ] Implement simple spell cards
-    [x] Deal 3 damage to random adjacent minion
-    [x] +1 power to all adjacent allies
-
 
 # Equipment/skills:
 [ ] Allow 1 additional action per minion (penalty: -1 power)
@@ -14,3 +13,5 @@
 [ ] Heal 1 when discarding
 [ ] Heal 2 when discarding
 [ ] Draw 1 extra card and gain one more backpack slot
+[ ] Reduce penalty for re-playing cards by 1 (i.e. first re-play is free, second increases cost 1 power, third +2 power etc.)
+[ ] Increase max number of minions (is limiting amount of minions a good idea?)

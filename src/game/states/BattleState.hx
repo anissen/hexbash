@@ -127,12 +127,12 @@ class BattleState extends State {
         var cost = switch (card.cardType) {
             case Minion(_, cost): cost;
             case Potion(power): power;
-            case Spell(_): 0; // free for now
+            case Spell(_, cost): cost;
         };
         var cardEntity = new CardEntity({
             text: card.title,
             cost: cost,
-            pos: new Vector(550, 550),
+            pos: new Vector(Luxe.screen.width - 100, Luxe.screen.height - 100),
             batcher: guiBatcher,
             depth: 3,
             scene: levelScene
@@ -140,7 +140,7 @@ class BattleState extends State {
         cardMap.set(card.id, cardEntity);
         var i = 0;
         for (c in cardMap) {
-            luxe.tween.Actuate.tween(c.pos, 0.3, { x: 550 - 120 * (i++) });
+            luxe.tween.Actuate.tween(c.pos, 0.3, { x: Luxe.screen.width / 2 + 120 - 120 * (i++) });
         }
         var popIn = new PopIn();
         cardEntity.add(popIn);

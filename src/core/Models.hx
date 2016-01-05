@@ -45,7 +45,7 @@ class HeroModel extends MinionModel {
 enum CardType {
     Minion(name :String, cost :Int);
     Potion(power :Int);
-    Spell(effect :BattleModel->Array<Command>);
+    Spell(effect :BattleModel->Array<Command>, cost :Int);
 }
 
 class CardModel {
@@ -290,7 +290,7 @@ class BattleModel {
         switch (card.cardType) {
             case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);
-            case Spell(effect): handle_play_spell(effect);
+            case Spell(effect, cost): handle_play_spell(effect, cost);
         }
 
         if (state.playerHand.length <= 1) {
@@ -323,7 +323,11 @@ class BattleModel {
         add_minion(new MinionModel(name, 0, cost, randomHex));
     }
 
-    function handle_play_spell(effect :BattleModel->Array<Command>) {
+    function handle_play_spell(effect :BattleModel->Array<Command>, cost :Int) {
+        var hero = get_hero(get_current_player());
+        damage_minion(hero.id, cost);
+        if (hero.power <= 0) return;
+
         var commands = effect(this);
         for (command in commands) {
             do_command(command);

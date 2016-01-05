@@ -130,12 +130,12 @@ class BattleFactory {
             { text: 'Imp', card_type: CardType.Minion('Imp', 4) },
             { text: 'Rat', card_type: CardType.Minion('Rat', 1) },
             { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
-            { text: 'Potion', card_type: CardType.Potion(1) },
-            { text: 'Potion', card_type: CardType.Potion(2) },
+            // { text: 'Potion', card_type: CardType.Potion(1) },
+            // { text: 'Potion', card_type: CardType.Potion(2) },
             { text: 'Potion', card_type: CardType.Potion(3) },
-            { text: 'Bam!', card_type: CardType.Spell(spell_bam) },
-            { text: 'Boost!', card_type: CardType.Spell(spell_boost) },
-            { text: 'Swap!', card_type: CardType.Spell(spell_swap) }
+            { text: 'Bam!', card_type: CardType.Spell(spell_bam, 2) },
+            { text: 'Boost!', card_type: CardType.Spell(spell_boost, 2) },
+            { text: 'Swap!', card_type: CardType.Spell(spell_swap, 2) }
         ];
 
         function random_int(v :Int) {
