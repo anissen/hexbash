@@ -10,29 +10,70 @@
 
     project : {
         name : 'hexbash',
-        version : '0.1.0',
+        version : '0.2.0',
         author : 'Anders Nissen',
 
         app : {
             name : 'hexbash',
             package : 'com.andersnissen.hexbash',
             main : 'Main',
-            mobile : {
-                orientation : 'portrait'
-            }
+            mobile: {
+                orientation: 'portrait',
+                android: {
+                    sdk_min: '12',
+                    sdk_target: '19'
+                },
+                ios: {
+                    devices: 'iPhone',
+                    deployment_target: '8.0',
+                }
+            },
+            icon : "icons => flow"
         },
 
         build : {
+            number: 1,
+
+            "comment" : "flow build android --d android_release",
             dependencies : {
-                luxe : '*'
+                luxe : '*',
             },
             defines : [
                 'absolute-path'
-            ]
+            ],
+            files: {
+                keystore: 'indiedev.keystore => project/indiedev.keystore',
+                passwords : 'passwords.sensitive.properties => project/passwords.sensitive.properties'
+            },
         },
 
         files : {
+            config : 'config.json',
             assets : 'assets/'
+        }
+    },
+
+    if: {
+        android_release: {
+            app: {
+                mobile: {
+                    android: {
+                        build_type: "release",
+                        keystore_path: "indiedev.keystore",
+                        keystore_alias: "indiedev"
+                    }
+                }
+            },
+
+            build: {
+                defines: ['no_debug_console']
+            }
+        },
+
+        ios: {
+            build: {
+                defines: ['no_debug_console']
+            }
         }
     }
 }
