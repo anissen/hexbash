@@ -1,5 +1,8 @@
 
 # To-do
+
+--> If this game is shipped tomorrow, what is the most important thing to work on right now??
+
 [x] Spell cards have a cost
 [ ] Enemy can cast spells
 [ ] Ranged attackers
@@ -15,3 +18,19 @@
 [ ] Draw 1 extra card and gain one more backpack slot
 [ ] Reduce penalty for re-playing cards by 1 (i.e. first re-play is free, second increases cost 1 power, third +2 power etc.)
 [ ] Increase max number of minions (is limiting amount of minions a good idea?)
+
+
+[ ] Tests
+[ ] Move game data out as a singleton that the Play state has access to
+[ ] Maybe: Move some general turn-based code out into "turnaround" lib
+
+
+Ideas:
+· Thorns 1 ability (deal 1 damage back when attacked)
+· Taunt ability (nearby enemies can do nothing but attack this minion)
+· Amour 1 (prevent the first 1 damage)
+· Amour piercing 1 (ignore 1 amour)
+· Ranged
+· Heal random nearby ally
+· Empower 1 (+1 power to random nearby ally)
+· In general: Mechanic -> Rule -> Consequence -> Puzzle (https://www.youtube.com/watch?v=2zK8ItePe3Y)

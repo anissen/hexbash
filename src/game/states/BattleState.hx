@@ -174,6 +174,7 @@ class BattleState extends State {
         return Promise.resolve();
     }
 
+    // TODO: Move get_ai_minion_action, create_ai_minion and do_ai_actions to enemy AI class
     function get_ai_minion_action(battleModel :BattleModel, model :MinionModel) :MinionAction { // TODO: Move this into a separate file
 
         // simple AI:

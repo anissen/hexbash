@@ -12,7 +12,7 @@ class MinionModel { // TODO: Make a hero type as well?
     public var playerId :Int;
     public var power :Int;
     public var hex :Hex;
-    public var actions :Int;
+    public var actions :Int; // Actions should be :Array<Action>, where Action := Move | Attack | Any, e.g. actions = [ Move, Move, Attack ]
     public var hero :Bool;
 
     public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
