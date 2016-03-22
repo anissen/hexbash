@@ -2,15 +2,20 @@
 import luxe.States;
 import luxe.Input.KeyEvent;
 import luxe.Input.Key;
+#if desktop
+import filewatch.Filewatch;
+#end
 
 import game.states.*;
 
 class Main extends luxe.Game {
     static public var states :States;
+    var fullscreen :Bool = false;
 
     override function config(config :luxe.AppConfig) {
         config.render.antialiasing = 4;
 
+        // config.preload.textures.push({ id: 'assets/images/cultist.png' });
         config.preload.texts.push({ id: 'assets/scripts/test.hxs' });
 
         // config.render.depth_bits = 24;
@@ -34,10 +39,34 @@ class Main extends luxe.Game {
         states.add(new MinionActionsState());
         states.set(BattleState.StateId);
 
-        // #if desktop
-        // trace('watching!');
-        // Luxe.snow.io.module.watch_add('assets/');
-        // #end
+        #if desktop
+            var assets_path = '/Users/nissen/code/snowkit/hexbash/assets';
+            trace('watching "$assets_path"');
+
+            function on_file_changed(event :FilewatchEvent) {
+                trace('type: ${event.type} path: ${event.path}');
+                if (event.type == FWE_modify || event.type == FWE_create) {
+                    var pos = event.path.indexOf("assets/");
+                    if (pos >= 0) {
+                        var asset_key = event.path.substr(pos);
+                        asset_key = StringTools.replace(asset_key, '\\', '/');
+
+                        trace('Trying to find asset with key "$asset_key" from ' + event.path);
+
+                        var resource = Luxe.resources.get(asset_key);
+                        if (resource != null /*&& StringTools.endsWith(asset_key, '.hxs') */) {
+                            trace('Reloading asset with key "$asset_key"');
+                            resource.reload();
+                        } else {
+                            trace('Ignoring asset with key "$asset_key"');
+                        }
+                    }
+                }
+            }
+
+            Filewatch.init(on_file_changed);
+            Filewatch.add_watch('$assets_path');
+        #end
     }
 
     // Scale camera's viewport accordingly when game is scaled, common and suitable for most games
@@ -57,45 +86,10 @@ class Main extends luxe.Game {
 
     override function onkeyup(e :KeyEvent) {
         if (e.keycode == Key.enter && e.mod.alt) {
-            // app.app.window.fullscreen = !app.app.window.fullscreen;
+            fullscreen = !fullscreen;
+            Luxe.snow.runtime.window_fullscreen(fullscreen, true /* true-fullscreen */);
         } else if (e.keycode == Key.escape) {
             if (!Luxe.core.shutting_down) Luxe.shutdown();
         }
     }
-
-
-
-    // ----------------------------------------------------
-
-
-
-    // function notify_reload(d :luxe.resource.Resource.TextResource) {
-    //     Luxe.events.fire('Luxe.reload', d);
-    //     trace('fire reload with $d');
-    // }
-    //
-    // override function onevent(event :snow.types.Types.SystemEvent) {
-    //     if (event.type == snow.types.Types.SystemEventType.file) {
-    //         var _type = event.file.type;
-    //         trace('File event type:${_type}, path:${event.file.path} ts:${event.file.timestamp}');
-    //     }
-    //     // if (e.type == snow.types.Types.SystemEventType.file) {
-    //         // var pos = e.file.path.indexOf("assets/");
-    //         // if (pos >= 0) {
-    //         //     var asset_key = e.file.path.substr(pos);
-    //         //     asset_key = StringTools.replace(asset_key, '\\', '/');
-    //         //
-    //         //     trace('Trying to find asset with key "$asset_key" from ' + e.file.path);
-    //         //
-    //         //     var resource = Luxe.resources.get(asset_key);
-    //         //     if (resource != null && StringTools.endsWith(asset_key, '.hx')) {
-    //         //         resource.reload().then(notify_reload);
-    //         //     } else {
-    //         //         trace('Ignoring asset with key "$asset_key"');
-    //         //     }
-    //         // } else {
-    //         //     trace('Non-asset file reload ignored (${e.file.path})');
-    //         // }
-    //     // }
-    // }
 }
