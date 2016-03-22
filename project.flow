@@ -2,6 +2,8 @@
     luxe:{
         window: {
             title: 'hexbash',
+            width: 960,
+            height: 640,
             fullscreen: false,
             resizable: true,
             borderless: false
@@ -27,8 +29,7 @@
                     devices: 'iPhone',
                     deployment_target: '8.0',
                 }
-            },
-            icon : "icons => flow"
+            }
         },
 
         build : {

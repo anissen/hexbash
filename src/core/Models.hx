@@ -255,7 +255,13 @@ class BattleModel {
 
     function handle_minion_action(modelId :Int, action :MinionAction) {
         var model = get_minion_from_id(modelId);
-        model.actions--;
+        if (model.actions > 0) {
+            model.actions--;
+        } else {
+            return;
+            // damage_minion(modelId, 1); // Test; penalty for minions doing multiple actions per turn
+            // if (model.power <= 0) return;
+        }
         switch (action) {
             case Nothing: /* Do nothing */
             case Move(hex): handle_move(modelId, hex);
@@ -293,7 +299,7 @@ class BattleModel {
             case Spell(effect, cost): handle_play_spell(effect, cost);
         }
 
-        if (state.playerHand.length <= 1) {
+        if (state.playerHand.length == 0) {
             handle_action(EndTurn);
         }
     }
@@ -304,7 +310,10 @@ class BattleModel {
         emit(CardDiscarded(cardId));
         state.playerHand.remove(card);
 
-        if (state.playerHand.length <= 1) {
+        var hero = get_hero(get_current_player());
+        heal_minion(hero.id, 1); // Test: heal 1 when discarding
+
+        if (state.playerHand.length == 0) {
             handle_action(EndTurn);
         }
     }

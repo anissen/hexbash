@@ -47,7 +47,7 @@ class BattleMap extends luxe.Entity {
 
     override function init() {
         var size = new Point(hexSize + margin, hexSize + margin);
-        var origin = new Point(0, 0); //Luxe.screen.mid.x, Luxe.screen.mid.y - 100 /* displaced to show cards */);
+        var origin = new Point(Luxe.screen.mid.x, Luxe.screen.mid.y);
         layout = new Layout(Layout.pointy, size, origin);
     }
 
