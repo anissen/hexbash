@@ -2,8 +2,7 @@ package core;
 
 // From http://www.redblobgames.com/grids/hexagons/
 
-class Point
-{
+class Point {
     public function new(x:Float, y:Float)
     {
         this.x = x;
