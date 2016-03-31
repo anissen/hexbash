@@ -96,7 +96,7 @@ class HandState extends State {
             var cardEntity = cardMap[cardId];
             cardEntity.color.r = 0.2;
             if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
-                cardEntity.color.r = 1.0;
+                cardEntity.color.r = 0.8;
             }
         }
     }

@@ -58,12 +58,12 @@ class MinionActionsState extends State {
                 case Move(hex):
                     var pos = battleMap.hex_to_pos(hex);
                     var radius = (mouse_hex.key == hex.key ? 20 : 10);
-                    Luxe.draw.circle({ x: pos.x, y: pos.y, r: radius, immediate: true, depth: 15 });
+                    Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 1, 1, 0.8), r: radius, immediate: true, depth: 15 });
                 case Attack(defenderId):
                     var defender = battleModel.get_minion_from_id(defenderId);
                     var pos = battleMap.hex_to_pos(defender.hex);
                     var radius = (mouse_hex.key == defender.hex.key ? 20 : 10);
-                    Luxe.draw.circle({ x: pos.x, y: pos.y, r: radius, immediate: true, depth: 15, color: new Color(1, 0, 0) });
+                    Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 0, 0, 0.8), r: radius, immediate: true, depth: 15 });
             }
         }
     }
