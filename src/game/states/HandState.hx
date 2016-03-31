@@ -48,11 +48,7 @@ class HandState extends State {
 
     public function draw_card(cardId :Int) :Promise {
         var card = battleModel.get_card_from_id(cardId);
-        var cost = switch (card.cardType) {
-            case Minion(_, cost): cost;
-            case Potion(power): power;
-            case Spell(_, cost): cost;
-        };
+        var cost = battleModel.get_card_cost(cardId);
         var cardEntity = new CardEntity({
             text: card.title,
             cost: cost,
@@ -96,7 +92,8 @@ class HandState extends State {
             var cardEntity = cardMap[cardId];
             cardEntity.color.r = 0.2;
             if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
-                cardEntity.color.r = 0.8;
+                var can_play = battleModel.can_play_card(cardId);
+                cardEntity.color.r = (can_play ? 0.8 : 0.2);
             }
         }
     }
@@ -112,7 +109,9 @@ class HandState extends State {
             var cardEntity = cardMap[cardId];
             if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
                 if (event.button == luxe.Input.MouseButton.left) {
-                    battleModel.do_action(PlayCard(cardId));
+                    if (battleModel.can_play_card(cardId)) {
+                        battleModel.do_action(PlayCard(cardId));
+                    }
                 } else if (event.button == luxe.Input.MouseButton.right) {
                     battleModel.do_action(DiscardCard(cardId));
                 }

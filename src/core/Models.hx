@@ -384,6 +384,26 @@ class BattleModel {
         return null;
     }
 
+    public function get_card_cost(cardId :Int) :Int {
+        var card = get_card_from_id(cardId);
+        return switch (card.cardType) {
+            case Minion(_, cost): cost;
+            case Potion(power): power;
+            case Spell(_, cost): cost;
+        }
+    }
+
+    public function can_play_card(cardId :Int) :Bool {
+        var card = get_card_from_id(cardId);
+        var cost = switch (card.cardType) {
+            case Minion(_, cost): cost;
+            case Potion(power): -power; // heals
+            case Spell(_, cost): cost;
+        };
+        var hero = get_hero(get_current_player());
+        return (cost < hero.power);
+    }
+
     public function add_hex(hex :Hex) {
         hexes.set(hex.key, hex);
         emit(HexAdded(hex));
