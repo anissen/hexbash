@@ -173,6 +173,7 @@ class CardEntity extends luxe.Sprite {
             align_vertical: luxe.Text.TextAlign.top,
             parent: this,
             batcher: _options.batcher,
+            scene: _options.scene,
             depth: _options.depth + 0.01
         });
     }

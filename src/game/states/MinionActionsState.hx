@@ -42,6 +42,10 @@ class MinionActionsState extends State {
         battleModel = data.battleModel;
         battleMap = data.battleMap;
         has_data = true;
+        if (model.actions <= 0) {
+            Main.states.disable(StateId);
+            Main.states.enable(HandState.StateId);
+        }
     }
 
     override public function onrender() {
@@ -68,6 +72,7 @@ class MinionActionsState extends State {
         battleModel.do_action(MinionAction(model.id, action));
         if (model.actions <= 0) {
             Main.states.disable(StateId);
+            Main.states.enable(HandState.StateId);
         }
     }
 

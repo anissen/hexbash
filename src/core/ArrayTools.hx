@@ -6,6 +6,10 @@ class ArrayTools {
         return array[(random != null ? random(array.length) : Std.random(array.length))];
     }
 
+    static public inline function empty<T>(array :Array<T>) :Bool {
+        return (array.length == 0);
+    }
+
     static public function shuffle<T>(array :Array<T>, ?random :Int->Int) :Array<T> {
         var indexes = [ for (i in 0 ... array.length) i ];
         var random_func = (random != null ? random : Std.random);

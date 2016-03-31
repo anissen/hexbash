@@ -14,7 +14,6 @@ import snow.api.Promise;
 
 import core.Models;
 import core.PromiseQueue;
-import game.Entities.CardEntity;
 import game.Entities.MinionEntity;
 import game.Entities.HeroEntity;
 import game.Entities.HexTile;
@@ -37,12 +36,12 @@ class BattleState extends State {
     static public var StateId :String = 'BattleState';
     var levelScene :Scene;
     var minionMap :Map<Int, MinionEntity>;
-    var cardMap :Map<Int, CardEntity>;
     var hexMap :Map<String, HexTile>;
     var battleModel :BattleModel;
     var battleMap :BattleMap;
     var currentPlayer :Int;
     var guiBatcher :phoenix.Batcher;
+    var handState :HandState;
 
     public function new() {
         super({ name: StateId });
@@ -61,7 +60,10 @@ class BattleState extends State {
         levelScene.empty();
         hexMap = new Map();
         minionMap = new Map();
-        cardMap = new Map();
+        handState = new HandState(battleModel, guiBatcher, levelScene);
+
+        Main.states.add(handState);
+        Main.states.enable(HandState.StateId);
 
         battleModel.load_map(seed);
         battleModel.start_game();
@@ -77,9 +79,9 @@ class BattleState extends State {
             case MinionAttacked(attackerId, defenderId): attack_minion(attackerId, defenderId);
             case MinionDied(modelId): remove_minion(modelId);
             case TurnStarted(playerId): turn_started(playerId);
-            case CardPlayed(cardId): play_card(cardId);
-            case CardDrawn(cardId): draw_card(cardId);
-            case CardDiscarded(cardId): discard_card(cardId);
+            case CardPlayed(cardId): handState.play_card(cardId);
+            case CardDrawn(cardId): handState.draw_card(cardId);
+            case CardDiscarded(cardId): handState.discard_card(cardId);
             case GameWon: game_over(true);
             case GameLost: game_over(false);
         };
@@ -122,48 +124,10 @@ class BattleState extends State {
         return Promise.resolve();
     }
 
-    function draw_card(cardId :Int) :Promise {
-        var card = battleModel.get_card_from_id(cardId);
-        var cost = switch (card.cardType) {
-            case Minion(_, cost): cost;
-            case Potion(power): power;
-            case Spell(_, cost): cost;
-        };
-        var cardEntity = new CardEntity({
-            text: card.title,
-            cost: cost,
-            pos: new Vector(Luxe.screen.width - 100, Luxe.screen.height - 100),
-            batcher: guiBatcher,
-            depth: 3,
-            scene: levelScene
-        });
-        cardMap.set(card.id, cardEntity);
-        var i = 0;
-        for (c in cardMap) {
-            luxe.tween.Actuate.tween(c.pos, 0.3, { x: Luxe.screen.width / 2 + 120 - 120 * (i++) });
-        }
-        var popIn = new PopIn();
-        cardEntity.add(popIn);
-        return popIn.promise;
-    }
-
-    function play_card(cardId :Int) :Promise {
-        var cardEntity = card_from_model(cardId);
-        cardMap.remove(cardId);
-        cardEntity.destroy();
-        return Promise.resolve();
-    }
-
-    function discard_card(cardId :Int) :Promise {
-        var cardEntity = card_from_model(cardId);
-        cardMap.remove(cardId);
-        cardEntity.destroy();
-        return Promise.resolve();
-    }
-
     function turn_started(playerId :Int) :Promise {
         if (Main.states.enabled(MinionActionsState.StateId)) {
             Main.states.disable(MinionActionsState.StateId);
+            Main.states.enable(HandState.StateId);
         }
 
         currentPlayer = playerId;
@@ -177,10 +141,6 @@ class BattleState extends State {
 
     function minion_from_model(minionId :Int) {
         return minionMap.get(minionId);
-    }
-
-    function card_from_model(cardId :Int) {
-        return cardMap.get(cardId);
     }
 
     function move_minion(modelId :Int, from :Hex, to :Hex) :Promise {
@@ -223,17 +183,17 @@ class BattleState extends State {
         var world_pos = Luxe.camera.screen_point_to_world(event.pos);
 
         /* HACK */
-        for (cardId in cardMap.keys()) {
-            var cardEntity = cardMap[cardId];
-            if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
-                if (event.button == luxe.Input.MouseButton.left) {
-                    battleModel.do_action(PlayCard(cardId));
-                } else if (event.button == luxe.Input.MouseButton.right) {
-                    battleModel.do_action(DiscardCard(cardId));
-                }
-                break;
-            }
-        }
+        // for (cardId in cardMap.keys()) {
+        //     var cardEntity = cardMap[cardId];
+        //     if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
+        //         if (event.button == luxe.Input.MouseButton.left) {
+        //             battleModel.do_action(PlayCard(cardId));
+        //         } else if (event.button == luxe.Input.MouseButton.right) {
+        //             battleModel.do_action(DiscardCard(cardId));
+        //         }
+        //         break;
+        //     }
+        // }
 
         /* HACK */
         for (model in battleModel.get_minions()) {
@@ -242,8 +202,11 @@ class BattleState extends State {
             if (minion != null && Luxe.utils.geometry.point_in_geometry(world_pos, minion.geometry)) {
                 if (Main.states.enabled(MinionActionsState.StateId)) {
                     Main.states.disable(MinionActionsState.StateId);
+                    Main.states.enable(HandState.StateId);
+                } else {
+                    Main.states.disable(HandState.StateId);
+                    Main.states.enable(MinionActionsState.StateId, { model: model, battleModel: battleModel, battleMap: battleMap });
                 }
-                Main.states.enable(MinionActionsState.StateId, { model: model, battleModel: battleModel, battleMap: battleMap });
                 return;
             }
         }

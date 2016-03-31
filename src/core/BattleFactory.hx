@@ -79,6 +79,7 @@ class BattleFactory {
                 if (m == null || m.playerId == battleModel.get_current_player()) return null;
                 return m;
             }).filter(function(m) { return m != null; });
+            if (enemies.empty()) return [];
             var randomEnemy = enemies.random(function(v) { return battleModel.get_random().int(v); });
             return [core.Models.Command.DamageMinion(randomEnemy.id, 3)];
         }
@@ -93,6 +94,7 @@ class BattleFactory {
                 if (m == null || m.playerId != battleModel.get_current_player()) return null;
                 return m;
             }).filter(function(m) { return m != null; });
+            if (allies.empty()) return [];
             return [ for (a in allies) core.Models.Command.HealMinion(a.id, 1) ];
         }
 
