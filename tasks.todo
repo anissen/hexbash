@@ -4,6 +4,7 @@
 --> If this game is shipped tomorrow, what is the most important thing to work on right now??
 
 [x] Spell cards have a cost
+[ ] Random enemy when starting a new battle
 [ ] Enemy can cast spells
 [ ] Ranged attackers
 [ ] Spell that moves a minion (jump)
@@ -34,3 +35,7 @@ Ideas:
 · Heal random nearby ally
 · Empower 1 (+1 power to random nearby ally)
 · In general: Mechanic -> Rule -> Consequence -> Puzzle (https://www.youtube.com/watch?v=2zK8ItePe3Y)
+· Cards that give more moves/attacks
+· Equipment that can restore cards to the deck after an ended battle
+· Cards that allow for precise targeting of spells/minions
+· When the battle is won, the hero heals the remaining power of his own minions

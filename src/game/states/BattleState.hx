@@ -133,8 +133,6 @@ class BattleState extends State {
         currentPlayer = playerId;
         if (currentPlayer == 1) { // AI
             core.AI.do_actions(battleModel);
-            // do_ai_actions();
-            // create_ai_minion(); // TODO: Replace with a play card action
         }
         return Promise.resolve();
     }
@@ -178,28 +176,32 @@ class BattleState extends State {
         return Promise.resolve();
     }
 
-    override public function onmouseup(event :luxe.Input.MouseEvent) {
+    override public function onmousemove(event :luxe.Input.MouseEvent) {
         var screen_pos = event.pos;
         var world_pos = Luxe.camera.screen_point_to_world(event.pos);
-
-        /* HACK */
-        // for (cardId in cardMap.keys()) {
-        //     var cardEntity = cardMap[cardId];
-        //     if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
-        //         if (event.button == luxe.Input.MouseButton.left) {
-        //             battleModel.do_action(PlayCard(cardId));
-        //         } else if (event.button == luxe.Input.MouseButton.right) {
-        //             battleModel.do_action(DiscardCard(cardId));
-        //         }
-        //         break;
-        //     }
-        // }
 
         /* HACK */
         for (model in battleModel.get_minions()) {
             if (model.playerId != 0) continue; // Only open actions for own minions
             var minion = minionMap[model.id];
+            if (minion == null) continue;
+            minion.color.r = (model.actions > 0 ? 0.5 : 0.3);
             if (minion != null && Luxe.utils.geometry.point_in_geometry(world_pos, minion.geometry)) {
+                minion.color.r = (model.actions > 0 ? 0.8 : 0.3);
+            }
+        }
+    }
+
+    override public function onmouseup(event :luxe.Input.MouseEvent) {
+        var screen_pos = event.pos;
+        var world_pos = Luxe.camera.screen_point_to_world(event.pos);
+
+        /* HACK */
+        for (model in battleModel.get_minions()) {
+            if (model.playerId != 0) continue; // Only open actions for own minions
+            var minion = minionMap[model.id];
+            if (minion == null) continue;
+            if (Luxe.utils.geometry.point_in_geometry(world_pos, minion.geometry)) {
                 if (Main.states.enabled(MinionActionsState.StateId)) {
                     Main.states.disable(MinionActionsState.StateId);
                     Main.states.enable(HandState.StateId);

@@ -13,7 +13,8 @@ using core.ArrayTools;
 class AI {
     static public function do_actions(battleModel :BattleModel) {
         do_ai_actions(battleModel);
-        create_ai_minion(battleModel);
+        create_ai_minion(battleModel); // TODO: replace this with card play
+        battleModel.do_action(EndTurn);
     }
 
     static function get_ai_minion_action(battleModel :BattleModel, model :MinionModel) :MinionAction {
@@ -69,7 +70,6 @@ class AI {
     static function create_ai_minion(battleModel :BattleModel) {
         var currentPlayer = battleModel.get_current_player();
         var ai_heroes = battleModel.get_minions().filter(function(m) { return m.playerId == currentPlayer && m.hero; });
-        // trace('ai_heroes.length: ' + ai_heroes.length);
         if (ai_heroes.length == 0) return;
 
         function random_int(v :Int) {
@@ -77,7 +77,6 @@ class AI {
         }
 
         var ai_hero = ai_heroes[0];
-        // trace('ai_hero: ' + ai_hero);
         var reachableHexes = ai_hero.hex.reachable(battleModel.is_walkable);
         var randomHex = reachableHexes.random(random_int);
         battleModel.add_minion(new MinionModel('Enemy Minion', currentPlayer, battleModel.get_random().int(1, 7), randomHex));
@@ -96,7 +95,7 @@ class AI {
                 actions = newBattleModel.get_minion_actions(m.id);
                 if (actions.length > 0) break;
             }
-            if (model == null || actions.length == 0) break;
+            if (model == null || actions.empty()) break;
 
             // has minion with available actions
             var minion_action = get_ai_minion_action(newBattleModel, model);
@@ -110,7 +109,5 @@ class AI {
         for (action in chosenActions) {
             battleModel.do_action(action);
         }
-
-        battleModel.do_action(EndTurn);
     }
 }
