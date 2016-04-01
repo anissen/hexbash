@@ -10,6 +10,7 @@ import game.Components.PopIn;
 import core.Models.BattleModel;
 import phoenix.Batcher;
 import luxe.Scene;
+import luxe.Color;
 
 import snow.api.Promise;
 
@@ -49,10 +50,16 @@ class HandState extends State {
     public function draw_card(cardId :Int) :Promise {
         var card = battleModel.get_card_from_id(cardId);
         var cost = battleModel.get_card_cost(cardId);
+        var color = switch (card.cardType) {
+            case Minion(_, _): new Color(0.2, 0.5, 0.5);
+            case Potion(_): new Color(0.2, 0.8, 0.3);
+            case Spell(_): new Color(0.8, 0.2, 0.3);
+        };
         var cardEntity = new CardEntity({
             text: card.title,
             cost: cost,
             pos: new Vector(Luxe.screen.width - 100, Luxe.screen.height - 100),
+            color: color,
             batcher: batcher,
             depth: 3,
             scene: scene
