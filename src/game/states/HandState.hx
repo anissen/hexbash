@@ -22,10 +22,10 @@ class HandState extends State {
 
     public function new(battleModel :BattleModel, batcher :Batcher, scene :Scene) {
         super({ name: StateId });
-        cardMap = new Map();
         this.battleModel = battleModel;
         this.batcher = batcher;
         this.scene = scene;
+        reset();
     }
 
     override function onenabled<T>(value :T) {
@@ -79,6 +79,10 @@ class HandState extends State {
         cardMap.remove(cardId);
         cardEntity.destroy();
         return Promise.resolve();
+    }
+
+    public function reset() {
+        cardMap = new Map();
     }
 
     override public function onmousemove(event :luxe.Input.MouseEvent) {

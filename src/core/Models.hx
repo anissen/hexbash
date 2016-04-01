@@ -105,6 +105,7 @@ enum MinionAction {
 enum Command {
     DamageMinion(modelId :Int, amount :Int);
     HealMinion(modelId :Int, amount :Int);
+    MoveMinion(modelId :Int, hex :Hex);
 }
 
 enum Event {
@@ -270,7 +271,7 @@ class BattleModel {
     }
 
     function handle_move(modelId :Int, hex :Hex) {
-        if (get_minion(hex) != null) throw 'Destination hex is already occupied!';
+        // if (get_minion(hex) != null) throw 'Destination hex is already occupied!';
         var model = get_minion_from_id(modelId);
         var from = model.hex;
         model.hex = hex;
@@ -343,7 +344,7 @@ class BattleModel {
         }
     }
 
-    function get_hero(playerId :Int) :HeroModel { // HACK, should be a property of player
+    public function get_hero(playerId :Int) :HeroModel { // HACK, should be a property of player
         for (model in state.minions) {
             if (model.playerId == playerId && model.hero) return cast model;
         }
@@ -453,6 +454,7 @@ class BattleModel {
         switch (command) {
             case DamageMinion(modelId, amount): damage_minion(modelId, amount);
             case HealMinion(modelId, amount): heal_minion(modelId, amount);
+            case MoveMinion(modelId, hex): handle_move(modelId, hex);
         }
     }
 

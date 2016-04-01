@@ -49,18 +49,20 @@ class BattleState extends State {
         battleMap = new BattleMap();
         levelScene = new Scene();
         guiBatcher = Luxe.renderer.create_batcher({ name: 'gui', layer: 4 });
+        handState = new HandState(battleModel, guiBatcher, levelScene);
     }
 
     override function init() {
         battleModel.listen(handle_event);
-        reset(87634.34);
+        //reset(87634.34);
+        reset(1000 * Math.random());
     }
 
     function reset(seed :Float) {
         levelScene.empty();
         hexMap = new Map();
         minionMap = new Map();
-        handState = new HandState(battleModel, guiBatcher, levelScene);
+        handState.reset();
 
         Main.states.add(handState);
         Main.states.enable(HandState.StateId);
@@ -167,7 +169,9 @@ class BattleState extends State {
     function attack_minion(attackerModelId :Int, defenderModelId :Int) :Promise {
         var attacker = minion_from_model(attackerModelId);
         var defender = minion_from_model(defenderModelId);
-        return Actuate.tween(attacker.pos, 0.2, { x: defender.pos.x, y: defender.pos.y }).reflect().repeat(1).toPromise();
+        var defenderPos = defender.pos.clone(); // in case defender dies
+        Luxe.camera.shake(2);
+        return Actuate.tween(attacker.pos, 0.2, { x: defenderPos.x, y: defenderPos.y }).reflect().repeat(1).toPromise();
     }
 
     function game_over(won :Bool) {

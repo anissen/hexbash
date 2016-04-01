@@ -70,10 +70,7 @@ class BattleFactory {
 
     static function get_deck(random :luxe.utils.Random) {
         function spell_bam(battleModel :core.Models.BattleModel) {
-            var heroes = battleModel.get_minions().filter(function(m) {
-                return m.playerId == battleModel.get_current_player() && m.hero;
-            });
-            var hero = heroes[0];
+            var hero = battleModel.get_hero(battleModel.get_current_player());
             var enemies = hero.hex.ring(1).map(function(h) {
                 var m = battleModel.get_minion(h);
                 if (m == null || m.playerId == battleModel.get_current_player()) return null;
@@ -85,24 +82,18 @@ class BattleFactory {
         }
 
         function spell_boost(battleModel :core.Models.BattleModel) {
-            var heroes = battleModel.get_minions().filter(function(m) {
-                return m.playerId == battleModel.get_current_player() && m.hero;
-            });
-            var hero = heroes[0];
+            var hero = battleModel.get_hero(battleModel.get_current_player());
             var allies = hero.hex.ring(1).map(function(h) {
                 var m = battleModel.get_minion(h);
                 if (m == null || m.playerId != battleModel.get_current_player()) return null;
                 return m;
             }).filter(function(m) { return m != null; });
             if (allies.empty()) return [];
-            return [ for (a in allies) core.Models.Command.HealMinion(a.id, 1) ];
+            return [ for (a in allies) core.Models.Command.HealMinion(a.id, 2) ];
         }
 
         function spell_swap(battleModel :core.Models.BattleModel) {
-            var heroes = battleModel.get_minions().filter(function(m) {
-                return m.playerId == battleModel.get_current_player() && m.hero;
-            });
-            var hero = heroes[0];
+            var hero = battleModel.get_hero(battleModel.get_current_player());
             var nearby = hero.hex.ring(1).map(function(h) {
                 return battleModel.get_minion(h);
             }).filter(function(m) { return m != null; });
@@ -126,6 +117,46 @@ class BattleFactory {
             return [];
         }
 
+        function spell_trade_places(battleModel :core.Models.BattleModel) {
+            var hero = battleModel.get_hero(battleModel.get_current_player());
+            var nearby = hero.hex.ring(1).map(battleModel.get_minion).filter(function(m) { return m != null; });
+            if (nearby.empty()) return [];
+            var randomMinion = nearby.random(function(v) { return battleModel.get_random().int(v); });
+            return [
+                core.Models.Command.MoveMinion(hero.id, randomMinion.hex),
+                core.Models.Command.MoveMinion(randomMinion.id, hero.hex)
+            ];
+        }
+
+        function spell_trade_places(battleModel :core.Models.BattleModel) {
+            var hero = battleModel.get_hero(battleModel.get_current_player());
+            var nearby = hero.hex.ring(1).map(battleModel.get_minion).filter(function(m) { return m != null; });
+            if (nearby.empty()) return [];
+            var randomMinion = nearby.random(function(v) { return battleModel.get_random().int(v); });
+            return [
+                core.Models.Command.MoveMinion(hero.id, randomMinion.hex),
+                core.Models.Command.MoveMinion(randomMinion.id, hero.hex)
+            ];
+        }
+
+        function spell_push(battleModel :core.Models.BattleModel) {
+            var hero = battleModel.get_hero(battleModel.get_current_player());
+            var nearby = hero.hex.ring(1).map(battleModel.get_minion).filter(function(m) { return m != null; });
+            if (nearby.empty()) return [];
+            // var randomMinion = nearby.random(function(v) { return battleModel.get_random().int(v); });
+            nearby = nearby.shuffle(function(v) { return battleModel.get_random().int(v); });
+            var commands = [];
+            for (m in nearby) {
+                var dir = m.hex.subtract(hero.hex);
+                var newPos = m.hex.add(dir);
+                if (battleModel.is_walkable(newPos)) {
+                    commands.push(core.Models.Command.MoveMinion(m.id, newPos));
+                }
+            }
+            return commands;
+            // return [core.Models.Command.MoveMinion(randomMinion.id, hero.hex)];
+        }
+
         // TODO: Remove the requirement of a separate card text
         var cards = [
             { text: 'Imp', card_type: CardType.Minion('Imp', 3) },
@@ -135,9 +166,11 @@ class BattleFactory {
             // { text: 'Potion', card_type: CardType.Potion(1) },
             // { text: 'Potion', card_type: CardType.Potion(2) },
             { text: 'Potion', card_type: CardType.Potion(3) },
-            { text: 'Bam!', card_type: CardType.Spell(spell_bam, 2) },
-            { text: 'Boost!', card_type: CardType.Spell(spell_boost, 2) },
-            { text: 'Swap!', card_type: CardType.Spell(spell_swap, 2) }
+            { text: 'Knock Knock', card_type: CardType.Spell(spell_bam, 2) },
+            { text: 'Boost Morale', card_type: CardType.Spell(spell_boost, 2) },
+            { text: 'Power Swap', card_type: CardType.Spell(spell_swap, 2) },
+            { text: 'Trade Places', card_type: CardType.Spell(spell_trade_places, 2) },
+            { text: 'Force Push', card_type: CardType.Spell(spell_push, 1) }
         ];
 
         function random_int(v :Int) {
@@ -146,7 +179,7 @@ class BattleFactory {
         var deck = [];
         for (card in cards.shuffle(random_int)) {
             deck.push(new CardModel(card.text, 0, card.card_type));
-            // deck.push(new CardModel(card.text, 0, card.card_type)); // take two of each card
+            deck.push(new CardModel(card.text, 0, card.card_type)); // take two of each card
         }
         return deck;
     }
