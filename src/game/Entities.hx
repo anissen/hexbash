@@ -25,8 +25,9 @@ class HexTile extends Visual {
         if (options.geometry == null) options.geometry = Luxe.draw.ngon({ sides: 6, r: options.r, angle: 30, solid: true });
         super(options);
 
+        var rand = -0.05 + 0.1 * Math.random();
         foreground = new Visual({
-            color: new Color(52/255, 73/255, 103/255),
+            color: new Color(52/255 + rand, 73/255 + rand, 103/255 + rand),
             geometry: Luxe.draw.ngon({ sides: 6, r: options.r - 5, angle: 30, solid: true }),
             parent: this
         });

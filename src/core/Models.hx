@@ -276,6 +276,7 @@ class BattleModel {
         var from = model.hex;
         model.hex = hex;
         emit(MinionMoved(modelId, from, hex));
+        if (!has_hex(hex)) kill_minion(modelId);
     }
 
     function handle_attack(attackerId :Int, defenderId :Int) {
@@ -458,20 +459,22 @@ class BattleModel {
         }
     }
 
+    function kill_minion(modelId :Int) {
+        state.minions.remove(get_minion_from_id(modelId));
+        emit(MinionDied(modelId));
+
+        if (get_hero(1 /* hack */) == null) {
+            emit(GameWon);
+        } else if (get_hero(0 /* hack */) == null) {
+            emit(GameLost);
+        }
+    }
+
     function damage_minion(modelId :Int, amount :Int) {
         var model = get_minion_from_id(modelId);
         model.power -= amount;
         emit(MinionDamaged(modelId, amount));
-        if (model.power <= 0) {
-            state.minions.remove(get_minion_from_id(modelId));
-            emit(MinionDied(modelId));
-
-            if (get_hero(1 /* hack */) == null) {
-                emit(GameWon);
-            } else if (get_hero(0 /* hack */) == null) {
-                emit(GameLost);
-            }
-        }
+        if (model.power <= 0) kill_minion(modelId);
     }
 
     function heal_minion(modelId :Int, amount :Int) {

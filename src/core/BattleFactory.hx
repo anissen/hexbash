@@ -149,7 +149,7 @@ class BattleFactory {
             for (m in nearby) {
                 var dir = m.hex.subtract(hero.hex);
                 var newPos = m.hex.add(dir);
-                if (battleModel.is_walkable(newPos)) {
+                if (battleModel.get_minion(newPos) == null) {
                     commands.push(core.Models.Command.MoveMinion(m.id, newPos));
                 }
             }
