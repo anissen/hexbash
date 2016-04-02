@@ -12,7 +12,7 @@ class MinionModel { // TODO: Make a hero type as well?
     public var playerId :Int;
     public var power :Int;
     public var hex :Hex;
-    public var actions :Int; // Actions should be :Array<Action>, where Action := Move | Attack | Any, e.g. actions = [ Move, Move, Attack ]
+    @:isVar public var actions(get, set) :Int; // Actions should be :Array<Action>, where Action := Move | Attack | Any, e.g. actions = [ Move, Move, Attack ]
     public var hero :Bool;
 
     public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
@@ -23,6 +23,14 @@ class MinionModel { // TODO: Make a hero type as well?
         this.hex = hex;
         this.actions = actions;
         this.hero = hero;
+    }
+
+    function get_actions() {
+        return actions;
+    }
+
+    function set_actions(a :Int) {
+        return (actions = a);
     }
 
     public function clone() :MinionModel {
@@ -42,8 +50,23 @@ class HeroModel extends MinionModel {
     }
 }
 
+class TowerModel extends MinionModel {
+    public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
+        super(title, playerId, power, hex, actions, false, id);
+    }
+
+    override function get_actions() {
+        return 0; // tower never has actions
+    }
+
+    override public function clone() :TowerModel {
+        return new TowerModel(title, playerId, power, hex, actions, hero, id);
+    }
+}
+
 enum CardType {
     Minion(name :String, cost :Int);
+    Tower(name :String, cost :Int, trigger :BattleModel->Event->Bool, effect :BattleModel->Array<Command>);
     Potion(power :Int);
     Spell(effect :BattleModel->Array<Command>, cost :Int);
 }
@@ -126,6 +149,7 @@ enum Event {
 
 class BattleGameState {
     public var minions :Array<MinionModel>; // TODO: Make into a map<int, model>
+    public var effects :Map<String, { trigger :BattleModel->Event->Bool, effect :BattleModel->Array<Command> }>;
     public var currentPlayerId :Int;
     public var random :luxe.utils.Random;
 
@@ -134,6 +158,7 @@ class BattleGameState {
 
     public function new() {
         minions = [];
+        effects = new Map();
         playerDeck = [];
         playerHand = [];
         currentPlayerId = 0;
@@ -143,6 +168,7 @@ class BattleGameState {
     public function clone() :BattleGameState {
         var newGameState = new BattleGameState();
         newGameState.minions = [ for (model in minions) model.clone() ];
+        newGameState.effects = this.effects; // enough??
         newGameState.playerDeck = [ for (card in playerDeck) card.clone() ];
         newGameState.playerHand = [ for (card in playerHand) card.clone() ];
         newGameState.currentPlayerId = currentPlayerId;
@@ -298,6 +324,7 @@ class BattleModel {
         switch (card.cardType) {
             case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);
+            case Tower(name, cost, trigger, effect): handle_play_tower(hero, name, cost, trigger, effect);
             case Spell(effect, cost): handle_play_spell(effect, cost);
         }
 
@@ -334,6 +361,20 @@ class BattleModel {
         add_minion(new MinionModel(name, 0, cost, randomHex));
     }
 
+    function handle_play_tower(hero :MinionModel, name :String, cost :Int, trigger, effect) {
+        damage_minion(hero.id, cost);
+        if (hero.power <= 0) return;
+
+        var nearbyHexes = hero.hex.reachable(is_walkable);
+        if (nearbyHexes.length == 0) return; // should not happen
+        var randomHex = nearbyHexes.random(function(v :Int) { return state.random.int(v); });
+
+        var tower = new TowerModel(name, 0, cost, randomHex);
+        var effect_key = 'tower_${tower.id}';
+        state.effects[effect_key] = { trigger: trigger, effect: effect };
+        add_minion(tower);
+    }
+
     function handle_play_spell(effect :BattleModel->Array<Command>, cost :Int) {
         var hero = get_hero(get_current_player());
         damage_minion(hero.id, cost);
@@ -368,6 +409,7 @@ class BattleModel {
     public function get_minion_attacks(modelId :Int) :Array<MinionAction> {
         var model = get_minion_from_id(modelId);
         if (model.actions <= 0) return [];
+        // if (model.hero) return []; // Test mechanic: Heroes cannot attack but has to use cards to deal damage
         return model.hex.ring(1).map(function(hex) {
             var other = get_minion(hex);
             if (other != null && other.playerId != model.playerId) return Attack(other.id);
@@ -390,6 +432,7 @@ class BattleModel {
         var card = get_card_from_id(cardId);
         return switch (card.cardType) {
             case Minion(_, cost): cost;
+            case Tower(_, cost, _, _): cost;
             case Potion(power): power;
             case Spell(_, cost): cost;
         }
@@ -399,6 +442,7 @@ class BattleModel {
         var card = get_card_from_id(cardId);
         var cost = switch (card.cardType) {
             case Minion(_, cost): cost;
+            case Tower(_, cost, _, _): cost;
             case Potion(power): -power; // heals
             case Spell(_, cost): cost;
         };
@@ -449,6 +493,16 @@ class BattleModel {
 
     function emit(event :Event) :Void {
         events.handle(event);
+        for (eff in state.effects) {
+            if (eff.trigger(this, event)) {
+                trace('TRIGGERED! ($event)');
+                var commands = eff.effect(this);
+                for (command in commands) {
+                    trace('effect: $command');
+                    do_command(command);
+                }
+            }
+        }
     }
 
     function do_command(command :Command) :Void {
@@ -461,6 +515,11 @@ class BattleModel {
 
     function kill_minion(modelId :Int) {
         state.minions.remove(get_minion_from_id(modelId));
+
+        
+        state.effects.remove('tower_${modelId}'); // HACK HACK HACK!!!
+
+
         emit(MinionDied(modelId));
 
         if (get_hero(1 /* hack */) == null) {
@@ -471,6 +530,7 @@ class BattleModel {
     }
 
     function damage_minion(modelId :Int, amount :Int) {
+        if (amount <= 0) return;
         var model = get_minion_from_id(modelId);
         model.power -= amount;
         emit(MinionDamaged(modelId, amount));

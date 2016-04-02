@@ -128,17 +128,6 @@ class BattleFactory {
             ];
         }
 
-        function spell_trade_places(battleModel :core.Models.BattleModel) {
-            var hero = battleModel.get_hero(battleModel.get_current_player());
-            var nearby = hero.hex.ring(1).map(battleModel.get_minion).filter(function(m) { return m != null; });
-            if (nearby.empty()) return [];
-            var randomMinion = nearby.random(function(v) { return battleModel.get_random().int(v); });
-            return [
-                core.Models.Command.MoveMinion(hero.id, randomMinion.hex),
-                core.Models.Command.MoveMinion(randomMinion.id, hero.hex)
-            ];
-        }
-
         function spell_push(battleModel :core.Models.BattleModel) {
             var hero = battleModel.get_hero(battleModel.get_current_player());
             var nearby = hero.hex.ring(1).map(battleModel.get_minion).filter(function(m) { return m != null; });
@@ -157,6 +146,36 @@ class BattleFactory {
             // return [core.Models.Command.MoveMinion(randomMinion.id, hero.hex)];
         }
 
+        function spell_attack(damage :Int, battleModel :core.Models.BattleModel) {
+            var hero = battleModel.get_hero(battleModel.get_current_player());
+            var enemies = hero.hex.ring(1).map(function(h) {
+                var m = battleModel.get_minion(h);
+                if (m == null || m.playerId == battleModel.get_current_player()) return null;
+                return m;
+            }).filter(function(m) { return m != null; });
+            if (enemies.empty()) return [];
+            var randomEnemy = enemies.random(function(v) { return battleModel.get_random().int(v); });
+            return [core.Models.Command.DamageMinion(randomEnemy.id, damage)];
+        }
+
+        function effect_heal(battleModel :core.Models.BattleModel) {
+            // var tower = how_to_get_tower_minion;
+            // var allies = hero.hex.ring(1).map(function(h) {
+            //     var m = battleModel.get_minion(h);
+            //     if (m == null || m.playerId != battleModel.get_current_player()) return null;
+            //     return m;
+            // }).filter(function(m) { return m != null; });
+            // if (allies.empty()) return [];
+            // return [ for (a in allies) core.Models.Command.HealMinion(a.id, 2) ];
+        }
+
+        function healing_tower_trigger(battleModel :core.Models.BattleModel, event :core.Models.Event) {
+            return switch (event) {
+                case TurnStarted(playerId): return (playerId == 0); // HACK
+                case _: return false;
+            };
+        }
+
         // TODO: Remove the requirement of a separate card text
         var cards = [
             { text: 'Imp', card_type: CardType.Minion('Imp', 3) },
@@ -170,7 +189,13 @@ class BattleFactory {
             { text: 'Boost Morale', card_type: CardType.Spell(spell_boost, 2) },
             { text: 'Power Swap', card_type: CardType.Spell(spell_swap, 2) },
             { text: 'Trade Places', card_type: CardType.Spell(spell_trade_places, 2) },
-            { text: 'Force Push', card_type: CardType.Spell(spell_push, 1) }
+            { text: 'Force Push', card_type: CardType.Spell(spell_push, 1) },
+            // { text: 'Bare Fist', card_type: CardType.Spell(spell_attack.bind(1), 0) },
+            // { text: 'Club', card_type: CardType.Spell(spell_attack.bind(2), 0) },
+            // { text: 'Board with nail', card_type: CardType.Spell(spell_attack.bind(3), 0) }
+            { text: 'Healing Tower', card_type: CardType.Tower('Healing Tower', 1, healing_tower_trigger, spell_boost) },
+            { text: 'Healing Tower', card_type: CardType.Tower('Healing Tower', 1, healing_tower_trigger, spell_boost) },
+            { text: 'Healing Tower', card_type: CardType.Tower('Healing Tower', 1, healing_tower_trigger, spell_boost) }
         ];
 
         function random_int(v :Int) {

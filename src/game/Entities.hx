@@ -146,6 +146,15 @@ class HeroEntity extends MinionEntity {
     }
 }
 
+class TowerEntity extends MinionEntity {
+    public function new(options :MinionOptions) {
+        var _options = options;
+
+        if (_options.geometry == null) _options.geometry = Luxe.draw.box({ x: -30, y: -30, w: 60, h: 60 });
+        super(_options);
+    }
+}
+
 typedef CardOptions = {
     > luxe.options.SpriteOptions,
     text :String,
