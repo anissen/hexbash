@@ -6,6 +6,7 @@
 [x] Spell cards have a cost
 [ ] Random enemy when starting a new battle
 [ ] Enemy can cast spells
+[ ] General-purpose effect handling (of type Void->Array<Command>, Command includes RemoveEffect)
 [ ] Ranged attackers
 [ ] Spell that moves a minion (jump)
 [ ] Refactor: Split into files
@@ -42,3 +43,4 @@ Ideas:
 · Bad cards that *must* be played when drawn (e.g. hero tripped, cannot move/attack this turn) (https://youtu.be/AdW8dGEEWfA?t=8m37s)
 · Certain equipment include cards that *must* be put in the deck (see https://youtu.be/AdW8dGEEWfA?t=10m56s)
 · Crazy idea: Hero cannot attack - attacks are performed via cards
+· Trap cards are shown when played, but not *where* they are placed

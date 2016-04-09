@@ -34,22 +34,24 @@ class HexTile extends Visual {
     }
 }
 
-class BattleMap extends luxe.Entity {
+class HexGrid extends luxe.Entity {
     static public var HEX_CLICKED_EVENT :String = 'hex_clicked';
     static public var HEX_MOUSEMOVED_EVENT :String = 'hex_mousemoved';
     public var layout :Layout;
 
-    public var hexSize :Int = 60;
-    var margin  :Int = 5;
+    public var hexSize :Int;
+    var margin :Int;
 
-    public function new() {
-        super({ name: 'BattleMap' });
-    }
-
-    override function init() {
+    public function new(hexSize :Int = 60, margin :Int = 5) {
+        super({ name: 'HexGrid' });
+        this.hexSize = hexSize;
         var size = new Point(hexSize + margin, hexSize + margin);
         var origin = new Point(Luxe.screen.mid.x, Luxe.screen.mid.y);
         layout = new Layout(Layout.pointy, size, origin);
+    }
+
+    override function init() {
+
     }
 
     public function get_world_pos(pos :Vector) :Vector {

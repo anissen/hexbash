@@ -37,6 +37,7 @@ class Main extends luxe.Game {
         states = new States({ name: 'state_machine' });
         states.add(new BattleState());
         states.add(new MinionActionsState());
+        states.add(new WorldState());
         states.set(BattleState.StateId);
 
         #if desktop
@@ -88,6 +89,10 @@ class Main extends luxe.Game {
         if (e.keycode == Key.enter && e.mod.alt) {
             fullscreen = !fullscreen;
             Luxe.snow.runtime.window_fullscreen(fullscreen, true /* true-fullscreen */);
+        } else if (e.keycode == Key.key_m) {
+            states.set(WorldState.StateId);
+        } else if (e.keycode == Key.key_b) {
+            states.set(BattleState.StateId);
         } else if (e.keycode == Key.escape) {
             if (!Luxe.core.shutting_down) Luxe.shutdown();
         }

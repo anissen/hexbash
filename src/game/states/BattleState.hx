@@ -17,7 +17,7 @@ import core.PromiseQueue;
 import game.Entities.MinionEntity;
 import game.Entities.HeroEntity;
 import game.Entities.HexTile;
-import game.Entities.BattleMap;
+import game.Entities.HexGrid;
 import game.Components;
 
 using core.HexLibrary.HexTools;
@@ -38,7 +38,7 @@ class BattleState extends State {
     var minionMap :Map<Int, MinionEntity>;
     var hexMap :Map<String, HexTile>;
     var battleModel :BattleModel;
-    var battleMap :BattleMap;
+    var hexGrid :HexGrid;
     var currentPlayer :Int;
     var guiBatcher :phoenix.Batcher;
     var handState :HandState;
@@ -46,23 +46,38 @@ class BattleState extends State {
     public function new() {
         super({ name: StateId });
         battleModel = new BattleModel();
-        battleMap = new BattleMap();
+        hexGrid = new HexGrid();
         levelScene = new Scene();
         guiBatcher = Luxe.renderer.create_batcher({ name: 'gui', layer: 4 });
         handState = new HandState(battleModel, guiBatcher, levelScene);
+        battleModel.listen(handle_event);
     }
 
     override function init() {
-        battleModel.listen(handle_event);
+
+    }
+
+    override function onenter(_) {
+        Luxe.camera.zoom = 0.1;
+        luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1 });
+        Luxe.camera.pos = new Vector(0, 0);
         //reset(87634.34);
         reset(1000 * Math.random());
     }
 
-    function reset(seed :Float) {
+    override function onleave(_) {
+        clear();
+    }
+
+    function clear() {
         levelScene.empty();
         hexMap = new Map();
         minionMap = new Map();
         handState.reset();
+    }
+
+    function reset(seed :Float) {
+        clear();
 
         Main.states.add(handState);
         Main.states.enable(HandState.StateId);
@@ -90,10 +105,10 @@ class BattleState extends State {
     }
 
     function add_hex(hex :Hex) :Promise {
-        var pos = Layout.hexToPixel(battleMap.layout, hex);
+        var pos = Layout.hexToPixel(hexGrid.layout, hex);
         var tile = new HexTile({
             pos: new Vector(pos.x, pos.y),
-            r: battleMap.hexSize,
+            r: hexGrid.hexSize,
             scene: levelScene
         });
         var popIn = new FastPopIn();
@@ -104,7 +119,7 @@ class BattleState extends State {
 
     function add_minion(modelId :Int) :Promise {
         var model = battleModel.get_minion_from_id(modelId);
-        var minionPos = Layout.hexToPixel(battleMap.layout, model.hex);
+        var minionPos = Layout.hexToPixel(hexGrid.layout, model.hex);
         var options :game.Entities.MinionOptions = {
             model: model,
             pos: new Vector(minionPos.x, minionPos.y),
@@ -145,8 +160,8 @@ class BattleState extends State {
 
     function move_minion(modelId :Int, from :Hex, to :Hex) :Promise {
         var minion = minion_from_model(modelId);
-        minion.pos = battleMap.hex_to_pos(from);
-        var pos = battleMap.hex_to_pos(to); // TODO: Rename to pos_from_hex
+        minion.pos = hexGrid.hex_to_pos(from);
+        var pos = hexGrid.hex_to_pos(to); // TODO: Rename to pos_from_hex
         return Actuate.tween(minion.pos, 0.2, { x: pos.x, y: pos.y }).toPromise();
     }
 
@@ -211,7 +226,7 @@ class BattleState extends State {
                     Main.states.enable(HandState.StateId);
                 } else {
                     Main.states.disable(HandState.StateId);
-                    Main.states.enable(MinionActionsState.StateId, { model: model, battleModel: battleModel, battleMap: battleMap });
+                    Main.states.enable(MinionActionsState.StateId, { model: model, battleModel: battleModel, hexGrid: hexGrid });
                 }
                 return;
             }

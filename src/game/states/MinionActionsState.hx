@@ -17,7 +17,7 @@ import core.PromiseQueue;
 import game.Entities.CardEntity;
 import game.Entities.MinionEntity;
 import game.Entities.HexTile;
-import game.Entities.BattleMap;
+import game.Entities.HexGrid;
 import game.Components;
 
 using Lambda;
@@ -27,7 +27,7 @@ using core.ArrayTools;
 class MinionActionsState extends State {
     static public var StateId :String = 'MinionActionsState';
     var battleModel :BattleModel;
-    var battleMap :BattleMap;
+    var hexGrid :HexGrid;
     var model :MinionModel;
     var has_data :Bool;
 
@@ -37,10 +37,10 @@ class MinionActionsState extends State {
     }
 
     override function onenabled<T>(value :T) {
-        var data :{ model :MinionModel, battleModel :BattleModel, battleMap :BattleMap } = cast value;
+        var data :{ model :MinionModel, battleModel :BattleModel, hexGrid :HexGrid } = cast value;
         model = data.model;
         battleModel = data.battleModel;
-        battleMap = data.battleMap;
+        hexGrid = data.hexGrid;
         has_data = true;
         if (model.actions <= 0) {
             Main.states.disable(StateId);
@@ -51,17 +51,17 @@ class MinionActionsState extends State {
     override public function onrender() {
         if (!has_data) return;
         var pos = Luxe.camera.screen_point_to_world(Luxe.screen.cursor.pos);
-        var mouse_hex = battleMap.pos_to_hex(pos);
+        var mouse_hex = hexGrid.pos_to_hex(pos);
         for (action in battleModel.get_minion_actions(model.id)) {
             switch (action) {
                 case Nothing:
                 case Move(hex):
-                    var pos = battleMap.hex_to_pos(hex);
+                    var pos = hexGrid.hex_to_pos(hex);
                     var radius = (mouse_hex.key == hex.key ? 20 : 10);
                     Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 1, 1, 0.8), r: radius, immediate: true, depth: 15 });
                 case Attack(defenderId):
                     var defender = battleModel.get_minion_from_id(defenderId);
-                    var pos = battleMap.hex_to_pos(defender.hex);
+                    var pos = hexGrid.hex_to_pos(defender.hex);
                     var radius = (mouse_hex.key == defender.hex.key ? 20 : 10);
                     Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 0, 0, 0.8), r: radius, immediate: true, depth: 15 });
             }
@@ -79,7 +79,7 @@ class MinionActionsState extends State {
     override public function onmouseup(event :luxe.Input.MouseEvent) {
         if (!has_data) return;
         var pos = Luxe.camera.screen_point_to_world(event.pos);
-        var mouse_hex = battleMap.pos_to_hex(pos);
+        var mouse_hex = hexGrid.pos_to_hex(pos);
         for (action in battleModel.get_minion_actions(model.id)) {
             switch (action) {
                 case Nothing:
