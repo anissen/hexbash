@@ -3,9 +3,11 @@ package game;
 import core.HexLibrary;
 import luxe.Input.MouseEvent;
 import luxe.options.VisualOptions;
+import luxe.options.SpriteOptions;
 import luxe.Scene;
 import luxe.Vector;
 import luxe.Visual;
+import luxe.Sprite;
 import luxe.Color;
 
 import core.Models.MinionModel;
@@ -34,6 +36,13 @@ class HexTile extends Visual {
     }
 }
 
+class HexSpriteTile extends Sprite {
+    public function new(options :SpriteOptions) {
+        if (options.texture == null) options.texture = Luxe.resources.texture('assets/images/tileGrass_tile.png');
+        super(options);
+    }
+}
+
 class HexGrid extends luxe.Entity {
     static public var HEX_CLICKED_EVENT :String = 'hex_clicked';
     static public var HEX_MOUSEMOVED_EVENT :String = 'hex_mousemoved';
@@ -42,10 +51,10 @@ class HexGrid extends luxe.Entity {
     public var hexSize :Int;
     var margin :Int;
 
-    public function new(hexSize :Int = 60, margin :Int = 5) {
+    public function new(hexSize :Int = 60, marginX :Int = 5, marginY :Int = 5) {
         super({ name: 'HexGrid' });
         this.hexSize = hexSize;
-        var size = new Point(hexSize + margin, hexSize + margin);
+        var size = new Point(hexSize + marginX, hexSize + marginY);
         var origin = new Point(Luxe.screen.mid.x, Luxe.screen.mid.y);
         layout = new Layout(Layout.pointy, size, origin);
     }

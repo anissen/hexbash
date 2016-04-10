@@ -58,7 +58,7 @@ class BattleState extends State {
     }
 
     override function onenter(_) {
-        Luxe.camera.zoom = 0.1;
+        Luxe.camera.zoom = 0.2;
         luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1 });
         Luxe.camera.pos = new Vector(0, 0);
         //reset(87634.34);

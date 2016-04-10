@@ -16,6 +16,9 @@ class Main extends luxe.Game {
         config.render.antialiasing = 4;
 
         // config.preload.textures.push({ id: 'assets/images/cultist.png' });
+        config.preload.textures.push({ id: 'assets/images/tileGrass_full.png' });
+        config.preload.textures.push({ id: 'assets/images/tileDirt_full.png' });
+        config.preload.textures.push({ id: 'assets/images/treeGreen_low.png' });
         config.preload.texts.push({ id: 'assets/scripts/test.hxs' });
 
         // config.render.depth_bits = 24;
@@ -38,7 +41,7 @@ class Main extends luxe.Game {
         states.add(new BattleState());
         states.add(new MinionActionsState());
         states.add(new WorldState());
-        states.set(BattleState.StateId);
+        states.set(WorldState.StateId);
 
         #if desktop
             var assets_path = '/Users/nissen/code/snowkit/hexbash/assets';

@@ -14,6 +14,7 @@ import luxe.Color;
 import snow.api.Promise;
 import core.MapFactory;
 import game.Entities.HexTile;
+import game.Entities.HexSpriteTile;
 import game.Entities.HexGrid;
 import game.Components;
 import core.HexLibrary.Hex;
@@ -38,8 +39,9 @@ class WorldState extends State {
         Luxe.camera.zoom = 10;
         luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1 });
 
-        hexGrid = new HexGrid(25, 0);
-        var hexes = MapFactory.create_rectangular_map(20, 20);
+        // hexGrid = new HexGrid(27, 5, 0);
+        hexGrid = new HexGrid(35, 2, 0);
+        var hexes = MapFactory.create_rectangular_map(10, 10);
         hexes.map(add_hex);
         pos = Luxe.screen.mid.clone();
         move_to = pos.clone();
@@ -51,10 +53,23 @@ class WorldState extends State {
 
     function add_hex(hex :Hex) :Promise {
         var pos = Layout.hexToPixel(hexGrid.layout, hex);
-        var tile = new HexTile({
+        // new HexTile({
+        //     pos: new Vector(pos.x, pos.y),
+        //     r: hexGrid.hexSize
+        // });
+        var tile = new HexSpriteTile({
             pos: new Vector(pos.x, pos.y),
-            r: hexGrid.hexSize
+            texture: Luxe.resources.texture('assets/images/tile' + (Math.random() > 0.3 ? 'Grass' : 'Dirt') + '_full.png'),
+            depth: hex.r
         });
+        if (Math.random() > 0.9) {
+            new luxe.Sprite({
+                pos: new Vector(pos.x - 30 + 60 * Math.random(), pos.y - 40 - 30 + 60 * Math.random()),
+                texture: Luxe.resources.texture('assets/images/treeGreen_low.png'),
+                depth: 100
+            });
+        }
+
         var popIn = new FastPopIn();
         tile.add(popIn);
         // hexGrid[hex.key] = tile;
