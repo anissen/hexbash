@@ -21,6 +21,7 @@ class Main extends luxe.Game {
         config.preload.textures.push({ id: 'assets/images/treeGreen_low.png' });
         config.preload.textures.push({ id: 'assets/images/icons/orc-head.png' });
         config.preload.textures.push({ id: 'assets/images/icons/spider-alt.png' });
+        config.preload.textures.push({ id: 'assets/images/icons/pointy-hat.png' });
         config.preload.texts.push({ id: 'assets/scripts/test.hxs' });
 
         // config.render.depth_bits = 24;

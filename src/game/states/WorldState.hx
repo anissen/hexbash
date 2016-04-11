@@ -4,6 +4,7 @@ package game.states;
 import luxe.Input.MouseEvent;
 import luxe.States.State;
 import luxe.Vector;
+import luxe.Sprite;
 import luxe.tween.Actuate;
 import game.Entities.CardEntity;
 import game.Components.PopIn;
@@ -21,32 +22,44 @@ import core.HexLibrary.Hex;
 import core.HexLibrary.Layout;
 
 using Lambda;
+using core.HexLibrary;
 
 class WorldState extends State {
     static public var StateId :String = 'WorldState';
     var hexGrid :HexGrid;
-    var pos :Vector;
-    var move_to :Vector;
+    var hexes :Map<String, Hex>;
+
+    var hero :Sprite;
+    var path_shown :Array<Vector>;
+    var path :Array<Hex>;
 
     public function new() {
         super({ name: StateId });
 
-        pos = Luxe.screen.mid.clone();
-        move_to = pos.clone();
+        path = [];
+        path_shown = [];
     }
 
     override function onenter(_) {
         Luxe.camera.zoom = 10;
         luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1 });
 
-        // hexGrid = new HexGrid(27, 5, 0);
         hexGrid = new HexGrid(35, 2, 0);
+        hexGrid.events.listen(HexGrid.HEX_MOUSEMOVED_EVENT, onhexmoved);
         hexGrid.events.listen(HexGrid.HEX_CLICKED_EVENT, onhexclicked);
 
-        var hexes = MapFactory.create_rectangular_map(10, 10);
-        hexes.map(add_hex);
-        pos = Luxe.screen.mid.clone();
-        move_to = pos.clone();
+        hexes = new Map();
+
+        var hex_list = MapFactory.create_rectangular_map(10, 10);
+        hex_list.map(add_hex);
+
+        hero = new Sprite({
+            pos: hexGrid.hex_to_pos(new Hex(0, 0)),
+            texture: Luxe.resources.texture('assets/images/icons/pointy-hat.png'),
+            color: new Color(0, 0.5, 0.5),
+            scale: new Vector(0.1, 0.1),
+            depth: 98
+        });
     }
 
     override function onleave(_) {
@@ -54,6 +67,7 @@ class WorldState extends State {
     }
 
     function add_hex(hex :Hex) :Promise {
+        hexes[hex.key] = hex;
         var pos = hexGrid.hex_to_pos(hex);
         // new HexTile({
         //     pos: new Vector(pos.x, pos.y),
@@ -66,7 +80,7 @@ class WorldState extends State {
         });
 
         if (Math.random() > 0.9) {
-            new luxe.Sprite({
+            new Sprite({
                 pos: new Vector(pos.x, pos.y),
                 texture: Luxe.resources.texture('assets/images/icons/' + (Math.random() < 0.5 ? 'orc-head.png' : 'spider-alt.png')),
                 color: new Color(0, 0, 0), // new ColorHSL(360 * Math.random(), 0.8, 0.8),
@@ -74,7 +88,7 @@ class WorldState extends State {
                 depth: 99
             });
         } else if (Math.random() > 0.9) {
-            new luxe.Sprite({
+            new Sprite({
                 pos: new Vector(pos.x, pos.y - 25),
                 texture: Luxe.resources.texture('assets/images/treeGreen_low.png'),
                 depth: 100
@@ -83,45 +97,49 @@ class WorldState extends State {
 
         var popIn = new FastPopIn();
         tile.add(popIn);
-        // hexGrid[hex.key] = tile;
         return popIn.promise;
     }
 
-    // override function onmouseup(event :MouseEvent) {
-    //     var screen_pos = event.pos;
-    //     var world_pos = Luxe.camera.screen_point_to_world(event.pos);
-    //     move_to = world_pos;
-    //     trace('move_to: $move_to');
-    //
-    //     // var enemyMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
-    //     // if (enemyMinions.length == 0) return;
-    //     // var randomEnemy = enemyMinions.random(random_int);
-    //     // var path = model.hex.find_path(randomEnemy.hex, 100, 6, battleModel.is_walkable, true);
-    //     // for (p in path) select_action(Move(p));
-    // }
+    function is_walkable(h :Hex) {
+        return hexes.exists(h.key);
+    }
 
     function onhexclicked(hex :Hex) {
-        move_to = hexGrid.hex_to_pos(hex);
+        var hero_hex = hexGrid.pos_to_hex(hero.pos);
+        path = hero_hex.find_path(hex, 100, 6, is_walkable); // TODO: Arguments?!
+    }
+
+    function onhexmoved(hex :Hex) {
+        if (path.length > 0) return;
+        var hero_hex = hexGrid.pos_to_hex(hero.pos);
+        path_shown = hero_hex.find_path(hex, 100, 6, is_walkable).map(function(h) {
+            return hexGrid.hex_to_pos(h);
+        });
     }
 
     override function update(dt :Float) {
-        if (pos == null || move_to == null) return;
+        if (path.length == 0) {
+            for (p in path_shown) {
+                Luxe.draw.circle({
+                    x: p.x,
+                    y: p.y,
+                    r: 10,
+                    immediate: true,
+                    depth: 101
+                });
+            }
+            return;
+        }
+        path_shown = [];
 
-        var diff = Vector.Subtract(move_to, pos);
+        var move_to = hexGrid.hex_to_pos(path[0]);
+        var diff = Vector.Subtract(move_to, hero.pos);
         if (diff.length > 2) {
             diff.normalize();
-            pos = Vector.Add(pos, Vector.Multiply(diff, dt * 200));
-            // Luxe.camera.focus(pos, 0);
-            // transform.pos.set_xy(view.pos.x, view.pos.y)
-            Luxe.camera.center = pos;
+            hero.pos = Vector.Add(hero.pos, Vector.Multiply(diff, dt * 200));
+            Luxe.camera.center = hero.pos;
+        } else {
+            path.shift();
         }
-
-        Luxe.draw.circle({ // TODO: Replace pos with Sprite/Visual
-            x: pos.x,
-            y: pos.y,
-            r: 20,
-            immediate: true,
-            depth: 5
-        });
     }
 }
