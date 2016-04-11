@@ -52,7 +52,7 @@ class WorldState extends State {
     }
 
     function add_hex(hex :Hex) :Promise {
-        var pos = Layout.hexToPixel(hexGrid.layout, hex);
+        var pos = hexGrid.hex_to_pos(hex);
         // new HexTile({
         //     pos: new Vector(pos.x, pos.y),
         //     r: hexGrid.hexSize
@@ -62,9 +62,18 @@ class WorldState extends State {
             texture: Luxe.resources.texture('assets/images/tile' + (Math.random() > 0.3 ? 'Grass' : 'Dirt') + '_full.png'),
             depth: hex.r
         });
+
         if (Math.random() > 0.9) {
             new luxe.Sprite({
-                pos: new Vector(pos.x - 30 + 60 * Math.random(), pos.y - 40 - 30 + 60 * Math.random()),
+                pos: new Vector(pos.x, pos.y - 13),
+                texture: Luxe.resources.texture('assets/images/icons/' + (Math.random() < 0.5 ? 'orc-head.png' : 'spider-alt.png')),
+                color: new Color(0, 0, 0), // new ColorHSL(360 * Math.random(), 0.8, 0.8),
+                scale: new Vector(0.1, 0.1),
+                depth: 99
+            });
+        } else if (Math.random() > 0.9) {
+            new luxe.Sprite({
+                pos: new Vector(pos.x, pos.y - 40),
                 texture: Luxe.resources.texture('assets/images/treeGreen_low.png'),
                 depth: 100
             });
@@ -98,7 +107,7 @@ class WorldState extends State {
         Luxe.draw.circle({ // TODO: Replace pos with Sprite/Visual
             x: pos.x,
             y: pos.y,
-            r: 30,
+            r: 20,
             immediate: true,
             depth: 5
         });

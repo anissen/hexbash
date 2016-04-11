@@ -105,7 +105,7 @@ class BattleState extends State {
     }
 
     function add_hex(hex :Hex) :Promise {
-        var pos = Layout.hexToPixel(hexGrid.layout, hex);
+        var pos = hexGrid.hex_to_pos(hex);
         var tile = new HexTile({
             pos: new Vector(pos.x, pos.y),
             r: hexGrid.hexSize,
@@ -119,7 +119,7 @@ class BattleState extends State {
 
     function add_minion(modelId :Int) :Promise {
         var model = battleModel.get_minion_from_id(modelId);
-        var minionPos = Layout.hexToPixel(hexGrid.layout, model.hex);
+        var minionPos = hexGrid.hex_to_pos(model.hex);
         var options :game.Entities.MinionOptions = {
             model: model,
             pos: new Vector(minionPos.x, minionPos.y),

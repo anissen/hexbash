@@ -46,7 +46,7 @@ class HexSpriteTile extends Sprite {
 class HexGrid extends luxe.Entity {
     static public var HEX_CLICKED_EVENT :String = 'hex_clicked';
     static public var HEX_MOUSEMOVED_EVENT :String = 'hex_mousemoved';
-    public var layout :Layout;
+    var layout :Layout;
 
     public var hexSize :Int;
     var margin :Int;
