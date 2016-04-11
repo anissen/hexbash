@@ -28,6 +28,7 @@ class WorldState extends State {
     static public var StateId :String = 'WorldState';
     var hexGrid :HexGrid;
     var hexes :Map<String, Hex>;
+    var enemies :Map<String, String>;
 
     var hero :Sprite;
     var path_shown :Array<Vector>;
@@ -49,6 +50,7 @@ class WorldState extends State {
         hexGrid.events.listen(HexGrid.HEX_CLICKED_EVENT, onhexclicked);
 
         hexes = new Map();
+        enemies = new Map();
 
         var hex_list = MapFactory.create_rectangular_map(10, 10);
         hex_list.map(add_hex);
@@ -87,6 +89,7 @@ class WorldState extends State {
                 scale: new Vector(0.1, 0.1),
                 depth: 99
             });
+            enemies[hex.key] = 'blah';
         } else if (Math.random() > 0.9) {
             new Sprite({
                 pos: new Vector(pos.x, pos.y - 25),
@@ -139,7 +142,10 @@ class WorldState extends State {
             hero.pos = Vector.Add(hero.pos, Vector.Multiply(diff, dt * 200));
             Luxe.camera.center = hero.pos;
         } else {
-            path.shift();
+            var hex = path.shift();
+            if (enemies.exists(hex.key)) {
+                Main.states.set(BattleState.StateId);
+            }
         }
     }
 }
