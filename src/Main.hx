@@ -81,15 +81,15 @@ class Main extends luxe.Game {
     //     Luxe.camera.viewport = new luxe.Rectangle(0, 0, e.event.x, e.event.y);
     // }
 
-    override function onrender() {
-        Luxe.draw.rectangle({
-            x: 20,
-            y: 20,
-            w: Luxe.screen.w - 40,
-            h: Luxe.screen.h - 40,
-            immediate: true
-        });
-    }
+    // override function onrender() {
+    //     Luxe.draw.rectangle({
+    //         x: 20,
+    //         y: 20,
+    //         w: Luxe.screen.w - 40,
+    //         h: Luxe.screen.h - 40,
+    //         immediate: true
+    //     });
+    // }
 
     override function onkeyup(e :KeyEvent) {
         if (e.keycode == Key.enter && e.mod.alt) {

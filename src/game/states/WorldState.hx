@@ -28,9 +28,11 @@ class WorldState extends State {
     static public var StateId :String = 'WorldState';
     var hexGrid :HexGrid;
     var hexes :Map<String, Hex>;
-    var enemies :Map<String, String>;
+    // var enemies :Map<String, String>;
 
     var hero :Sprite;
+    var enemies :Array<Sprite>;
+
     var path_shown :Array<Vector>;
     var path :Array<Hex>;
 
@@ -50,7 +52,7 @@ class WorldState extends State {
         hexGrid.events.listen(HexGrid.HEX_CLICKED_EVENT, onhexclicked);
 
         hexes = new Map();
-        enemies = new Map();
+        enemies = [];
 
         var hex_list = MapFactory.create_rectangular_map(10, 10);
         for (h in hex_list) {
@@ -82,14 +84,14 @@ class WorldState extends State {
 
         var walkable = true;
         if (Math.random() > 0.9) {
-            new Sprite({
+            var enemy = new Sprite({
                 pos: new Vector(pos.x, pos.y),
                 texture: Luxe.resources.texture('assets/images/icons/' + (Math.random() < 0.5 ? 'orc-head.png' : 'spider-alt.png')),
                 color: new Color(0.2, 0, 0), // new ColorHSL(360 * Math.random(), 0.8, 0.8),
                 scale: new Vector(0.1, 0.1),
                 depth: 99
             });
-            enemies[hex.key] = 'blah';
+            enemies.push(enemy);
         } else if (Math.random() > 0.9) {
             walkable = false;
             new Sprite({
@@ -145,8 +147,30 @@ class WorldState extends State {
             Luxe.camera.center = hero.pos;
         } else {
             var hex = path.shift();
-            if (enemies.exists(hex.key)) {
-                Main.states.set(BattleState.StateId);
+            for (enemy in enemies) {
+                var enemy_hex = hexGrid.pos_to_hex(enemy.pos);
+                if (hex.key == enemy_hex.key) {
+                    Main.states.set(BattleState.StateId);
+                    return;
+                }
+            }
+            for (enemy in enemies) {
+                if (enemy.has('MoveTo')) continue; // Enemy is already moving
+                if (Math.random() < 0.5) continue; // Enemy doesn't want to move
+                var enemy_hex = hexGrid.pos_to_hex(enemy.pos);
+
+                var reachable = enemy_hex.reachable(is_walkable, 1);
+                if (reachable.length == 0) continue;
+                var random_hex = reachable[Math.floor(reachable.length * Math.random())];
+                // enemy.pos = hexGrid.hex_to_pos(random_hex);
+                var new_pos = hexGrid.hex_to_pos(random_hex);
+                var move_to = new MoveTo(new_pos, Math.random());
+                move_to.onCompleted = function() {
+                    if (hex.key == random_hex.key) {
+                        Main.states.set(BattleState.StateId);
+                    }
+                };
+                enemy.add(move_to);
             }
         }
     }
