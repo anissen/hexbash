@@ -53,7 +53,11 @@ class WorldState extends State {
         enemies = new Map();
 
         var hex_list = MapFactory.create_rectangular_map(10, 10);
-        hex_list.map(add_hex);
+        for (h in hex_list) {
+            if (Math.random() < 0.2) continue; // make some random holes
+            add_hex(h);
+        }
+        // hex_list.map(add_hex);
 
         hero = new Sprite({
             pos: hexGrid.hex_to_pos(new Hex(0, 0)),
@@ -69,34 +73,32 @@ class WorldState extends State {
     }
 
     function add_hex(hex :Hex) :Promise {
-        hexes[hex.key] = hex;
         var pos = hexGrid.hex_to_pos(hex);
-        // new HexTile({
-        //     pos: new Vector(pos.x, pos.y),
-        //     r: hexGrid.hexSize
-        // });
         var tile = new HexSpriteTile({
             pos: new Vector(pos.x, pos.y + 12),
             texture: Luxe.resources.texture('assets/images/tile' + (Math.random() > 0.3 ? 'Grass' : 'Dirt') + '_full.png'),
             depth: hex.r
         });
 
+        var walkable = true;
         if (Math.random() > 0.9) {
             new Sprite({
                 pos: new Vector(pos.x, pos.y),
                 texture: Luxe.resources.texture('assets/images/icons/' + (Math.random() < 0.5 ? 'orc-head.png' : 'spider-alt.png')),
-                color: new Color(0, 0, 0), // new ColorHSL(360 * Math.random(), 0.8, 0.8),
+                color: new Color(0.2, 0, 0), // new ColorHSL(360 * Math.random(), 0.8, 0.8),
                 scale: new Vector(0.1, 0.1),
                 depth: 99
             });
             enemies[hex.key] = 'blah';
         } else if (Math.random() > 0.9) {
+            walkable = false;
             new Sprite({
                 pos: new Vector(pos.x, pos.y - 25),
                 texture: Luxe.resources.texture('assets/images/treeGreen_low.png'),
                 depth: 100
             });
         }
+        if (walkable) hexes[hex.key] = hex;
 
         var popIn = new FastPopIn();
         tile.add(popIn);
