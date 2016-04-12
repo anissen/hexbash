@@ -74,7 +74,7 @@ class WorldState extends State {
         Luxe.scene.empty();
     }
 
-    function add_hex(hex :Hex) :Promise {
+    function add_hex(hex :Hex) {
         var pos = hexGrid.hex_to_pos(hex);
         var tile = new HexSpriteTile({
             pos: new Vector(pos.x, pos.y + 12),
@@ -101,10 +101,6 @@ class WorldState extends State {
             });
         }
         if (walkable) hexes[hex.key] = hex;
-
-        var popIn = new FastPopIn();
-        tile.add(popIn);
-        return popIn.promise;
     }
 
     function is_walkable(h :Hex) {
@@ -161,12 +157,13 @@ class WorldState extends State {
 
                 var reachable = enemy_hex.reachable(is_walkable, 1);
                 if (reachable.length == 0) continue;
-                var random_hex = reachable[Math.floor(reachable.length * Math.random())];
+                var new_hex = reachable[Math.floor(reachable.length * Math.random())];
                 // enemy.pos = hexGrid.hex_to_pos(random_hex);
-                var new_pos = hexGrid.hex_to_pos(random_hex);
+                var new_pos = hexGrid.hex_to_pos(new_hex);
                 var move_to = new MoveTo(new_pos, Math.random());
                 move_to.onCompleted = function() {
-                    if (hex.key == random_hex.key) {
+                    var hero_hex = hexGrid.pos_to_hex(hero.pos);
+                    if (new_hex.key == hero_hex.key) {
                         Main.states.set(BattleState.StateId);
                     }
                 };
