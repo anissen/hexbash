@@ -3,6 +3,14 @@
 
 --> If this game is shipped tomorrow, what is the most important thing to work on right now??
 
+:: Battle: Make battle map fancy too.
+:: Map: Make enemies on world map move at a specific speed
+:: Map: Make different types of tiles affect speed
+:: Battle: Implement attack cards
+:: Battle: Clean up effects handling
+:: Battle: Fix broken postprocessing shader
+
+
 [x] Spell cards have a cost
 [ ] Random enemy when starting a new battle
 [ ] Enemy can cast spells

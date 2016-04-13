@@ -77,6 +77,7 @@ class Main extends luxe.Game {
         config.preload.textures.push({ id: 'assets/images/icons/shadow.png' });
         config.preload.texts.push({ id: 'assets/scripts/test.hxs' });
         config.preload.shaders.push({ id: 'postprocess', frag_id: 'assets/shaders/postprocess.glsl', vert_id: 'default' });
+        // config.preload.shaders.push({ id: 'tilt_shift', frag_id: 'assets/shaders/tilt_shift.glsl', vert_id: 'default' });
         // config.preload.shaders.push({ id: 'toon_water', frag_id: 'assets/shaders/toon_water.glsl', vert_id: 'default' });
         // config.preload.shaders.push({ id: 'perlin_water', frag_id: 'assets/shaders/perlin_water.glsl', vert_id: 'default' });
         // config.preload.shaders.push({ id: 'simple_water', frag_id: 'assets/shaders/simple_water.glsl', vert_id: 'default' });
