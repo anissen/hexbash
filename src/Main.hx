@@ -74,8 +74,12 @@ class Main extends luxe.Game {
         config.preload.textures.push({ id: 'assets/images/icons/orc-head.png' });
         config.preload.textures.push({ id: 'assets/images/icons/spider-alt.png' });
         config.preload.textures.push({ id: 'assets/images/icons/pointy-hat.png' });
+        config.preload.textures.push({ id: 'assets/images/icons/shadow.png' });
         config.preload.texts.push({ id: 'assets/scripts/test.hxs' });
         config.preload.shaders.push({ id: 'postprocess', frag_id: 'assets/shaders/postprocess.glsl', vert_id: 'default' });
+        // config.preload.shaders.push({ id: 'toon_water', frag_id: 'assets/shaders/toon_water.glsl', vert_id: 'default' });
+        // config.preload.shaders.push({ id: 'perlin_water', frag_id: 'assets/shaders/perlin_water.glsl', vert_id: 'default' });
+        // config.preload.shaders.push({ id: 'simple_water', frag_id: 'assets/shaders/simple_water.glsl', vert_id: 'default' });
 
 
         // config.render.depth_bits = 24;
@@ -97,7 +101,6 @@ class Main extends luxe.Game {
         var shader = Luxe.resources.shader('postprocess');
         shader.set_vector2('resolution', Luxe.screen.size);
         postprocess = new PostProcess(shader);
-        postprocess.toggle();
 
         states = new States({ name: 'state_machine' });
         states.add(new BattleState());

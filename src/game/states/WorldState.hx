@@ -24,17 +24,38 @@ import core.HexLibrary.Layout;
 using Lambda;
 using core.HexLibrary;
 
+// enum WalkableTile {
+//     Grass;
+//     Dirt;
+// }
+//
+// enum UnwalkableTile {
+//     Empty;
+//     Water;
+// }
+// enum BlockedTile {
+//     Tree;
+//     Rock;
+// }
+//
+// enum TileType {
+//     Walkable(type :WalkableTile);
+//     Unwalkable(type :UnwalkableTile);
+//     Blocked(type :BlockedTile);
+// }
+
 class WorldState extends State {
     static public var StateId :String = 'WorldState';
     var hexGrid :HexGrid;
     var hexes :Map<String, Hex>;
-    // var enemies :Map<String, String>;
 
     var hero :Sprite;
     var enemies :Array<Sprite>;
 
     var path_shown :Array<Vector>;
     var path :Array<Hex>;
+
+    // var water_shader :phoenix.Shader;
 
     public function new() {
         super({ name: StateId });
@@ -45,7 +66,21 @@ class WorldState extends State {
 
     override function onenter(_) {
         Luxe.camera.zoom = 10;
+        Luxe.renderer.clear_color.set(130/255, 220/255, 230/255); // water color
+        // Luxe.renderer.clear_color.set(1, 20, 0);
         luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1 });
+
+        // water_shader = Luxe.resources.shader('toon_water');
+        // water_shader.set_vector2('resolution', Luxe.screen.size.clone());
+        // new Sprite({
+        //     centered: false,
+        //     pos: new Vector(0, 0),
+        //     color: new Color(139/255, 225/255, 235/255),
+        //     size: Luxe.screen.size.clone(),
+        //     shader: water_shader,
+        //     texture: Luxe.resources.texture('assets/images/water.png'),
+        //     batcher: Luxe.renderer.create_batcher({ name: 'water', layer: -1 })
+        // });
 
         hexGrid = new HexGrid(35, 2, 0);
         hexGrid.events.listen(HexGrid.HEX_MOUSEMOVED_EVENT, onhexmoved);
@@ -54,7 +89,7 @@ class WorldState extends State {
         hexes = new Map();
         enemies = [];
 
-        var hex_list = MapFactory.create_rectangular_map(10, 10);
+        var hex_list = MapFactory.create_hexagon_map(10); // .create_rectangular_map(10, 10);
         for (h in hex_list) {
             if (Math.random() < 0.2) continue; // make some random holes
             add_hex(h);
@@ -76,7 +111,10 @@ class WorldState extends State {
 
     function add_hex(hex :Hex) {
         var pos = hexGrid.hex_to_pos(hex);
-        var tile = new HexSpriteTile({
+        var height = -3 + 6 * Math.random();
+        pos.y += height;
+
+        new HexSpriteTile({
             pos: new Vector(pos.x, pos.y + 12),
             texture: Luxe.resources.texture('assets/images/tile' + (Math.random() > 0.3 ? 'Grass' : 'Dirt') + '_full.png'),
             depth: hex.r
@@ -87,9 +125,18 @@ class WorldState extends State {
             var enemy = new Sprite({
                 pos: new Vector(pos.x, pos.y),
                 texture: Luxe.resources.texture('assets/images/icons/' + (Math.random() < 0.5 ? 'orc-head.png' : 'spider-alt.png')),
-                color: new Color(0.2, 0, 0), // new ColorHSL(360 * Math.random(), 0.8, 0.8),
-                scale: new Vector(0.1, 0.1),
+                color: new Color(1, 1, 1), // new ColorHSL(360 * Math.random(), 0.8, 0.8),
+                scale: new Vector(0.08, 0.08),
                 depth: 99
+            });
+            new Sprite({
+                pos: new Vector(256, 256),
+                centered: true,
+                texture: Luxe.resources.texture('assets/images/icons/shadow.png'),
+                color: new Color(0, 0, 0),
+                scale: new Vector(1.4, 1.4),
+                depth: 98,
+                parent: enemy
             });
             enemies.push(enemy);
         } else if (Math.random() > 0.9) {
@@ -109,18 +156,20 @@ class WorldState extends State {
 
     function onhexclicked(hex :Hex) {
         var hero_hex = hexGrid.pos_to_hex(hero.pos);
-        path = hero_hex.find_path(hex, 100, 6, is_walkable); // TODO: Arguments?!
+        path = hero_hex.find_path(hex, 5, 100, is_walkable); // TODO: Arguments?!
     }
 
     function onhexmoved(hex :Hex) {
         if (path.length > 0) return;
         var hero_hex = hexGrid.pos_to_hex(hero.pos);
-        path_shown = hero_hex.find_path(hex, 100, 6, is_walkable).map(function(h) {
+        path_shown = hero_hex.find_path(hex, 5, 100, is_walkable).map(function(h) {
             return hexGrid.hex_to_pos(h);
         });
     }
 
     override function update(dt :Float) {
+        // water_shader.set_float('time', Luxe.core.tick_start + dt);
+
         if (path.length == 0) {
             for (p in path_shown) {
                 Luxe.draw.circle({
@@ -158,7 +207,6 @@ class WorldState extends State {
                 var reachable = enemy_hex.reachable(is_walkable, 1);
                 if (reachable.length == 0) continue;
                 var new_hex = reachable[Math.floor(reachable.length * Math.random())];
-                // enemy.pos = hexGrid.hex_to_pos(random_hex);
                 var new_pos = hexGrid.hex_to_pos(new_hex);
                 var move_to = new MoveTo(new_pos, Math.random());
                 move_to.onCompleted = function() {
