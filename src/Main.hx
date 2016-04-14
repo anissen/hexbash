@@ -75,6 +75,7 @@ class Main extends luxe.Game {
         config.preload.textures.push({ id: 'assets/images/icons/spider-alt.png' });
         config.preload.textures.push({ id: 'assets/images/icons/pointy-hat.png' });
         config.preload.textures.push({ id: 'assets/images/icons/shadow.png' });
+        config.preload.textures.push({ id: 'assets/images/icons/background.png' });
         config.preload.texts.push({ id: 'assets/scripts/test.hxs' });
         config.preload.shaders.push({ id: 'postprocess', frag_id: 'assets/shaders/postprocess.glsl', vert_id: 'default' });
         // config.preload.shaders.push({ id: 'tilt_shift', frag_id: 'assets/shaders/tilt_shift.glsl', vert_id: 'default' });

@@ -16,7 +16,7 @@ import core.Models;
 import core.PromiseQueue;
 import game.Entities.MinionEntity;
 import game.Entities.HeroEntity;
-import game.Entities.HexTile;
+import game.Entities.HexSpriteTile;
 import game.Entities.HexGrid;
 import game.Components;
 
@@ -36,7 +36,7 @@ class BattleState extends State {
     static public var StateId :String = 'BattleState';
     var levelScene :Scene;
     var minionMap :Map<Int, MinionEntity>;
-    var hexMap :Map<String, HexTile>;
+    var hexMap :Map<String, HexSpriteTile>;
     var battleModel :BattleModel;
     var hexGrid :HexGrid;
     var currentPlayer :Int;
@@ -46,7 +46,7 @@ class BattleState extends State {
     public function new() {
         super({ name: StateId });
         battleModel = new BattleModel();
-        hexGrid = new HexGrid();
+        hexGrid = new HexGrid(35, 6, 4); //new HexGrid();
         levelScene = new Scene();
         guiBatcher = Luxe.renderer.create_batcher({ name: 'gui', layer: 4 });
         handState = new HandState(battleModel, guiBatcher, levelScene);
@@ -59,7 +59,7 @@ class BattleState extends State {
 
     override function onenter(_) {
         Luxe.camera.zoom = 0.2;
-        luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1 });
+        luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1.5 });
         Luxe.camera.pos = new Vector(0, 0);
         //reset(87634.34);
         reset(1000 * Math.random());
@@ -106,10 +106,15 @@ class BattleState extends State {
 
     function add_hex(hex :Hex) :Promise {
         var pos = hexGrid.hex_to_pos(hex);
-        var tile = new HexTile({
-            pos: new Vector(pos.x, pos.y),
-            r: hexGrid.hexSize,
-            scene: levelScene
+        // var tile = new HexTile({
+        //     pos: new Vector(pos.x, pos.y),
+        //     r: hexGrid.hexSize,
+        //     scene: levelScene
+        // });
+        var tile = new HexSpriteTile({
+            pos: new Vector(pos.x, pos.y + 12),
+            texture: Luxe.resources.texture('assets/images/tile' + (Math.random() > 0.3 ? 'Grass' : 'Dirt') + '_full.png'),
+            depth: -100 + hex.r
         });
         var popIn = new FastPopIn();
         tile.add(popIn);

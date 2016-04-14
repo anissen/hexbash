@@ -94,10 +94,10 @@ class HexGrid extends luxe.Entity {
 }
 
 typedef MinionOptions = {
-    > VisualOptions,
+    > SpriteOptions,
     model :MinionModel
 };
-class MinionEntity extends Visual {
+class MinionEntity extends Sprite {
     var power :Int;
     var powerText :luxe.Text;
 
@@ -106,17 +106,64 @@ class MinionEntity extends Visual {
         power = _options.model.power;
 
         if (_options.color == null) _options.color = new Color(0, 0.5, 0.5);
-        if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 28 });
+        if (_options.texture == null) _options.texture = Luxe.resources.texture('assets/images/icons/' + (Math.random() < 0.5 ? 'pointy-hat' : 'orc-head') + '.png');
+        if (_options.size == null) _options.size = new Vector(40, 40);
+        //if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 24 });
         super(_options);
 
+        var bg_color = _options.color.toColorHSL();
+        bg_color.h = (bg_color.h + 200) % 360;
+        new Sprite({
+            pos: Vector.Divide(size, 2),
+            size: new Vector(size.x + 10, size.y + 10),
+            parent: this,
+            depth: _options.depth - 0.01,
+            texture: Luxe.resources.texture('assets/images/icons/background.png'),
+            color: bg_color.clone()
+        });
+
+        var icon_displacement = 6;
+        bg_color.h = (bg_color.h + 40) % 360;
+
+        new Sprite({
+            pos: new Vector(size.x / 2, size.y + icon_displacement),
+            size: Vector.Multiply(size, 0.65),
+            parent: this,
+            depth: _options.depth + 0.01,
+            texture: Luxe.resources.texture('assets/images/icons/background.png'),
+            color: bg_color
+        });
+
         powerText = new luxe.Text({
-            point_size: 28,
+            pos: new Vector(size.x / 2, size.y + icon_displacement),
+            point_size: 24,
             align: luxe.Text.TextAlign.center,
             align_vertical: luxe.Text.TextAlign.center,
             parent: this,
-            depth: _options.depth + 0.01
+            depth: _options.depth + 0.02
         });
+
         update_text();
+
+        var effect = (Math.random() < 0.5);
+        if (effect) {
+            new Sprite({
+                pos: new Vector(size.x / 2, -icon_displacement),
+                size: new Vector(15, 15),
+                parent: this,
+                depth: _options.depth + 0.01,
+                texture: Luxe.resources.texture('assets/images/icons/background.png'),
+                color: bg_color
+            });
+            new Sprite({
+                pos: new Vector(size.x / 2, -icon_displacement),
+                size: new Vector(15, 15),
+                parent: this,
+                depth: _options.depth + 0.02,
+                texture: Luxe.resources.texture('assets/images/icons/spider-alt.png'),
+                color: new Color(1, 1, 0)
+            });
+        }
     }
 
     public function damage(amount :Int) {
@@ -142,7 +189,8 @@ class HeroEntity extends MinionEntity {
 
         max_power = _options.model.power;
 
-        if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 35 });
+        // if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 28 });
+        if (_options.size == null) _options.size = new Vector(45, 45);
         super(_options);
     }
 
@@ -153,7 +201,7 @@ class HeroEntity extends MinionEntity {
     }
 
     override function update_text() {
-        powerText.text = '$power/$max_power';
+        powerText.text = '$power';
     }
 }
 
