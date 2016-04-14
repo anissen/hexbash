@@ -55,6 +55,7 @@ class HandState extends State {
             case Tower(_, _): new Color(0.2, 0.3, 0.8);
             case Potion(_): new Color(0.2, 0.8, 0.3);
             case Spell(_): new Color(0.8, 0.2, 0.3);
+            case Attack(_): new Color(1.0, 0.1, 0.2);
         };
         var cardEntity = new CardEntity({
             text: card.title,

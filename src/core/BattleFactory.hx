@@ -184,18 +184,18 @@ class BattleFactory {
             { text: 'Rat', card_type: CardType.Minion('Rat', 2) },
             // { text: 'Potion', card_type: CardType.Potion(1) },
             // { text: 'Potion', card_type: CardType.Potion(2) },
-            { text: 'Potion', card_type: CardType.Potion(3) },
-            { text: 'Knock Knock', card_type: CardType.Spell(spell_bam, 2) },
-            { text: 'Boost Morale', card_type: CardType.Spell(spell_boost, 2) },
-            { text: 'Power Swap', card_type: CardType.Spell(spell_swap, 2) },
+            // { text: 'Potion', card_type: CardType.Potion(3) },
+            // { text: 'Knock Knock', card_type: CardType.Spell(spell_bam, 2) },
+            // { text: 'Boost Morale', card_type: CardType.Spell(spell_boost, 2) },
+            // { text: 'Power Swap', card_type: CardType.Spell(spell_swap, 2) },
             { text: 'Trade Places', card_type: CardType.Spell(spell_trade_places, 2) },
             { text: 'Force Push', card_type: CardType.Spell(spell_push, 1) },
-            // { text: 'Bare Fist', card_type: CardType.Spell(spell_attack.bind(1), 0) },
-            // { text: 'Club', card_type: CardType.Spell(spell_attack.bind(2), 0) },
-            // { text: 'Board with nail', card_type: CardType.Spell(spell_attack.bind(3), 0) }
-            { text: 'Healing Tower', card_type: CardType.Tower('Healing Tower', 1, healing_tower_trigger, spell_boost) },
-            { text: 'Healing Tower', card_type: CardType.Tower('Healing Tower', 1, healing_tower_trigger, spell_boost) },
-            { text: 'Healing Tower', card_type: CardType.Tower('Healing Tower', 1, healing_tower_trigger, spell_boost) }
+            { text: 'Attack 1', card_type: CardType.Attack(1) },
+            { text: 'Attack 2', card_type: CardType.Attack(2) },
+            { text: 'Attack 3', card_type: CardType.Attack(3) }
+            // { text: 'Healing Tower', card_type: CardType.Tower('Healing Tower', 1, healing_tower_trigger, spell_boost) },
+            // { text: 'Healing Tower', card_type: CardType.Tower('Healing Tower', 1, healing_tower_trigger, spell_boost) },
+            // { text: 'Healing Tower', card_type: CardType.Tower('Healing Tower', 1, healing_tower_trigger, spell_boost) }
         ];
 
         function random_int(v :Int) {

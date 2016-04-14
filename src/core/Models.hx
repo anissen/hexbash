@@ -69,6 +69,7 @@ enum CardType {
     Tower(name :String, cost :Int, trigger :BattleModel->Event->Bool, effect :BattleModel->Array<Command>);
     Potion(power :Int);
     Spell(effect :BattleModel->Array<Command>, cost :Int);
+    Attack(power :Int);
 }
 
 class CardModel {
@@ -326,6 +327,7 @@ class BattleModel {
             case Minion(name, cost): handle_play_minion(hero, name, cost);
             case Tower(name, cost, trigger, effect): handle_play_tower(hero, name, cost, trigger, effect);
             case Spell(effect, cost): handle_play_spell(effect, cost);
+            case Attack(power): handle_play_attack(power);
         }
 
         if (state.playerHand.length == 0) {
@@ -386,6 +388,20 @@ class BattleModel {
         }
     }
 
+    function handle_play_attack(power :Int) {
+        var hero = get_hero(get_current_player());
+        var targets = hero.hex.ring(1).map(function(hex) {
+            var other = get_minion(hex);
+            if (other != null && other.playerId != hero.playerId) return other.id;
+            return null;
+        }).filter(function(action) { return (action != null); });
+
+        if (targets.length == 0) return;
+        // TODO: Allow targeting!
+        var randomTarget = targets.random(function(v :Int) { return state.random.int(v); });
+        handle_attack(hero.id, randomTarget);
+    }
+
     public function get_hero(playerId :Int) :HeroModel { // HACK, should be a property of player
         for (model in state.minions) {
             if (model.playerId == playerId && model.hero) return cast model;
@@ -435,6 +451,7 @@ class BattleModel {
             case Tower(_, cost, _, _): cost;
             case Potion(power): power;
             case Spell(_, cost): cost;
+            case Attack(_): 0;
         }
     }
 
@@ -445,6 +462,7 @@ class BattleModel {
             case Tower(_, cost, _, _): cost;
             case Potion(power): -power; // heals
             case Spell(_, cost): cost;
+            case Attack(_): 0;
         };
         var hero = get_hero(get_current_player());
         return (cost < hero.power);
@@ -516,7 +534,7 @@ class BattleModel {
     function kill_minion(modelId :Int) {
         state.minions.remove(get_minion_from_id(modelId));
 
-        
+
         state.effects.remove('tower_${modelId}'); // HACK HACK HACK!!!
 
 
