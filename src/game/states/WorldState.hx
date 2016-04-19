@@ -21,6 +21,10 @@ import game.Components;
 import core.HexLibrary.Hex;
 import core.HexLibrary.Layout;
 
+import libnoise.QualityMode;
+import libnoise.ModuleBase;
+import libnoise.generator.Perlin;
+
 using Lambda;
 using core.HexLibrary;
 
@@ -89,12 +93,7 @@ class WorldState extends State {
         hexes = new Map();
         enemies = [];
 
-        var hex_list = MapFactory.create_hexagon_map(10); // .create_rectangular_map(10, 10);
-        for (h in hex_list) {
-            if (Math.random() < 0.2) continue; // make some random holes
-            add_hex(h);
-        }
-        // hex_list.map(add_hex);
+        create_map();
 
         hero = new Sprite({
             pos: hexGrid.hex_to_pos(new Hex(0, 0)),
@@ -109,19 +108,57 @@ class WorldState extends State {
         Luxe.scene.empty();
     }
 
-    function add_hex(hex :Hex) {
+    function create_map() {
+        var frequency = 0.01;
+    	var lacunarity = 2.0;
+    	var persistence = 0.5;
+    	var octaves = 16;
+    	var seed = 42;
+    	var quality = HIGH;
+
+        var module :ModuleBase = new Perlin(frequency, lacunarity, persistence, octaves, seed, quality);
+
+        function get_normalized_value(val : Float) {
+    		return (val + 1) / 2;
+    	}
+
+        var hex_list = MapFactory.create_hexagon_map(10); // .create_rectangular_map(10, 10);
+        for (h in hex_list) {
+            // if (Math.random() < 0.2) continue; // make some random holes
+            var value = get_normalized_value(module.getValue(h.q * 15, h.r * 15, 0));
+            if (value < water_level) continue;
+            add_hex(h, value);
+        }
+        // hex_list.map(add_hex);
+    }
+
+    var water_level = 0.25;
+
+    function add_hex(hex :Hex, value :Float) {
         var pos = hexGrid.hex_to_pos(hex);
-        var height = -3 + 6 * Math.random();
+        var height = (0.5 - (water_level + value)) * 50; // -3 + 6 * Math.random();
         pos.y += height;
 
+        var tile_image = if (value < 0.4) {
+            'Sand';
+        } else if (value < 0.6) {
+            'Dirt';
+        } else if (value < 0.8) {
+            'Grass';
+        } else {
+            'Snow';
+        }
+        var col = value * value;
         new HexSpriteTile({
             pos: new Vector(pos.x, pos.y + 12),
-            texture: Luxe.resources.texture('assets/images/tile' + (Math.random() > 0.3 ? 'Grass' : 'Dirt') + '_full.png'),
+            // texture: Luxe.resources.texture('assets/images/tile' + (Math.random() > 0.3 ? 'Grass' : 'Dirt') + '_full.png'),
+            texture: Luxe.resources.texture('assets/images/tiles/tile${tile_image}_full.png'),
+            // color: new Color(value, value, value),
             depth: hex.r
         });
 
         var walkable = true;
-        if (Math.random() > 0.9) {
+        if (Math.random() > 0.95) {
             var enemy = new Sprite({
                 pos: new Vector(pos.x, pos.y),
                 texture: Luxe.resources.texture('assets/images/icons/' + (Math.random() < 0.5 ? 'orc-head.png' : 'spider-alt.png')),
@@ -141,11 +178,19 @@ class WorldState extends State {
             enemies.push(enemy);
         } else if (Math.random() > 0.9) {
             walkable = false;
-            new Sprite({
-                pos: new Vector(pos.x, pos.y - 25),
-                texture: Luxe.resources.texture('assets/images/treeGreen_low.png'),
-                depth: 100
-            });
+            if (Math.random() < 0.8) {
+                new Sprite({
+                    pos: new Vector(pos.x, pos.y - 25),
+                    texture: Luxe.resources.texture('assets/images/tiles/treeGreen_low.png'),
+                    depth: 100
+                });
+            } else {
+                new Sprite({
+                    pos: new Vector(pos.x, pos.y),
+                    texture: Luxe.resources.texture('assets/images/tiles/rockStone.png'),
+                    depth: 100
+                });
+            }
         }
         if (walkable) hexes[hex.key] = hex;
     }

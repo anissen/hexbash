@@ -68,9 +68,12 @@ class Main extends luxe.Game {
         config.render.antialiasing = 4;
 
         // config.preload.textures.push({ id: 'assets/images/cultist.png' });
-        config.preload.textures.push({ id: 'assets/images/tileGrass_full.png' });
-        config.preload.textures.push({ id: 'assets/images/tileDirt_full.png' });
-        config.preload.textures.push({ id: 'assets/images/treeGreen_low.png' });
+        config.preload.textures.push({ id: 'assets/images/tiles/tileGrass_full.png' });
+        config.preload.textures.push({ id: 'assets/images/tiles/tileDirt_full.png' });
+        config.preload.textures.push({ id: 'assets/images/tiles/tileSand_full.png' });
+        config.preload.textures.push({ id: 'assets/images/tiles/tileSnow_full.png' });
+        config.preload.textures.push({ id: 'assets/images/tiles/treeGreen_low.png' });
+        config.preload.textures.push({ id: 'assets/images/tiles/rockStone.png' });
         config.preload.textures.push({ id: 'assets/images/icons/orc-head.png' });
         config.preload.textures.push({ id: 'assets/images/icons/spider-alt.png' });
         config.preload.textures.push({ id: 'assets/images/icons/pointy-hat.png' });

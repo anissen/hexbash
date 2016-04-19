@@ -38,7 +38,7 @@ class HexTile extends Visual {
 
 class HexSpriteTile extends Sprite {
     public function new(options :SpriteOptions) {
-        if (options.texture == null) options.texture = Luxe.resources.texture('assets/images/tileGrass_tile.png');
+        // if (options.texture == null) options.texture = Luxe.resources.texture('assets/images/tiles/tileGrass_tile.png');
         super(options);
     }
 }
