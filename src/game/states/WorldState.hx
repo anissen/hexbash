@@ -52,6 +52,7 @@ class WorldState extends State {
     static public var StateId :String = 'WorldState';
     var hexGrid :HexGrid;
     var hexes :Map<String, Hex>;
+    var heights :Map<String, Float>;
 
     var hero :Sprite;
     var enemies :Array<Sprite>;
@@ -91,12 +92,13 @@ class WorldState extends State {
         hexGrid.events.listen(HexGrid.HEX_CLICKED_EVENT, onhexclicked);
 
         hexes = new Map();
+        heights = new Map();
         enemies = [];
 
         create_map();
 
         hero = new Sprite({
-            pos: hexGrid.hex_to_pos(new Hex(0, 0)),
+            pos: hex_to_pos(new Hex(0, 0)),
             texture: Luxe.resources.texture('assets/images/icons/pointy-hat.png'),
             color: new Color(0, 0.5, 0.5),
             scale: new Vector(0.1, 0.1),
@@ -162,7 +164,7 @@ class WorldState extends State {
             var enemy = new Sprite({
                 pos: new Vector(pos.x, pos.y),
                 texture: Luxe.resources.texture('assets/images/icons/' + (Math.random() < 0.5 ? 'orc-head.png' : 'spider-alt.png')),
-                color: new Color(1, 1, 1), // new ColorHSL(360 * Math.random(), 0.8, 0.8),
+                color: new Color(0, 0, 0), // new ColorHSL(360 * Math.random(), 0.8, 0.8),
                 scale: new Vector(0.08, 0.08),
                 depth: 99
             });
@@ -170,7 +172,7 @@ class WorldState extends State {
                 pos: new Vector(256, 256),
                 centered: true,
                 texture: Luxe.resources.texture('assets/images/icons/shadow.png'),
-                color: new Color(0, 0, 0),
+                color: new Color(1, 1, 1, 0.2),
                 scale: new Vector(1.4, 1.4),
                 depth: 98,
                 parent: enemy
@@ -186,17 +188,26 @@ class WorldState extends State {
                 });
             } else {
                 new Sprite({
-                    pos: new Vector(pos.x, pos.y),
+                    pos: new Vector(pos.x, pos.y + 10),
                     texture: Luxe.resources.texture('assets/images/tiles/rockStone.png'),
                     depth: 100
                 });
             }
         }
-        if (walkable) hexes[hex.key] = hex;
+        if (walkable) {
+            hexes[hex.key] = hex;
+            heights[hex.key] = height;
+        }
     }
 
     function is_walkable(h :Hex) {
         return hexes.exists(h.key);
+    }
+
+    function hex_to_pos(hex :Hex) :Vector {
+        var pos = hexGrid.hex_to_pos(hex);
+        pos.y += heights[hex.key];
+        return pos;
     }
 
     function onhexclicked(hex :Hex) {
@@ -208,7 +219,7 @@ class WorldState extends State {
         if (path.length > 0) return;
         var hero_hex = hexGrid.pos_to_hex(hero.pos);
         path_shown = hero_hex.find_path(hex, 5, 100, is_walkable).map(function(h) {
-            return hexGrid.hex_to_pos(h);
+            return hex_to_pos(h);
         });
     }
 
@@ -229,7 +240,7 @@ class WorldState extends State {
         }
         path_shown = [];
 
-        var move_to = hexGrid.hex_to_pos(path[0]);
+        var move_to = hex_to_pos(path[0]);
         var diff = Vector.Subtract(move_to, hero.pos);
         if (diff.length > 2) {
             diff.normalize();
@@ -252,7 +263,7 @@ class WorldState extends State {
                 var reachable = enemy_hex.reachable(is_walkable, 1);
                 if (reachable.length == 0) continue;
                 var new_hex = reachable[Math.floor(reachable.length * Math.random())];
-                var new_pos = hexGrid.hex_to_pos(new_hex);
+                var new_pos = hex_to_pos(new_hex);
                 var move_to = new MoveTo(new_pos, Math.random());
                 move_to.onCompleted = function() {
                     var hero_hex = hexGrid.pos_to_hex(hero.pos);
