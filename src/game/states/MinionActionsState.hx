@@ -18,7 +18,7 @@ import game.Entities.CardEntity;
 import game.Entities.MinionEntity;
 import game.Entities.HexTile;
 import game.Entities.HexGrid;
-import game.Components;
+import game.components.PopIn;
 
 using Lambda;
 using core.HexLibrary.HexTools;

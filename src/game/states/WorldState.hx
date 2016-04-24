@@ -7,7 +7,8 @@ import luxe.Vector;
 import luxe.Sprite;
 import luxe.tween.Actuate;
 import game.Entities.CardEntity;
-import game.Components.PopIn;
+import game.components.PopIn;
+import game.components.MoveTo;
 import core.Models.BattleModel;
 import phoenix.Batcher;
 import luxe.Scene;
@@ -17,7 +18,6 @@ import core.MapFactory;
 import game.Entities.HexTile;
 import game.Entities.HexSpriteTile;
 import game.Entities.HexGrid;
-import game.Components;
 import core.HexLibrary.Hex;
 import core.HexLibrary.Layout;
 

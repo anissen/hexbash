@@ -6,7 +6,7 @@ import luxe.States.State;
 import luxe.Vector;
 import luxe.tween.Actuate;
 import game.Entities.CardEntity;
-import game.Components.PopIn;
+import game.components.PopIn;
 import core.Models.BattleModel;
 import phoenix.Batcher;
 import luxe.Scene;

@@ -18,7 +18,7 @@ import game.Entities.MinionEntity;
 import game.Entities.HeroEntity;
 import game.Entities.HexSpriteTile;
 import game.Entities.HexGrid;
-import game.Components;
+import game.components.PopIn;
 
 using core.HexLibrary.HexTools;
 using core.ArrayTools;
