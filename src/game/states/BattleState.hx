@@ -113,7 +113,7 @@ class BattleState extends State {
         // });
         var tile = new HexSpriteTile({
             pos: new Vector(pos.x, pos.y + 12),
-            texture: Luxe.resources.texture('assets/images/tile' + (Math.random() > 0.3 ? 'Grass' : 'Dirt') + '_full.png'),
+            texture: Luxe.resources.texture('assets/images/tiles/tile' + (Math.random() > 0.3 ? 'Grass' : 'Dirt') + '_full.png'),
             depth: -100 + hex.r
         });
         var popIn = new FastPopIn();

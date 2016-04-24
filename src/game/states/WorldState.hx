@@ -212,7 +212,7 @@ class WorldState extends State {
 
     function onhexclicked(hex :Hex) {
         var hero_hex = hexGrid.pos_to_hex(hero.pos);
-        path = hero_hex.find_path(hex, 5, 100, is_walkable); // TODO: Arguments?!
+        path = hero_hex.find_path(hex, 20, 100, is_walkable);
     }
 
     // function onhexmoved(hex :Hex) {
@@ -226,7 +226,7 @@ class WorldState extends State {
     override function update(dt :Float) {
         // water_shader.set_float('time', Luxe.core.tick_start + dt);
 
-        // if (path.length == 0) {
+        if (path.length == 0) {
         //     for (p in path_shown) {
         //         Luxe.draw.circle({
         //             x: p.x,
@@ -236,8 +236,8 @@ class WorldState extends State {
         //             depth: 101
         //         });
         //     }
-        //     return;
-        // }
+            return;
+        }
         // path_shown = [];
 
         var move_to = hex_to_pos(path[0]);

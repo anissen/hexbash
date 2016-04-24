@@ -16,6 +16,7 @@
 [ ] General-purpose effect handling (of type Void->Array<Command>, Command includes RemoveEffect)
 [ ] Ranged attackers
 [ ] Spell that moves a minion (jump)
+[ ] Move some game state out of the battle state (e.g. hero life, cards)
 [ ] Refactor: Split into files
 [ ] Refactor: Clean up code
 
