@@ -2,9 +2,6 @@
 import luxe.States;
 import luxe.Input.KeyEvent;
 import luxe.Input.Key;
-#if desktop
-import filewatch.Filewatch;
-#end
 
 import game.states.*;
 
@@ -112,35 +109,6 @@ class Main extends luxe.Game {
         states.add(new MinionActionsState());
         states.add(new WorldState());
         states.set(WorldState.StateId);
-
-        #if desktop
-            var assets_path = '/Users/nissen/code/snowkit/hexbash/assets';
-            trace('watching "$assets_path"');
-
-            function on_file_changed(event :FilewatchEvent) {
-                trace('type: ${event.type} path: ${event.path}');
-                if (event.type == FWE_modify || event.type == FWE_create) {
-                    var pos = event.path.indexOf("assets/");
-                    if (pos >= 0) {
-                        var asset_key = event.path.substr(pos);
-                        asset_key = StringTools.replace(asset_key, '\\', '/');
-
-                        trace('Trying to find asset with key "$asset_key" from ' + event.path);
-
-                        var resource = Luxe.resources.get(asset_key);
-                        if (resource != null /*&& StringTools.endsWith(asset_key, '.hxs') */) {
-                            trace('Reloading asset with key "$asset_key"');
-                            resource.reload();
-                        } else {
-                            trace('Ignoring asset with key "$asset_key"');
-                        }
-                    }
-                }
-            }
-
-            Filewatch.init(on_file_changed);
-            Filewatch.add_watch('$assets_path');
-        #end
     }
 
     // Scale camera's viewport accordingly when game is scaled, common and suitable for most games
