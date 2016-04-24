@@ -57,7 +57,7 @@ class WorldState extends State {
     var hero :Sprite;
     var enemies :Array<Sprite>;
 
-    var path_shown :Array<Vector>;
+    // var path_shown :Array<Vector>;
     var path :Array<Hex>;
 
     // var water_shader :phoenix.Shader;
@@ -66,7 +66,7 @@ class WorldState extends State {
         super({ name: StateId });
 
         path = [];
-        path_shown = [];
+        // path_shown = [];
     }
 
     override function onenter(_) {
@@ -88,7 +88,7 @@ class WorldState extends State {
         // });
 
         hexGrid = new HexGrid(35, 2, 0);
-        hexGrid.events.listen(HexGrid.HEX_MOUSEMOVED_EVENT, onhexmoved);
+        // hexGrid.events.listen(HexGrid.HEX_MOUSEMOVED_EVENT, onhexmoved);
         hexGrid.events.listen(HexGrid.HEX_CLICKED_EVENT, onhexclicked);
 
         hexes = new Map();
@@ -215,30 +215,30 @@ class WorldState extends State {
         path = hero_hex.find_path(hex, 5, 100, is_walkable); // TODO: Arguments?!
     }
 
-    function onhexmoved(hex :Hex) {
-        if (path.length > 0) return;
-        var hero_hex = hexGrid.pos_to_hex(hero.pos);
-        path_shown = hero_hex.find_path(hex, 5, 100, is_walkable).map(function(h) {
-            return hex_to_pos(h);
-        });
-    }
+    // function onhexmoved(hex :Hex) {
+    //     if (path.length > 0) return;
+    //     var hero_hex = hexGrid.pos_to_hex(hero.pos);
+    //     path_shown = hero_hex.find_path(hex, 5, 100, is_walkable).map(function(h) {
+    //         return hex_to_pos(h);
+    //     });
+    // }
 
     override function update(dt :Float) {
         // water_shader.set_float('time', Luxe.core.tick_start + dt);
 
-        if (path.length == 0) {
-            for (p in path_shown) {
-                Luxe.draw.circle({
-                    x: p.x,
-                    y: p.y,
-                    r: 10,
-                    immediate: true,
-                    depth: 101
-                });
-            }
-            return;
-        }
-        path_shown = [];
+        // if (path.length == 0) {
+        //     for (p in path_shown) {
+        //         Luxe.draw.circle({
+        //             x: p.x,
+        //             y: p.y,
+        //             r: 10,
+        //             immediate: true,
+        //             depth: 101
+        //         });
+        //     }
+        //     return;
+        // }
+        // path_shown = [];
 
         var move_to = hex_to_pos(path[0]);
         var diff = Vector.Subtract(move_to, hero.pos);
