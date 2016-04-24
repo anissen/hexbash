@@ -3,18 +3,16 @@
 
 --> If this game is shipped tomorrow, what is the most important thing to work on right now??
 
-[ ] Map: Generate level from noise function
-[ ] Battle: Make battle map fancy too.
 [ ] Map: Make enemies on world map move at a specific speed
 [ ] Map: Make different types of tiles affect speed
 [ ] Battle: Implement attack cards
 [ ] Battle: Clean up effects handling
 [ ] Battle: Fix broken postprocessing shader
-
-
-[x] Spell cards have a cost
-[ ] Random enemy when starting a new battle
-[ ] Enemy can cast spells
+[ ] Battle: Dungeon type battles
+[ ] Map: Generate different monster types
+[ ] Battle: Try out tile background
+[ ] Map + Battle: Handle progression of life, cards
+[ ] Generate weapons
 [ ] General-purpose effect handling (of type Void->Array<Command>, Command includes RemoveEffect)
 [ ] Ranged attackers
 [ ] Spell that moves a minion (jump)
