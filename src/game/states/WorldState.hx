@@ -60,6 +60,8 @@ class WorldState extends State {
     // var path_shown :Array<Vector>;
     var path :Array<Hex>;
 
+    var overlay_batcher :phoenix.Batcher;
+    var overlay_filter :Sprite;
     // var water_shader :phoenix.Shader;
 
     public function new() {
@@ -104,6 +106,27 @@ class WorldState extends State {
             scale: new Vector(0.1, 0.1),
             depth: 98
         });
+
+        overlay_batcher = Luxe.renderer.create_batcher({ name: 'overlay', layer: 100 });
+        overlay_filter = new Sprite({
+            pos: Luxe.screen.mid.clone(),
+            texture: Luxe.resources.texture('assets/images/overlay_filter.png'),
+            size: Luxe.screen.size.clone(),
+            batcher: overlay_batcher
+        });
+        overlay_filter.color.a = 0.75;
+
+        // for (i in 0 ... 5) {
+        //     var top = Math.random() < 0.5;
+        //     var sun_ray = new Sprite({
+        //         pos: top ? new Vector(Luxe.screen.w * Math.random(), 300 * Math.random()) : new Vector(100 * Math.random(), Luxe.screen.h * 0.75 * Math.random()),
+        //         texture: Luxe.resources.texture('assets/images/sun_ray.png'),
+        //         batcher: overlay_batcher,
+        //         size: new Vector(50 + 250 * Math.random(), 400 + 400 * Math.random()),
+        //         rotation_z: -30
+        //     });
+        //     sun_ray.color.a = 0.3;
+        // }
     }
 
     override function onleave(_) {
@@ -222,6 +245,12 @@ class WorldState extends State {
     //         return hex_to_pos(h);
     //     });
     // }
+
+    override function onkeyup(e :luxe.Input.KeyEvent) {
+        if (e.keycode == luxe.Input.Key.key_f) {
+            overlay_filter.visible = !overlay_filter.visible;
+        }
+    }
 
     override function update(dt :Float) {
         // water_shader.set_float('time', Luxe.core.tick_start + dt);
