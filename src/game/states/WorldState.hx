@@ -107,26 +107,36 @@ class WorldState extends State {
             depth: 98
         });
 
-        overlay_batcher = Luxe.renderer.create_batcher({ name: 'overlay', layer: 100 });
+        overlay_batcher = Luxe.renderer.create_batcher({
+            name: 'overlay',
+            layer: 100
+        });
+        overlay_batcher.on(prerender, function(b :Batcher) {
+            Luxe.renderer.blend_mode(BlendMode.src_alpha, BlendMode.one);
+        });
+        overlay_batcher.on(postrender, function(b :Batcher) {
+            Luxe.renderer.blend_mode();
+        });
+
         overlay_filter = new Sprite({
             pos: Luxe.screen.mid.clone(),
             texture: Luxe.resources.texture('assets/images/overlay_filter.png'),
             size: Luxe.screen.size.clone(),
             batcher: overlay_batcher
         });
-        overlay_filter.color.a = 0.75;
+        overlay_filter.color.a = 0.5;
 
-        // for (i in 0 ... 5) {
-        //     var top = Math.random() < 0.5;
-        //     var sun_ray = new Sprite({
-        //         pos: top ? new Vector(Luxe.screen.w * Math.random(), 300 * Math.random()) : new Vector(100 * Math.random(), Luxe.screen.h * 0.75 * Math.random()),
-        //         texture: Luxe.resources.texture('assets/images/sun_ray.png'),
-        //         batcher: overlay_batcher,
-        //         size: new Vector(50 + 250 * Math.random(), 400 + 400 * Math.random()),
-        //         rotation_z: -30
-        //     });
-        //     sun_ray.color.a = 0.3;
-        // }
+        for (i in 0 ... 5) {
+            var top = Math.random() < 0.5;
+            var sun_ray = new Sprite({
+                pos: top ? new Vector(Luxe.screen.w * 0.5 * Math.random(), 300 * Math.random()) : new Vector(100 * Math.random(), Luxe.screen.h * 0.5 * Math.random()),
+                texture: Luxe.resources.texture('assets/images/sun_ray.png'),
+                batcher: overlay_batcher,
+                size: new Vector(50 + 250 * Math.random(), 400 + 400 * Math.random()),
+                rotation_z: -30
+            });
+            sun_ray.color.a = 0.2;
+        }
     }
 
     override function onleave(_) {
@@ -161,7 +171,9 @@ class WorldState extends State {
 
     function add_hex(hex :Hex, value :Float) {
         var pos = hexGrid.hex_to_pos(hex);
-        var height = (0.5 - (water_level + value)) * 50; // -3 + 6 * Math.random();
+        var max_height = (1 - water_level);
+        var height_amount = (-max_height / 2) + ((value - water_level)) / max_height; // [-0.5;0.5]
+        var height = height_amount * 25;
         pos.y += height;
 
         var tile_image = if (value < 0.4) {
@@ -256,15 +268,15 @@ class WorldState extends State {
         // water_shader.set_float('time', Luxe.core.tick_start + dt);
 
         if (path.length == 0) {
-        //     for (p in path_shown) {
-        //         Luxe.draw.circle({
-        //             x: p.x,
-        //             y: p.y,
-        //             r: 10,
-        //             immediate: true,
-        //             depth: 101
-        //         });
-        //     }
+            // for (p in path_shown) {
+            //     Luxe.draw.circle({
+            //         x: p.x,
+            //         y: p.y,
+            //         r: 10,
+            //         immediate: true,
+            //         depth: 101
+            //     });
+            // }
             return;
         }
         // path_shown = [];

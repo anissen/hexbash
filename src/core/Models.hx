@@ -390,7 +390,7 @@ class BattleModel {
 
     function handle_play_attack(power :Int) {
         var hero = get_hero(get_current_player());
-        var targets = hero.hex.ring(1).map(function(hex) {
+        var targets = hero.hex.ring(1).map(function(hex) :Null<Int> {
             var other = get_minion(hex);
             if (other != null && other.playerId != hero.playerId) return other.id;
             return null;
