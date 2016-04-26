@@ -4,16 +4,17 @@
 --> If this game is shipped tomorrow, what is the most important thing to work on right now??
 
 [ ] Battle: Implement attack cards
-[ ] Battle: Clean up effects handling
-[ ] Map: Generate different monster types
-[ ] Map + Battle: Handle progression of life, cards
-[ ] Generate weapons
-[ ] General-purpose effect handling (of type Void->Array<Command>, Command includes RemoveEffect)
-[ ] Ranged attackers
-[ ] Spell that moves a minion (jump)
 [ ] Move some game state out of the battle state (e.g. hero life, cards)
+[ ] Map + Battle: Handle progression of life, cards
+[ ] Map: Generate different monster types
+[ ] Battle: Create battle with the given enemy type
 [ ] Refactor: Split into files
 [ ] Refactor: Clean up code
+[ ] Battle: Clean up effects handling
+[ ] General-purpose effect handling (of type Void->Array<Command>, Command includes RemoveEffect)
+[ ] Spell that moves a minion (jump)
+[ ] Ranged attackers
+[ ] Generate weapons
 [ ] Battle: Fix broken postprocessing shader
 [ ] Battle: Dungeon type battles
 
