@@ -253,6 +253,19 @@ class WorldState extends State {
         }
     }
 
+    function get_next_enemy_hex(enemy :Enemy, hero_hex :Hex) :Null<Hex> {
+        var enemy_hex = hexGrid.pos_to_hex(enemy.pos);
+        var chase_tile_count = enemy.get_chase_tiles();
+        if (chase_tile_count > 0) {
+            var chase_path = enemy_hex.find_path(hero_hex, chase_tile_count, 100, is_walkable);
+            if (chase_path.length > 0) return chase_path[0];
+        }
+
+        var reachable = enemy_hex.reachable(is_walkable, 1);
+        if (reachable.length == 0) return null;
+        return reachable[Math.floor(reachable.length * Math.random())];
+    }
+
     override function update(dt :Float) {
         // water_shader.set_float('time', Luxe.core.tick_start + dt);
 
@@ -286,13 +299,10 @@ class WorldState extends State {
                 }
             }
             for (enemy in enemies) {
-                if (enemy.has('MoveTo')) continue; // Enemy is already moving
-                if (Math.random() < 0.5) continue; // Enemy doesn't want to move
-                var enemy_hex = hexGrid.pos_to_hex(enemy.pos);
+                if (enemy.is_moving()) continue;
+                if (enemy.is_idle()) continue;
 
-                var reachable = enemy_hex.reachable(is_walkable, 1);
-                if (reachable.length == 0) continue;
-                var new_hex = reachable[Math.floor(reachable.length * Math.random())];
+                var new_hex = get_next_enemy_hex(enemy, hex);
                 var new_pos = hex_to_pos(new_hex);
                 enemy.move_to(new_pos).onCompleted = function() {
                     var hero_hex = hexGrid.pos_to_hex(hero.pos);

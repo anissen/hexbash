@@ -54,16 +54,9 @@ class Enemy extends Sprite {
         };
     }
 
-    public function get_agression() {
-        return switch (type) {
-            case Spider: 1;
-            case Orc: 0.25;
-        };
-    }
-
     public function get_idleness() {
         return switch (type) {
-            case Spider: 0;
+            case Spider: 0.25;
             case Orc: 0.75;
         };
     }
@@ -73,6 +66,14 @@ class Enemy extends Sprite {
             case Spider: 3;
             case Orc: 0;
         };
+    }
+
+    public function is_idle() {
+        return (get_idleness() > Math.random());
+    }
+
+    public function is_moving() {
+        return has('MoveTo');
     }
 
     public function move_to(pos :Vector) :Null<MoveTo> {
