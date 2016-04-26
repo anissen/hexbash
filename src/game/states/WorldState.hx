@@ -195,14 +195,15 @@ class WorldState extends State {
             depth: hex.r
         });
 
+        var is_hero_start_hex = (hex.q == 0 && hex.r == 0);
         var walkable = true;
-        if (Math.random() > 0.95) {
+        if (Math.random() > 0.95 && !is_hero_start_hex) {
             var enemy = new Enemy({
                 pos: new Vector(pos.x, pos.y),
                 type: (Math.random() < 0.5 ? Spider : Orc)
             });
             enemies.push(enemy);
-        } else if (Math.random() > 0.9) {
+        } else if (Math.random() > 0.9 && !is_hero_start_hex) {
             walkable = false;
             if (Math.random() < 0.8) {
                 new Sprite({

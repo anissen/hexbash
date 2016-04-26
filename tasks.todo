@@ -3,14 +3,9 @@
 
 --> If this game is shipped tomorrow, what is the most important thing to work on right now??
 
-[ ] Map: Make enemies on world map move at a specific speed
-[ ] Map: Make different types of tiles affect speed
 [ ] Battle: Implement attack cards
 [ ] Battle: Clean up effects handling
-[ ] Battle: Fix broken postprocessing shader
-[ ] Battle: Dungeon type battles
 [ ] Map: Generate different monster types
-[ ] Battle: Try out tile background
 [ ] Map + Battle: Handle progression of life, cards
 [ ] Generate weapons
 [ ] General-purpose effect handling (of type Void->Array<Command>, Command includes RemoveEffect)
@@ -19,6 +14,8 @@
 [ ] Move some game state out of the battle state (e.g. hero life, cards)
 [ ] Refactor: Split into files
 [ ] Refactor: Clean up code
+[ ] Battle: Fix broken postprocessing shader
+[ ] Battle: Dungeon type battles
 
 # Equipment/skills:
 [ ] Allow 1 additional action per minion (penalty: -1 power)

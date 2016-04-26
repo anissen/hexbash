@@ -242,8 +242,8 @@ class BattleState extends State {
         switch (event.keycode) {
             // case luxe.Input.Key.enter: battleModel.do_action(core.Models.Action.EndTurn);
             case luxe.Input.Key.key_r: reset(1000 * Math.random());
-            case luxe.Input.Key.kp_minus: Luxe.camera.zoom -= 0.05;
-            case luxe.Input.Key.kp_period: Luxe.camera.zoom += 0.05;
+            // case luxe.Input.Key.kp_minus: Luxe.camera.zoom -= 0.05;
+            // case luxe.Input.Key.kp_period: Luxe.camera.zoom += 0.05;
         }
     }
 }
