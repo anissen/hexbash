@@ -18,6 +18,7 @@ import core.MapFactory;
 import game.Entities.HexTile;
 import game.Entities.HexSpriteTile;
 import game.Entities.HexGrid;
+import game.entities.Enemy;
 import core.HexLibrary.Hex;
 import core.HexLibrary.Layout;
 
@@ -55,7 +56,7 @@ class WorldState extends State {
     var heights :Map<String, Float>;
 
     var hero :Sprite;
-    var enemies :Array<Sprite>;
+    var enemies :Array<Enemy>;
 
     // var path_shown :Array<Vector>;
     var path :Array<Hex>;
@@ -129,7 +130,7 @@ class WorldState extends State {
         for (i in 0 ... 5) {
             var top = Math.random() < 0.5;
             var sun_ray = new Sprite({
-                pos: top ? new Vector(Luxe.screen.w * 0.5 * Math.random(), 300 * Math.random()) : new Vector(100 * Math.random(), Luxe.screen.h * 0.5 * Math.random()),
+                pos: top ? new Vector(Luxe.screen.w * 0.5 * Math.random(), 100 * Math.random()) : new Vector(100 * Math.random(), Luxe.screen.h * 0.5 * Math.random()),
                 texture: Luxe.resources.texture('assets/images/sun_ray.png'),
                 batcher: overlay_batcher,
                 size: new Vector(50 + 250 * Math.random(), 400 + 400 * Math.random()),
@@ -196,21 +197,9 @@ class WorldState extends State {
 
         var walkable = true;
         if (Math.random() > 0.95) {
-            var enemy = new Sprite({
+            var enemy = new Enemy({
                 pos: new Vector(pos.x, pos.y),
-                texture: Luxe.resources.texture('assets/images/icons/' + (Math.random() < 0.5 ? 'orc-head.png' : 'spider-alt.png')),
-                color: new Color(0, 0, 0), // new ColorHSL(360 * Math.random(), 0.8, 0.8),
-                scale: new Vector(0.08, 0.08),
-                depth: 99
-            });
-            new Sprite({
-                pos: new Vector(256, 256),
-                centered: true,
-                texture: Luxe.resources.texture('assets/images/icons/shadow.png'),
-                color: new Color(1, 1, 1, 0.2),
-                scale: new Vector(1.4, 1.4),
-                depth: 98,
-                parent: enemy
+                type: (Math.random() < 0.5 ? Spider : Orc)
             });
             enemies.push(enemy);
         } else if (Math.random() > 0.9) {
@@ -305,14 +294,12 @@ class WorldState extends State {
                 if (reachable.length == 0) continue;
                 var new_hex = reachable[Math.floor(reachable.length * Math.random())];
                 var new_pos = hex_to_pos(new_hex);
-                var move_to = new MoveTo(new_pos, Math.random());
-                move_to.onCompleted = function() {
+                enemy.move_to(new_pos).onCompleted = function() {
                     var hero_hex = hexGrid.pos_to_hex(hero.pos);
                     if (new_hex.key == hero_hex.key) {
                         Main.states.set(BattleState.StateId);
                     }
                 };
-                enemy.add(move_to);
             }
         }
     }
