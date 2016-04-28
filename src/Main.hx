@@ -27,6 +27,7 @@ class Main extends luxe.Game {
         config.preload.textures.push({ id: 'assets/images/overlay_filter.png' });
         config.preload.textures.push({ id: 'assets/images/sun_ray.png' });
         config.preload.shaders.push({ id: 'postprocess', frag_id: 'assets/shaders/postprocess2.glsl', vert_id: 'default' });
+        config.preload.jsons.push({ id: 'assets/data/world_enemies.json' });
         return config;
     }
 

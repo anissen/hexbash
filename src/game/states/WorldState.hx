@@ -49,6 +49,14 @@ using core.HexLibrary;
 //     Blocked(type :BlockedTile);
 // }
 
+typedef EnemyData = {
+    var name :String;
+    var icon :String;
+    var speed :Float;
+    var idle :Float;
+    var chase_tiles :Int;
+};
+
 class WorldState extends State {
     static public var StateId :String = 'WorldState';
     var hexGrid :HexGrid;
@@ -64,12 +72,14 @@ class WorldState extends State {
     var overlay_batcher :phoenix.Batcher;
     var overlay_filter :Sprite;
     // var water_shader :phoenix.Shader;
+    var enemy_database :Array<EnemyData>;
 
     public function new() {
         super({ name: StateId });
 
         path = [];
         // path_shown = [];
+        enemy_database = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
     }
 
     override function onenter(_) {
@@ -198,6 +208,8 @@ class WorldState extends State {
         var is_hero_start_hex = (hex.q == 0 && hex.r == 0);
         var walkable = true;
         if (Math.random() > 0.95 && !is_hero_start_hex) {
+            var data = enemy_database[Math.floor(enemy_database.length * Math.random())];
+            trace('enemy data: $data');
             var enemy = new Enemy({
                 pos: new Vector(pos.x, pos.y),
                 type: (Math.random() < 0.5 ? Spider : Orc)
