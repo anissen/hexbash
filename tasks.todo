@@ -4,6 +4,7 @@
 --> If this game is shipped tomorrow, what is the most important thing to work on right now??
 
 [ ] Battle: Implement attack cards
+[ ] Database of minions (JSON, should be used for look-up for minion/enemy creation)
 [ ] Move some game state out of the battle state (e.g. hero life, cards)
 [ ] Map + Battle: Handle progression of life, cards
 [ ] Map: Generate different monster types

@@ -72,6 +72,14 @@ enum CardType {
     Attack(power :Int);
 }
 
+// enum PlayCard {
+//     Minion(name :String, cost :Int, tile :Hex);
+//     Tower(name :String, cost :Int, tile :Hex);
+//     Potion(power :Int);
+//     Spell(effect :BattleModel->Array<Command>, cost :Int);
+//     Attack(power :Int);
+// }
+
 class CardModel {
     static var Id :Int = 0;
     public var id :Int;
@@ -321,7 +329,7 @@ class BattleModel {
 
         emit(CardPlayed(cardId));
         state.playerHand.remove(card);
-        state.playerDeck.unshift(card); // try adding played card back into deck as a mechanic
+        // state.playerDeck.unshift(card); // try adding played card back into deck as a mechanic
         switch (card.cardType) {
             case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);
@@ -340,6 +348,7 @@ class BattleModel {
 
         emit(CardDiscarded(cardId));
         state.playerHand.remove(card);
+        state.playerDeck.unshift(card); // try adding discarded card back into deck as a mechanic
 
         var hero = get_hero(get_current_player());
         heal_minion(hero.id, 1); // Test: heal 1 when discarding
