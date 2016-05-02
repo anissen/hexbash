@@ -21,6 +21,8 @@ class Main extends luxe.Game {
         config.preload.textures.push({ id: 'assets/images/tiles/rockStone.png' });
         config.preload.textures.push({ id: 'assets/images/icons/orc-head.png' });
         config.preload.textures.push({ id: 'assets/images/icons/spider-alt.png' });
+        config.preload.textures.push({ id: 'assets/images/icons/wolf-head.png' });
+        config.preload.textures.push({ id: 'assets/images/icons/crowned-skull.png' });
         config.preload.textures.push({ id: 'assets/images/icons/pointy-hat.png' });
         config.preload.textures.push({ id: 'assets/images/icons/shadow.png' });
         config.preload.textures.push({ id: 'assets/images/icons/background.png' });

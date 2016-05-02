@@ -6,24 +6,23 @@ import luxe.Sprite;
 import luxe.Color;
 import game.components.MoveTo;
 
-enum EnemyType {
-    Spider;
-    Orc;
-}
-
 typedef EnemyOptions = {
     > luxe.options.SpriteOptions,
-    type: EnemyType
+    icon :String,
+    ?speed :Float,
+    ?idle :Float,
+    ?chase_tiles :Int
 }
 
 class Enemy extends Sprite {
-    var type :EnemyType;
+    var speed :Float;
+    var idle :Float;
+    var chase_tiles :Int;
 
     public function new(options :EnemyOptions) {
-        type = options.type;
         super({
             pos: options.pos,
-            texture: get_texture(),
+            texture: Luxe.resources.texture('assets/images/icons/${options.icon}'),
             color: new Color(0, 0, 0), // new ColorHSL(360 * Math.random(), 0.8, 0.8),
             scale: new Vector(0.08, 0.08),
             depth: 99
@@ -37,35 +36,21 @@ class Enemy extends Sprite {
             depth: 98,
             parent: this
         });
-    }
-
-    function get_texture() {
-        var icon = switch (type) {
-            case Spider: 'spider-alt';
-            case Orc: 'orc-head';
-        };
-        return Luxe.resources.texture('assets/images/icons/$icon.png');
+        speed = (options.speed != null ? options.speed : 1);
+        idle = (options.idle != null ? options.idle : 0.5);
+        chase_tiles = (options.chase_tiles != null ? options.chase_tiles : 1);
     }
 
     function get_speed() {
-        return switch (type) {
-            case Spider: 1;
-            case Orc: 0.25;
-        };
+        return speed;
     }
 
     public function get_idleness() {
-        return switch (type) {
-            case Spider: 0.25;
-            case Orc: 0.75;
-        };
+        return idle;
     }
 
     public function get_chase_tiles() {
-        return switch (type) {
-            case Spider: 3;
-            case Orc: 0;
-        };
+        return chase_tiles;
     }
 
     public function is_idle() {

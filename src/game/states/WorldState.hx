@@ -170,7 +170,6 @@ class WorldState extends State {
 
         var hex_list = MapFactory.create_hexagon_map(10); // .create_rectangular_map(10, 10);
         for (h in hex_list) {
-            // if (Math.random() < 0.2) continue; // make some random holes
             var value = get_normalized_value(module.getValue(h.q * 15, h.r * 15, 0));
             if (value < water_level) continue;
             add_hex(h, value);
@@ -196,12 +195,11 @@ class WorldState extends State {
         } else {
             'Snow';
         }
-        var col = value * value;
+        var col = 1.0 - value * 0.5;
         new HexSpriteTile({
             pos: new Vector(pos.x, pos.y + 12),
-            // texture: Luxe.resources.texture('assets/images/tile' + (Math.random() > 0.3 ? 'Grass' : 'Dirt') + '_full.png'),
             texture: Luxe.resources.texture('assets/images/tiles/tile${tile_image}_full.png'),
-            // color: new Color(value, value, value),
+            color: new Color(col, col, col),
             depth: hex.r
         });
 
@@ -212,7 +210,10 @@ class WorldState extends State {
             trace('enemy data: $data');
             var enemy = new Enemy({
                 pos: new Vector(pos.x, pos.y),
-                type: (Math.random() < 0.5 ? Spider : Orc)
+                icon: data.icon,
+                speed: data.speed,
+                idle: data.idle,
+                chase_tiles: data.chase_tiles
             });
             enemies.push(enemy);
         } else if (Math.random() > 0.9 && !is_hero_start_hex) {
