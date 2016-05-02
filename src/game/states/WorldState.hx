@@ -21,10 +21,15 @@ import game.Entities.HexGrid;
 import game.entities.Enemy;
 import core.HexLibrary.Hex;
 import core.HexLibrary.Layout;
+import core.EnemyFactory;
 
 import libnoise.QualityMode;
 import libnoise.ModuleBase;
 import libnoise.generator.Perlin;
+
+import generativegrammar.Generator;
+import generativegrammar.Tree;
+using generativegrammar.TreeTools;
 
 using Lambda;
 using core.HexLibrary;
@@ -49,14 +54,6 @@ using core.HexLibrary;
 //     Blocked(type :BlockedTile);
 // }
 
-typedef EnemyData = {
-    var name :String;
-    var icon :String;
-    var speed :Float;
-    var idle :Float;
-    var chase_tiles :Int;
-};
-
 class WorldState extends State {
     static public var StateId :String = 'WorldState';
     var hexGrid :HexGrid;
@@ -72,14 +69,15 @@ class WorldState extends State {
     var overlay_batcher :phoenix.Batcher;
     var overlay_filter :Sprite;
     // var water_shader :phoenix.Shader;
-    var enemy_database :Array<EnemyData>;
+    var enemy_factory :EnemyFactory;
 
     public function new() {
         super({ name: StateId });
 
         path = [];
         // path_shown = [];
-        enemy_database = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
+        var enemy_database = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
+        enemy_factory = new EnemyFactory(enemy_database);
     }
 
     override function onenter(_) {
@@ -148,10 +146,47 @@ class WorldState extends State {
             });
             sun_ray.color.a = 0.2;
         }
+
+        generate_stuff();
     }
 
     override function onleave(_) {
         Luxe.scene.empty();
+    }
+
+    function generate_stuff() {
+        var encounter_grammar = "
+        Encounter => Animal + Encounter
+        Encounter [0.25]=> Monster
+        Encounter [0.10]=> Chief
+        Animal => wolf
+        Animal => spider
+        Monster => orc
+        Chief => necromancer
+        ";
+
+        var generator = new Generator();
+        generator.add_rules(encounter_grammar);
+
+        var results = generator.generate('Encounter').leafs();
+        trace(results);
+    }
+
+    function get_enemy() /* HACK! */ {
+        var encounter_grammar = "
+        Encounter => Animal
+        Encounter [0.25]=> Monster
+        Encounter [0.10]=> Chief
+        Animal => wolf
+        Animal => spider
+        Monster => orc
+        Chief => necromancer
+        ";
+
+        var generator = new Generator();
+        generator.add_rules(encounter_grammar);
+
+        return generator.generate('Encounter').leafs()[0];
     }
 
     function create_map() {
@@ -206,8 +241,7 @@ class WorldState extends State {
         var is_hero_start_hex = (hex.q == 0 && hex.r == 0);
         var walkable = true;
         if (Math.random() > 0.95 && !is_hero_start_hex) {
-            var data = enemy_database[Math.floor(enemy_database.length * Math.random())];
-            trace('enemy data: $data');
+            var data = enemy_factory.create(get_enemy());
             var enemy = new Enemy({
                 pos: new Vector(pos.x, pos.y),
                 icon: data.icon,

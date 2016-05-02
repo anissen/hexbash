@@ -196,8 +196,12 @@ class BattleState extends State {
 
     function game_over(won :Bool) {
         trace('Game Over - You ${won ? "Won" : "Lost"}!');
-        reset(battleModel.get_random().get());
-        return Promise.resolve();
+        // reset(battleModel.get_random().get());
+        return Promise.resolve().then(to_overworld_map);
+    }
+
+    function to_overworld_map() {
+        Main.states.set(WorldState.StateId);
     }
 
     override public function onmousemove(event :luxe.Input.MouseEvent) {

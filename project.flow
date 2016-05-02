@@ -38,7 +38,8 @@
             "comment" : "flow build android --d android_release",
             dependencies : {
                 luxe: '*',
-                libnoise: '*'
+                libnoise: '*',
+                generativegrammar: '*'
             },
             defines : [
                 'absolute-path'
