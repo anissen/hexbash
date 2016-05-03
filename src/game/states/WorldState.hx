@@ -27,10 +27,6 @@ import libnoise.QualityMode;
 import libnoise.ModuleBase;
 import libnoise.generator.Perlin;
 
-import generativegrammar.Generator;
-import generativegrammar.Tree;
-using generativegrammar.TreeTools;
-
 using Lambda;
 using core.HexLibrary;
 
@@ -76,8 +72,7 @@ class WorldState extends State {
 
         path = [];
         // path_shown = [];
-        var enemy_database = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
-        enemy_factory = new EnemyFactory(enemy_database);
+        enemy_factory = new EnemyFactory();
     }
 
     override function onenter(_) {
@@ -146,47 +141,10 @@ class WorldState extends State {
             });
             sun_ray.color.a = 0.2;
         }
-
-        generate_stuff();
     }
 
     override function onleave(_) {
         Luxe.scene.empty();
-    }
-
-    function generate_stuff() {
-        var encounter_grammar = "
-        Encounter => Animal + Encounter
-        Encounter [0.25]=> Monster
-        Encounter [0.10]=> Chief
-        Animal => wolf
-        Animal => spider
-        Monster => orc
-        Chief => necromancer
-        ";
-
-        var generator = new Generator();
-        generator.add_rules(encounter_grammar);
-
-        var results = generator.generate('Encounter').leafs();
-        trace(results);
-    }
-
-    function get_enemy() /* HACK! */ {
-        var encounter_grammar = "
-        Encounter => Animal
-        Encounter [0.25]=> Monster
-        Encounter [0.10]=> Chief
-        Animal => wolf
-        Animal => spider
-        Monster => orc
-        Chief => necromancer
-        ";
-
-        var generator = new Generator();
-        generator.add_rules(encounter_grammar);
-
-        return generator.generate('Encounter').leafs()[0];
     }
 
     function create_map() {
@@ -241,7 +199,7 @@ class WorldState extends State {
         var is_hero_start_hex = (hex.q == 0 && hex.r == 0);
         var walkable = true;
         if (Math.random() > 0.95 && !is_hero_start_hex) {
-            var data = enemy_factory.create(get_enemy());
+            var data = enemy_factory.create_random();
             var enemy = new Enemy({
                 pos: new Vector(pos.x, pos.y),
                 icon: data.icon,
