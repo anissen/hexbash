@@ -10,7 +10,7 @@ class Main extends luxe.Game {
     var fullscreen :Bool = false;
     var postprocess :PostProcess;
 
-    override function config(config :luxe.AppConfig) {
+    override function config(config :luxe.GameConfig) {
         config.render.antialiasing = 4;
 
         config.preload.textures.push({ id: 'assets/images/tiles/tileGrass_full.png' });
