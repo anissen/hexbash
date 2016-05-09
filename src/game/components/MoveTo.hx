@@ -16,9 +16,10 @@ class MoveTo extends Component {
 
     override function update(dt :Float) {
         var diff = Vector.Subtract(move_to, pos);
-        if (diff.length > 2) {
+        var diff_length = diff.length;
+        if (diff_length > 2) {
             diff.normalize();
-            pos = Vector.Add(pos, Vector.Multiply(diff, dt * 200 * speed));
+            pos = Vector.Add(pos, Vector.Multiply(diff, Math.min(dt * 200 * speed, diff_length)));
         } else {
             entity.remove('MoveTo');
             if (onCompleted != null) onCompleted();

@@ -30,26 +30,6 @@ import libnoise.generator.Perlin;
 using Lambda;
 using core.HexLibrary;
 
-// enum WalkableTile {
-//     Grass;
-//     Dirt;
-// }
-//
-// enum UnwalkableTile {
-//     Empty;
-//     Water;
-// }
-// enum BlockedTile {
-//     Tree;
-//     Rock;
-// }
-//
-// enum TileType {
-//     Walkable(type :WalkableTile);
-//     Unwalkable(type :UnwalkableTile);
-//     Blocked(type :BlockedTile);
-// }
-
 class WorldState extends State {
     static public var StateId :String = 'WorldState';
     var hexGrid :HexGrid;
@@ -59,42 +39,25 @@ class WorldState extends State {
     var hero :Sprite;
     var enemies :Array<Enemy>;
 
-    // var path_shown :Array<Vector>;
     var path :Array<Hex>;
 
     var overlay_batcher :phoenix.Batcher;
     var overlay_filter :Sprite;
-    // var water_shader :phoenix.Shader;
     var enemy_factory :EnemyFactory;
 
     public function new() {
         super({ name: StateId });
 
         path = [];
-        // path_shown = [];
         enemy_factory = new EnemyFactory();
     }
 
     override function onenter(_) {
         Luxe.camera.zoom = 10;
         Luxe.renderer.clear_color.set(130/255, 220/255, 230/255); // water color
-        // Luxe.renderer.clear_color.set(1, 20, 0);
         luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1 });
 
-        // water_shader = Luxe.resources.shader('toon_water');
-        // water_shader.set_vector2('resolution', Luxe.screen.size.clone());
-        // new Sprite({
-        //     centered: false,
-        //     pos: new Vector(0, 0),
-        //     color: new Color(139/255, 225/255, 235/255),
-        //     size: Luxe.screen.size.clone(),
-        //     shader: water_shader,
-        //     texture: Luxe.resources.texture('assets/images/water.png'),
-        //     batcher: Luxe.renderer.create_batcher({ name: 'water', layer: -1 })
-        // });
-
         hexGrid = new HexGrid(35, 2, 0);
-        // hexGrid.events.listen(HexGrid.HEX_MOUSEMOVED_EVENT, onhexmoved);
         hexGrid.events.listen(HexGrid.HEX_CLICKED_EVENT, onhexclicked);
 
         hexes = new Map();
@@ -161,13 +124,12 @@ class WorldState extends State {
     		return (val + 1) / 2;
     	}
 
-        var hex_list = MapFactory.create_hexagon_map(10); // .create_rectangular_map(10, 10);
+        var hex_list = MapFactory.create_hexagon_map(10);
         for (h in hex_list) {
             var value = get_normalized_value(module.getValue(h.q * 15, h.r * 15, 0));
             if (value < water_level) continue;
             add_hex(h, value);
         }
-        // hex_list.map(add_hex);
     }
 
     var water_level = 0.25;
@@ -245,14 +207,6 @@ class WorldState extends State {
         path = hero_hex.find_path(hex, 20, 100, is_walkable);
     }
 
-    // function onhexmoved(hex :Hex) {
-    //     if (path.length > 0) return;
-    //     var hero_hex = hexGrid.pos_to_hex(hero.pos);
-    //     path_shown = hero_hex.find_path(hex, 5, 100, is_walkable).map(function(h) {
-    //         return hex_to_pos(h);
-    //     });
-    // }
-
     override function onkeyup(e :luxe.Input.KeyEvent) {
         if (e.keycode == luxe.Input.Key.key_f) {
             overlay_filter.visible = !overlay_filter.visible;
@@ -273,27 +227,15 @@ class WorldState extends State {
     }
 
     override function update(dt :Float) {
-        // water_shader.set_float('time', Luxe.core.tick_start + dt);
-
-        if (path.length == 0) {
-            // for (p in path_shown) {
-            //     Luxe.draw.circle({
-            //         x: p.x,
-            //         y: p.y,
-            //         r: 10,
-            //         immediate: true,
-            //         depth: 101
-            //     });
-            // }
-            return;
-        }
-        // path_shown = [];
+        if (path.length == 0) return;
 
         var move_to = hex_to_pos(path[0]);
         var diff = Vector.Subtract(move_to, hero.pos);
-        if (diff.length > 2) {
+        var diff_length = diff.length;
+        if (diff_length > 2) {
             diff.normalize();
-            hero.pos = Vector.Add(hero.pos, Vector.Multiply(diff, dt * 200));
+            var move_vector = Vector.Multiply(diff, Math.min(dt * 200, diff_length));
+            hero.pos = Vector.Add(hero.pos, move_vector);
             Luxe.camera.center = hero.pos;
         } else {
             var hex = path.shift();
