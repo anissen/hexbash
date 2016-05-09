@@ -29,16 +29,16 @@ class EnemyFactory {
         generator.add_rules(enemy_grammar);
     }
 
-    public function create(name :String) {
+    public function create(name :String) :EnemyData {
         return enemy_database[name];
     }
 
-    public function create_random() {
+    public function create_random() :EnemyData {
         var name = generator.generate('Encounter').leafs()[0];
         return create(name);
     }
 
-    public function create_random_list() {
+    public function create_random_list() :Array<EnemyData> {
         var names = generator.generate('Encounter').leafs();
         return [ for (name in names) create(name) ];
     }

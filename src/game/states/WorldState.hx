@@ -164,6 +164,7 @@ class WorldState extends State {
             var data = enemy_factory.create_random();
             var enemy = new Enemy({
                 pos: new Vector(pos.x, pos.y),
+                name: data.name,
                 icon: data.icon,
                 speed: data.speed,
                 idle: data.idle,
@@ -213,6 +214,13 @@ class WorldState extends State {
         }
     }
 
+    function enter_battle(enemy :Enemy) {
+        enemy.destroy();
+        if (Main.states.current_state.id != BattleState.StateId) {
+            Main.states.set(BattleState.StateId, { enemy: enemy.get_name() });
+        }
+    }
+
     function get_next_enemy_hex(enemy :Enemy, hero_hex :Hex) :Null<Hex> {
         var enemy_hex = hexGrid.pos_to_hex(enemy.pos);
         var chase_tile_count = enemy.get_chase_tiles();
@@ -242,7 +250,7 @@ class WorldState extends State {
             for (enemy in enemies) {
                 var enemy_hex = hexGrid.pos_to_hex(enemy.pos);
                 if (hex.key == enemy_hex.key) {
-                    Main.states.set(BattleState.StateId);
+                    enter_battle(enemy);
                     return;
                 }
             }
@@ -255,7 +263,7 @@ class WorldState extends State {
                 enemy.move_to(new_pos).onCompleted = function() {
                     var hero_hex = hexGrid.pos_to_hex(hero.pos);
                     if (new_hex.key == hero_hex.key) {
-                        Main.states.set(BattleState.StateId);
+                        enter_battle(enemy);
                     }
                 };
             }
