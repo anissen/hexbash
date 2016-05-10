@@ -5,7 +5,7 @@ import generativegrammar.Tree;
 using generativegrammar.TreeTools;
 
 typedef EnemyData = {
-    var name :String;
+    var identifier :String;
     var icon :String;
     var speed :Float;
     var idle :Float;
@@ -21,7 +21,7 @@ class EnemyFactory {
 
         var database :Array<EnemyData> = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
         for (d in database) {
-            enemy_database[d.name] = d;
+            enemy_database[d.identifier] = d;
         }
 
         var enemy_grammar = Luxe.resources.text('assets/data/encounter_grammar.txt').asset.text;
@@ -29,17 +29,17 @@ class EnemyFactory {
         generator.add_rules(enemy_grammar);
     }
 
-    public function create(name :String) :EnemyData {
-        return enemy_database[name];
+    public function create(identifier :String) :EnemyData {
+        return enemy_database[identifier];
     }
 
     public function create_random() :EnemyData {
-        var name = generator.generate('Encounter').leafs()[0];
-        return create(name);
+        var identifier = generator.generate('Encounter').leafs()[0];
+        return create(identifier);
     }
 
-    public function create_random_list() :Array<EnemyData> {
-        var names = generator.generate('Encounter').leafs();
-        return [ for (name in names) create(name) ];
+    public function create_many() :Array<EnemyData> {
+        var identifiers = generator.generate('Encounter').leafs();
+        return [ for (id in identifiers) create(id) ];
     }
 }

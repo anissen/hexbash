@@ -8,7 +8,7 @@ import game.components.MoveTo;
 
 typedef EnemyOptions = {
     > luxe.options.SpriteOptions,
-    name :String,
+    identifier :String,
     icon :String,
     ?speed :Float,
     ?idle :Float,
@@ -16,7 +16,7 @@ typedef EnemyOptions = {
 }
 
 class Enemy extends Sprite {
-    var name :String;
+    var identifier :String;
     var speed :Float;
     var idle :Float;
     var chase_tiles :Int;
@@ -38,14 +38,14 @@ class Enemy extends Sprite {
             depth: 98,
             parent: this
         });
-        name = options.name;
+        identifier = options.identifier;
         speed = (options.speed != null ? options.speed : 1);
         idle = (options.idle != null ? options.idle : 0.5);
         chase_tiles = (options.chase_tiles != null ? options.chase_tiles : 1);
     }
 
-    public function get_name() {
-        return name;
+    public function get_identifier() {
+        return identifier;
     }
 
     function get_speed() {

@@ -57,12 +57,12 @@ class BattleState extends State {
 
     }
 
-    override function onenter(_) {
+    override function onenter(data :Dynamic) {
         Luxe.camera.zoom = 0.2;
         luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1.5 });
         Luxe.camera.pos = new Vector(0, 0);
         //reset(87634.34);
-        reset(1000 * Math.random());
+        reset(data.enemy, 1000 * Math.random());
     }
 
     override function onleave(_) {
@@ -76,14 +76,39 @@ class BattleState extends State {
         handState.reset();
     }
 
-    function reset(seed :Float) {
+    function reset(enemy :String, seed :Float) {
         clear();
 
         Main.states.add(handState);
         Main.states.enable(HandState.StateId);
 
-        battleModel.load_map(seed);
+        load_map(enemy, seed);
+        //battleModel.load_map(seed);
         battleModel.start_game();
+    }
+
+    function load_map(enemy :String, seed :Float) {
+        var hexes = core.MapFactory.create_custom_map();
+        hexes.map(battleModel.add_hex);
+
+        function get_placement() {
+            while (true) {
+                var random_hex = hexes[Math.floor(hexes.length * Math.random())];
+                if (battleModel.get_minion(random_hex) == null) return random_hex;
+            }
+        }
+
+        function create_enemy_minion(data :core.EnemyFactory.EnemyData) {
+            trace(data);
+            var enemyId = 1;
+            var model = new MinionModel(data.identifier, enemyId, Luxe.utils.random.int(1, 6), get_placement(), data.icon);
+            battleModel.add_minion(model);
+        }
+
+        battleModel.add_minion(new HeroModel('Enemy', 1, 8, new Hex(1, -2), 'crowned-skull.png')); // TODO: Should be part of normal generation
+        var enemy_factory = new core.EnemyFactory(); // TODO: Maybe make this a singleton?
+        enemy_factory.create_many().map(create_enemy_minion);
+        battleModel.add_minion(new HeroModel('Hero', 0, 10, new Hex(-1, 2), 'pointy-hat.png'));
     }
 
     function handle_event(event :Event) :Promise {
@@ -245,7 +270,7 @@ class BattleState extends State {
     override public function onkeyup(event :luxe.Input.KeyEvent) {
         switch (event.keycode) {
             // case luxe.Input.Key.enter: battleModel.do_action(core.Models.Action.EndTurn);
-            case luxe.Input.Key.key_r: reset(1000 * Math.random());
+            case luxe.Input.Key.key_r: reset('spider', 1000 * Math.random());
             // case luxe.Input.Key.kp_minus: Luxe.camera.zoom -= 0.05;
             // case luxe.Input.Key.kp_period: Luxe.camera.zoom += 0.05;
         }

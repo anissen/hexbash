@@ -38,9 +38,9 @@ class BattleFactory {
         // TODO: Load from file
         var playerId = 0;
         var enemyId = 1;
-        var enemyHero = new HeroModel('Enemy', enemyId, 8, new Hex(1, -2));
+        var enemyHero = new HeroModel('Enemy', enemyId, 8, new Hex(1, -2), 'crowned-skull.png');
         var minions :Array<MinionModel> = [
-            new HeroModel('Hero', playerId, 10, new Hex(-1, 2)),
+            new HeroModel('Hero', playerId, 10, new Hex(-1, 2), 'pointy-hat.png'),
             enemyHero
         ];
 
@@ -53,7 +53,7 @@ class BattleFactory {
         }
         var reachableHexes = enemyHero.hex.reachable(walkable);
         for (i in 0 ... random.int(0, reachableHexes.length)) {
-            minions.push(new MinionModel('Enemy Minion ${i + 1}', enemyId, random.int(1, 6), reachableHexes[i]));
+            minions.push(new MinionModel('Enemy Minion ${i + 1}', enemyId, random.int(1, 6), reachableHexes[i], 'spider-alt.png'));
         }
 
         return minions;

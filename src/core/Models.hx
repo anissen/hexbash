@@ -12,15 +12,17 @@ class MinionModel { // TODO: Make a hero type as well?
     public var playerId :Int;
     public var power :Int;
     public var hex :Hex;
+    public var icon :String;
     @:isVar public var actions(get, set) :Int; // Actions should be :Array<Action>, where Action := Move | Attack | Any, e.g. actions = [ Move, Move, Attack ]
     public var hero :Bool;
 
-    public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
+    public function new(title :String, playerId :Int, power :Int, hex :Hex, icon :String, actions :Int = 1, hero :Bool = false, ?id :Int) {
         this.id = (id != null ? id : Id++);
         this.title = title;
         this.playerId = playerId;
         this.power = power;
         this.hex = hex;
+        this.icon = icon;
         this.actions = actions;
         this.hero = hero;
     }
@@ -34,25 +36,25 @@ class MinionModel { // TODO: Make a hero type as well?
     }
 
     public function clone() :MinionModel {
-        return new MinionModel(title, playerId, power, hex, actions, hero, id);
+        return new MinionModel(title, playerId, power, hex, icon, actions, hero, id);
     }
 }
 
 class HeroModel extends MinionModel {
     public var max_power :Int;
 
-    public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
-        super(title, playerId, power, hex, actions, true, id);
+    public function new(title :String, playerId :Int, power :Int, hex :Hex, icon :String, actions :Int = 1, hero :Bool = false, ?id :Int) {
+        super(title, playerId, power, hex, icon, actions, true, id);
     }
 
     override public function clone() :HeroModel {
-        return new HeroModel(title, playerId, power, hex, actions, hero, id);
+        return new HeroModel(title, playerId, power, hex, icon, actions, hero, id);
     }
 }
 
 class TowerModel extends MinionModel {
-    public function new(title :String, playerId :Int, power :Int, hex :Hex, actions :Int = 1, hero :Bool = false, ?id :Int) {
-        super(title, playerId, power, hex, actions, false, id);
+    public function new(title :String, playerId :Int, power :Int, hex :Hex, icon :String, actions :Int = 1, hero :Bool = false, ?id :Int) {
+        super(title, playerId, power, hex, icon, actions, false, id);
     }
 
     override function get_actions() {
@@ -60,7 +62,7 @@ class TowerModel extends MinionModel {
     }
 
     override public function clone() :TowerModel {
-        return new TowerModel(title, playerId, power, hex, actions, hero, id);
+        return new TowerModel(title, playerId, power, hex, icon, actions, hero, id);
     }
 }
 
@@ -155,6 +157,16 @@ enum Event {
     GameWon();
     GameLost();
 }
+
+// class Player {
+//     public var deck :Array<CardModel>;
+//     public var life :Int;
+//
+//     public function new() {
+//         deck = [];
+//         life = 10;
+//     }
+// }
 
 class BattleGameState {
     public var minions :Array<MinionModel>; // TODO: Make into a map<int, model>
@@ -369,7 +381,7 @@ class BattleModel {
         var nearbyHexes = hero.hex.reachable(is_walkable);
         if (nearbyHexes.length == 0) return; // should not happen
         var randomHex = nearbyHexes.random(function(v :Int) { return state.random.int(v); });
-        add_minion(new MinionModel(name, 0, cost, randomHex));
+        add_minion(new MinionModel(name, 0, cost, randomHex, 'spider-alt.png'));
     }
 
     function handle_play_tower(hero :MinionModel, name :String, cost :Int, trigger, effect) {
@@ -380,7 +392,7 @@ class BattleModel {
         if (nearbyHexes.length == 0) return; // should not happen
         var randomHex = nearbyHexes.random(function(v :Int) { return state.random.int(v); });
 
-        var tower = new TowerModel(name, 0, cost, randomHex);
+        var tower = new TowerModel(name, 0, cost, randomHex, 'wolf-head.png');
         var effect_key = 'tower_${tower.id}';
         state.effects[effect_key] = { trigger: trigger, effect: effect };
         add_minion(tower);

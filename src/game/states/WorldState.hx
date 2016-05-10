@@ -164,7 +164,7 @@ class WorldState extends State {
             var data = enemy_factory.create_random();
             var enemy = new Enemy({
                 pos: new Vector(pos.x, pos.y),
-                name: data.name,
+                identifier: data.identifier,
                 icon: data.icon,
                 speed: data.speed,
                 idle: data.idle,
@@ -217,7 +217,7 @@ class WorldState extends State {
     function enter_battle(enemy :Enemy) {
         enemy.destroy();
         if (Main.states.current_state.id != BattleState.StateId) {
-            Main.states.set(BattleState.StateId, { enemy: enemy.get_name() });
+            Main.states.set(BattleState.StateId, { enemy: enemy.get_identifier() });
         }
     }
 

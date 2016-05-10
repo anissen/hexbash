@@ -106,13 +106,13 @@ class MinionEntity extends Sprite {
         power = _options.model.power;
 
         if (_options.color == null) _options.color = new Color(0, 0.5, 0.5);
-        if (_options.texture == null) _options.texture = Luxe.resources.texture('assets/images/icons/' + (Math.random() < 0.5 ? 'pointy-hat' : 'orc-head') + '.png');
+        if (_options.texture == null) _options.texture = Luxe.resources.texture('assets/images/icons/${options.model.icon}');
         if (_options.size == null) _options.size = new Vector(40, 40);
         //if (_options.geometry == null) _options.geometry = Luxe.draw.circle({ r: 24 });
         super(_options);
 
         var bg_color = _options.color.toColorHSL();
-        bg_color.h = (bg_color.h + 200) % 360;
+        bg_color.h = (bg_color.h + 160) % 360;
         new Sprite({
             pos: Vector.Divide(size, 2),
             size: new Vector(size.x + 10, size.y + 10),
@@ -145,25 +145,25 @@ class MinionEntity extends Sprite {
 
         update_text();
 
-        var effect = (Math.random() < 0.5);
-        if (effect) {
-            new Sprite({
-                pos: new Vector(size.x / 2, -icon_displacement),
-                size: new Vector(15, 15),
-                parent: this,
-                depth: _options.depth + 0.01,
-                texture: Luxe.resources.texture('assets/images/icons/background.png'),
-                color: bg_color
-            });
-            new Sprite({
-                pos: new Vector(size.x / 2, -icon_displacement),
-                size: new Vector(15, 15),
-                parent: this,
-                depth: _options.depth + 0.02,
-                texture: Luxe.resources.texture('assets/images/icons/spider-alt.png'),
-                color: new Color(1, 1, 0)
-            });
-        }
+        // var effect = (Math.random() < 0.5);
+        // if (effect) {
+        //     new Sprite({
+        //         pos: new Vector(size.x / 2, -icon_displacement),
+        //         size: new Vector(15, 15),
+        //         parent: this,
+        //         depth: _options.depth + 0.01,
+        //         texture: Luxe.resources.texture('assets/images/icons/background.png'),
+        //         color: bg_color
+        //     });
+        //     new Sprite({
+        //         pos: new Vector(size.x / 2, -icon_displacement),
+        //         size: new Vector(15, 15),
+        //         parent: this,
+        //         depth: _options.depth + 0.02,
+        //         texture: Luxe.resources.texture('assets/images/icons/spider-alt.png'),
+        //         color: new Color(1, 1, 0)
+        //     });
+        // }
     }
 
     public function damage(amount :Int) {

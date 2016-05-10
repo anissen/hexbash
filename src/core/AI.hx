@@ -79,7 +79,7 @@ class AI {
         var ai_hero = ai_heroes[0];
         var reachableHexes = ai_hero.hex.reachable(battleModel.is_walkable);
         var randomHex = reachableHexes.random(random_int);
-        battleModel.add_minion(new MinionModel('Enemy Minion', currentPlayer, battleModel.get_random().int(1, 7), randomHex));
+        battleModel.add_minion(new MinionModel('Enemy Minion', currentPlayer, battleModel.get_random().int(1, 7), randomHex, 'spider-alt.png'));
     }
 
     static function do_ai_actions(battleModel :BattleModel) {
