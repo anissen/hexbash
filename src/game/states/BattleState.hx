@@ -47,6 +47,7 @@ class BattleState extends State {
         super({ name: StateId });
         battleModel = new BattleModel();
         hexGrid = new HexGrid(35, 6, 4); //new HexGrid();
+        TargetSelectionState.hexGrid = hexGrid; // HACK
         levelScene = new Scene();
         guiBatcher = Luxe.renderer.create_batcher({ name: 'gui', layer: 4 });
         handState = new HandState(battleModel, guiBatcher, levelScene);
@@ -84,6 +85,9 @@ class BattleState extends State {
 
         load_map(enemy, seed);
         //battleModel.load_map(seed);
+        battleModel.add_card_to_deck(new CardModel('Attack', 0, Attack(2)));
+        battleModel.add_card_to_deck(new CardModel('Attack', 0, Attack(2)));
+        battleModel.add_card_to_deck(new CardModel('Attack', 0, Attack(2)));
         battleModel.start_game();
     }
 

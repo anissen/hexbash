@@ -58,6 +58,7 @@ class Main extends luxe.Game {
         states.add(new BattleState());
         states.add(new MinionActionsState());
         states.add(new WorldState());
+        states.add(new TargetSelectionState());
         states.set(WorldState.StateId);
     }
 

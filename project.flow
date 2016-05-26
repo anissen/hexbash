@@ -20,15 +20,7 @@
             package : 'com.andersnissen.hexbash',
             main : 'Main',
             mobile: {
-                orientation: 'portrait',
-                android: {
-                    sdk_min: '12',
-                    sdk_target: '19'
-                },
-                ios: {
-                    devices: 'iPhone',
-                    deployment_target: '8.0',
-                }
+                orientation: 'portrait'
             }
         },
 

@@ -125,7 +125,7 @@ typedef EventListenerFunction = Event -> snow.api.Promise;
 
 enum Action {
     MinionAction(modelId :Int, action :MinionAction);
-    PlayCard(cardId :Int);
+    PlayCard(cardId :Int, ?target :Hex);
     DiscardCard(cardId :Int);
     EndTurn();
 }
@@ -157,6 +157,11 @@ enum Event {
     GameWon();
     GameLost();
 }
+
+// enum CardTarget {
+//     Global;
+//     Hex(hex :Hex);
+// }
 
 // class Player {
 //     public var deck :Array<CardModel>;
@@ -273,7 +278,7 @@ class BattleModel {
     function handle_action(action :Action) {
         switch (action) {
             case MinionAction(modelId, action): handle_minion_action(modelId, action);
-            case PlayCard(cardId): handle_play_card(cardId);
+            case PlayCard(cardId, target): handle_play_card(cardId, target);
             case DiscardCard(cardId): handle_discard_card(cardId);
             case EndTurn: handle_end_turn(); handle_start_turn();
         }
@@ -335,7 +340,7 @@ class BattleModel {
         damage_minion(defenderId, attacker.power);
     }
 
-    function handle_play_card(cardId :Int) {
+    function handle_play_card(cardId :Int, ?target :Hex) {
         var hero = get_hero(state.currentPlayerId);
         var card = get_card_from_id(cardId);
 
@@ -347,7 +352,7 @@ class BattleModel {
             case Minion(name, cost): handle_play_minion(hero, name, cost);
             case Tower(name, cost, trigger, effect): handle_play_tower(hero, name, cost, trigger, effect);
             case Spell(effect, cost): handle_play_spell(effect, cost);
-            case Attack(power): handle_play_attack(power);
+            case Attack(power): handle_play_attack(power, target);
         }
 
         if (state.playerHand.length == 0) {
@@ -409,18 +414,10 @@ class BattleModel {
         }
     }
 
-    function handle_play_attack(power :Int) {
+    function handle_play_attack(power :Int, target :Hex) {
         var hero = get_hero(get_current_player());
-        var targets = hero.hex.ring(1).map(function(hex) :Null<Int> {
-            var other = get_minion(hex);
-            if (other != null && other.playerId != hero.playerId) return other.id;
-            return null;
-        }).filter(function(action) { return (action != null); });
-
-        if (targets.length == 0) return;
-        // TODO: Allow targeting!
-        var randomTarget = targets.random(function(v :Int) { return state.random.int(v); });
-        handle_attack(hero.id, randomTarget);
+        var minionId = get_minion(target).id;
+        handle_attack(hero.id, minionId);
     }
 
     public function get_hero(playerId :Int) :HeroModel { // HACK, should be a property of player

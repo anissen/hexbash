@@ -111,6 +111,14 @@ class HandState extends State {
         }
     }
 
+    function get_target(cardId :Int) :Promise {
+        var cardModel = battleModel.get_card_from_id(cardId);
+        switch (cardModel.cardType) {
+            case Attack(_): return TargetSelectionState.Target([new core.HexLibrary.Hex(0,0), new core.HexLibrary.Hex(0,1), new core.HexLibrary.Hex(1,1)]); //Promise.resolve(new core.HexLibrary.Hex(0, 0)); // Select target
+            default: return Promise.resolve();
+        }
+    }
+
     override public function onmouseup(event :luxe.Input.MouseEvent) {
         if (!enabled) return;
 
@@ -123,7 +131,15 @@ class HandState extends State {
             if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
                 if (event.button == luxe.Input.MouseButton.left) {
                     if (battleModel.can_play_card(cardId)) {
-                        battleModel.do_action(PlayCard(cardId));
+                        trace('Select target');
+                        get_target(cardId)
+                            .then(function(?target :core.HexLibrary.Hex) {
+                                trace('Got target: $target');
+                                battleModel.do_action(PlayCard(cardId, target));
+                            })
+                            .error(function() {
+                                trace('Error getting target');
+                            });
                     }
                 } else if (event.button == luxe.Input.MouseButton.right) {
                     battleModel.do_action(DiscardCard(cardId));
