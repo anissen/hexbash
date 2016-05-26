@@ -12,12 +12,12 @@ class TargetSelectionState extends State {
     static public var StateId :String = 'TargetSelectionState';
     var hexes :Array<Hex>;
     static public var hexGrid :HexGrid;
-    var has_data :Bool;
+    // var has_data :Bool;
     static var promise_func :Hex->Void;
 
     public function new() {
         super({ name: StateId });
-        has_data = false;
+        // has_data = false;
     }
 
     static public function Target(hexes :Array<Hex>) :Promise {
@@ -29,11 +29,11 @@ class TargetSelectionState extends State {
 
     override function onenabled<T>(value :T) {
         hexes = cast value;
-        has_data = true;
+        // has_data = true;
     }
 
     override public function onrender() {
-        if (!has_data) return;
+        // if (!has_data) return;
         var pos = Luxe.camera.screen_point_to_world(Luxe.screen.cursor.pos);
         var mouse_hex = hexGrid.pos_to_hex(pos);
 
@@ -46,12 +46,12 @@ class TargetSelectionState extends State {
 
     function select_target(hex :Hex) {
         promise_func(hex);
-        has_data = false;
+        // has_data = false;
         Main.states.disable(StateId);
     }
 
     override public function onmouseup(event :luxe.Input.MouseEvent) {
-        if (!has_data) return;
+        // if (!has_data) return;
         var pos = Luxe.camera.screen_point_to_world(event.pos);
         var mouse_hex = hexGrid.pos_to_hex(pos);
         for (hex in hexes) {

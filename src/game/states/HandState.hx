@@ -20,26 +20,31 @@ class HandState extends State {
     var battleModel :BattleModel;
     var batcher :Batcher;
     var scene :Scene;
+    var grabbedCardEntity :CardEntity;
+    var card_y :Float;
 
     public function new(battleModel :BattleModel, batcher :Batcher, scene :Scene) {
         super({ name: StateId });
         this.battleModel = battleModel;
         this.batcher = batcher;
         this.scene = scene;
+        card_y = Luxe.screen.height - 100;
         reset();
     }
 
     override function onenabled<T>(value :T) {
+        card_y = Luxe.screen.height - 100;
         for (cardId in cardMap.keys()) {
             var cardEntity = cardMap[cardId];
-            luxe.tween.Actuate.tween(cardEntity.pos, 0.4, { y: Luxe.screen.height - 100 });
+            luxe.tween.Actuate.tween(cardEntity.pos, 0.4, { y: card_y });
         }
     }
 
     override function ondisabled<T>(value :T) {
+        card_y = Luxe.screen.height;
         for (cardId in cardMap.keys()) {
             var cardEntity = cardMap[cardId];
-            luxe.tween.Actuate.tween(cardEntity.pos, 0.4, { y: Luxe.screen.height });
+            luxe.tween.Actuate.tween(cardEntity.pos, 0.4, { y: card_y });
         }
     }
 
@@ -58,6 +63,7 @@ class HandState extends State {
             case Attack(_): new Color(1.0, 0.1, 0.2);
         };
         var cardEntity = new CardEntity({
+            centered: true,
             text: card.title,
             cost: cost,
             pos: new Vector(Luxe.screen.width - 100, Luxe.screen.height - 100),
@@ -67,13 +73,25 @@ class HandState extends State {
             scene: scene
         });
         cardMap.set(card.id, cardEntity);
-        var i = 0;
-        for (c in cardMap) {
-            luxe.tween.Actuate.tween(c.pos, 0.3, { x: Luxe.screen.width / 2 + 120 - 120 * (i++) });
-        }
+
+        position_cards();
+
         var popIn = new PopIn();
         cardEntity.add(popIn);
         return popIn.promise;
+    }
+
+    function position_cards() {
+        var i = 0;
+        for (c in cardMap) {
+            luxe.tween.Actuate.tween(c.pos, 0.3, {
+                x: Luxe.screen.width / 2 + 120 - 120 * (i++),
+                y: card_y
+            });
+            luxe.tween.Actuate.tween(c, 0.3, {
+                rotation_z: 0
+            });
+        }
     }
 
     public function play_card(cardId :Int) :Promise {
@@ -97,6 +115,13 @@ class HandState extends State {
     override public function onmousemove(event :luxe.Input.MouseEvent) {
         if (!enabled) return;
 
+        if (grabbedCardEntity != null) {
+            grabbedCardEntity.rotation_z = luxe.utils.Maths.clamp(grabbedCardEntity.rotation_z + event.x_rel / 50, -5, 5);
+            grabbedCardEntity.color.a = 0.25; // Remove everything but the icon instead
+            grabbedCardEntity.pos = Vector.Subtract(Luxe.screen.cursor.pos, grabbedCardEntity.size);
+            return;
+        }
+
         var screen_pos = event.pos;
         var world_pos = Luxe.camera.screen_point_to_world(event.pos);
 
@@ -111,15 +136,15 @@ class HandState extends State {
         }
     }
 
-    function get_target(cardId :Int) :Promise {
-        var cardModel = battleModel.get_card_from_id(cardId);
-        switch (cardModel.cardType) {
-            case Attack(_): return TargetSelectionState.Target([new core.HexLibrary.Hex(0,0), new core.HexLibrary.Hex(0,1), new core.HexLibrary.Hex(1,1)]); //Promise.resolve(new core.HexLibrary.Hex(0, 0)); // Select target
-            default: return Promise.resolve();
-        }
-    }
+    // function get_target(cardId :Int) :Promise {
+    //     var cardModel = battleModel.get_card_from_id(cardId);
+    //     switch (cardModel.cardType) {
+    //         case Attack(_): return TargetSelectionState.Target([new core.HexLibrary.Hex(0,0), new core.HexLibrary.Hex(0,1), new core.HexLibrary.Hex(1,1)]); //Promise.resolve(new core.HexLibrary.Hex(0, 0)); // Select target
+    //         default: return Promise.resolve();
+    //     }
+    // }
 
-    override public function onmouseup(event :luxe.Input.MouseEvent) {
+    override public function onmousedown(event :luxe.Input.MouseEvent) {
         if (!enabled) return;
 
         var screen_pos = event.pos;
@@ -131,21 +156,55 @@ class HandState extends State {
             if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
                 if (event.button == luxe.Input.MouseButton.left) {
                     if (battleModel.can_play_card(cardId)) {
-                        trace('Select target');
-                        get_target(cardId)
-                            .then(function(?target :core.HexLibrary.Hex) {
-                                trace('Got target: $target');
-                                battleModel.do_action(PlayCard(cardId, target));
-                            })
-                            .error(function() {
-                                trace('Error getting target');
-                            });
+                        grabbed_card(cardEntity);
                     }
-                } else if (event.button == luxe.Input.MouseButton.right) {
-                    battleModel.do_action(DiscardCard(cardId));
                 }
                 break;
             }
         }
     }
+
+    function grabbed_card(cardEntity :CardEntity) {
+        grabbedCardEntity = cardEntity;
+    }
+
+    override public function onmouseup(event :luxe.Input.MouseEvent) {
+        if (!enabled) return;
+
+        if (grabbedCardEntity != null) {
+            grabbedCardEntity.color.a = 1;
+            grabbedCardEntity = null;
+            position_cards();
+        }
+    }
+
+    // override public function onmouseup(event :luxe.Input.MouseEvent) {
+    //     if (!enabled) return;
+    //
+    //     var screen_pos = event.pos;
+    //     var world_pos = Luxe.camera.screen_point_to_world(event.pos);
+    //
+    //     /* HACK */
+    //     for (cardId in cardMap.keys()) {
+    //         var cardEntity = cardMap[cardId];
+    //         if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
+    //             if (event.button == luxe.Input.MouseButton.left) {
+    //                 if (battleModel.can_play_card(cardId)) {
+    //                     trace('Select target');
+    //                     get_target(cardId)
+    //                         .then(function(?target :core.HexLibrary.Hex) {
+    //                             trace('Got target: $target');
+    //                             battleModel.do_action(PlayCard(cardId, target));
+    //                         })
+    //                         .error(function() {
+    //                             trace('Error getting target');
+    //                         });
+    //                 }
+    //             } else if (event.button == luxe.Input.MouseButton.right) {
+    //                 battleModel.do_action(DiscardCard(cardId));
+    //             }
+    //             break;
+    //         }
+    //     }
+    // }
 }
