@@ -70,10 +70,10 @@ class MinionActionsState extends State {
 
     function select_action(action :core.Models.MinionAction) {
         battleModel.do_action(MinionAction(model.id, action));
-        if (model.actions <= 0) {
+        // if (model.actions <= 0) {
             Main.states.disable(StateId);
             Main.states.enable(HandState.StateId);
-        }
+        // }
     }
 
     override public function onmouseup(event :luxe.Input.MouseEvent) {
@@ -96,6 +96,8 @@ class MinionActionsState extends State {
                     }
             }
         }
+        Main.states.disable(StateId);
+        Main.states.enable(HandState.StateId);
     }
 
     // override public function onkeyup(event :luxe.Input.KeyEvent) {

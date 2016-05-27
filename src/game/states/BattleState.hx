@@ -85,9 +85,9 @@ class BattleState extends State {
 
         load_map(enemy, seed);
         //battleModel.load_map(seed);
-        battleModel.add_card_to_deck(new CardModel('Attack', 0, Attack(2)));
-        battleModel.add_card_to_deck(new CardModel('Attack', 0, Attack(2)));
-        battleModel.add_card_to_deck(new CardModel('Attack', 0, Attack(2)));
+        battleModel.add_card_to_deck(new CardModel('Attack', 0, CardType.Attack(2)));
+        battleModel.add_card_to_deck(new CardModel('Attack', 0, CardType.Attack(2)));
+        battleModel.add_card_to_deck(new CardModel('Minion', 0, CardType.Minion('Rat', 2)));
         battleModel.start_game();
     }
 
@@ -103,7 +103,6 @@ class BattleState extends State {
         }
 
         function create_enemy_minion(data :core.EnemyFactory.EnemyData) {
-            trace(data);
             var enemyId = 1;
             var model = new MinionModel(data.identifier, enemyId, Luxe.utils.random.int(1, 6), get_placement(), data.icon);
             battleModel.add_minion(model);
@@ -113,6 +112,8 @@ class BattleState extends State {
         var enemy_factory = new core.EnemyFactory(); // TODO: Maybe make this a singleton?
         enemy_factory.create_many().map(create_enemy_minion);
         battleModel.add_minion(new HeroModel('Hero', 0, 10, new Hex(-1, 2), 'pointy-hat.png'));
+
+        battleModel.add_minion(new MinionModel('Rat', 0, Luxe.utils.random.int(1, 6), get_placement(), 'wolf-head.png'));
     }
 
     function handle_event(event :Event) :Promise {
@@ -249,7 +250,7 @@ class BattleState extends State {
         }
     }
 
-    override public function onmouseup(event :luxe.Input.MouseEvent) {
+    override public function onmousedown(event :luxe.Input.MouseEvent) {
         var screen_pos = event.pos;
         var world_pos = Luxe.camera.screen_point_to_world(event.pos);
 
@@ -259,17 +260,42 @@ class BattleState extends State {
             var minion = minionMap[model.id];
             if (minion == null) continue;
             if (Luxe.utils.geometry.point_in_geometry(world_pos, minion.geometry)) {
-                if (Main.states.enabled(MinionActionsState.StateId)) {
-                    Main.states.disable(MinionActionsState.StateId);
-                    Main.states.enable(HandState.StateId);
-                } else {
-                    Main.states.disable(HandState.StateId);
-                    Main.states.enable(MinionActionsState.StateId, { model: model, battleModel: battleModel, hexGrid: hexGrid });
-                }
+                Main.states.disable(HandState.StateId);
+                Main.states.enable(MinionActionsState.StateId, { model: model, battleModel: battleModel, hexGrid: hexGrid });
                 return;
             }
         }
     }
+
+    // override public function onmouseup(event :luxe.Input.MouseEvent) {
+    //     if (Main.states.enabled(MinionActionsState.StateId)) {
+    //         Main.states.disable(MinionActionsState.StateId);
+    //         Main.states.enable(HandState.StateId);
+    //     }
+    // }
+
+
+    // override public function onmouseup(event :luxe.Input.MouseEvent) {
+    //     var screen_pos = event.pos;
+    //     var world_pos = Luxe.camera.screen_point_to_world(event.pos);
+    //
+    //     /* HACK */
+    //     for (model in battleModel.get_minions()) {
+    //         if (model.playerId != 0) continue; // Only open actions for own minions
+    //         var minion = minionMap[model.id];
+    //         if (minion == null) continue;
+    //         if (Luxe.utils.geometry.point_in_geometry(world_pos, minion.geometry)) {
+    //             if (Main.states.enabled(MinionActionsState.StateId)) {
+    //                 Main.states.disable(MinionActionsState.StateId);
+    //                 Main.states.enable(HandState.StateId);
+    //             } else {
+    //                 Main.states.disable(HandState.StateId);
+    //                 Main.states.enable(MinionActionsState.StateId, { model: model, battleModel: battleModel, hexGrid: hexGrid });
+    //             }
+    //             return;
+    //         }
+    //     }
+    // }
 
     override public function onkeyup(event :luxe.Input.KeyEvent) {
         switch (event.keycode) {
