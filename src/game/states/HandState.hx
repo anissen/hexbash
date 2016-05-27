@@ -16,6 +16,7 @@ import snow.api.Promise;
 
 class HandState extends State {
     static public var StateId :String = 'HandState';
+    var deck :CardEntity;
     var cardMap :Map<Int, CardEntity>;
     var battleModel :BattleModel;
     var batcher :Batcher;
@@ -34,6 +35,18 @@ class HandState extends State {
 
     override function onenabled<T>(value :T) {
         card_y = Luxe.screen.height - 100;
+
+        deck = new CardEntity({
+            centered: true,
+            text: 'DECK',
+            cost: 0,
+            pos: new Vector(Luxe.screen.width - 100, card_y),
+            color: new Color(1, 1, 1),
+            batcher: this.batcher,
+            depth: 2,
+            scene: this.scene
+        });
+
         for (cardId in cardMap.keys()) {
             var cardEntity = cardMap[cardId];
             luxe.tween.Actuate.tween(cardEntity.pos, 0.4, { y: card_y });
@@ -170,12 +183,37 @@ class HandState extends State {
 
     override public function onmouseup(event :luxe.Input.MouseEvent) {
         if (!enabled) return;
+        if (grabbedCardEntity == null) return;
 
-        if (grabbedCardEntity != null) {
-            grabbedCardEntity.color.a = 1;
-            grabbedCardEntity = null;
-            position_cards();
+        var cardId = -1;
+        for (key in cardMap.keys()) {
+            if (cardMap[key] == grabbedCardEntity) cardId = key;
         }
+        if (cardId == -1) return;
+
+        // if card is dropped on the deck
+        var screen_pos = event.pos;
+        var world_pos = Luxe.camera.screen_point_to_world(event.pos);
+        if (Luxe.utils.geometry.point_in_geometry(screen_pos, deck.geometry)) {
+            battleModel.do_action(DiscardCard(cardId));
+            return;
+        }
+
+        // if card is dropped on a target
+        // TODO:
+        // var mouse_hex = hexGrid.pos_to_hex(screen_pos);
+        // var targets = battleModel.get_targets_for_card(cardId);
+        // for (hex in targets) {
+        //     if (hex.key == mouse_hex.key) {
+        //         select_target(hex);
+        //         return;
+        //     }
+        // }
+
+        // if card has no valid drop, put it back
+        grabbedCardEntity.color.a = 1;
+        grabbedCardEntity = null;
+        position_cards();
     }
 
     // override public function onmouseup(event :luxe.Input.MouseEvent) {
