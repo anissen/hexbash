@@ -85,6 +85,12 @@ class HandState extends State {
 
         var deckSize = battleModel.get_deck_size();
         deck.set_text('Deck\n\nCards: $deckSize');
+
+        var draw_animation = new Promise(function(resolve) {
+            Actuate.tween(cardEntity, 0.2, { rotation_z: -10 + 20 * Math.random() });
+            Actuate.tween(cardEntity.pos, 0.4, { x: deck.pos.x + 50 - 150 * Math.random(), y: deck.pos.y - 100 - 50 * Math.random() }).onComplete(resolve);
+        });
+        return draw_animation.then(position_cards);
     }
 
     function position_cards() :Promise {
