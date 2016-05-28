@@ -179,7 +179,11 @@ class BattleState extends State {
     function turn_started(playerId :Int) :Promise {
         if (Main.states.enabled(MinionActionsState.StateId)) {
             Main.states.disable(MinionActionsState.StateId);
-            Main.states.enable(HandState.StateId);
+        }
+        if (playerId == 0) {
+            if (!Main.states.enabled(HandState.StateId)) Main.states.enable(HandState.StateId);
+        } else {
+            if (Main.states.enabled(HandState.StateId)) Main.states.disable(HandState.StateId);
         }
 
         currentPlayer = playerId;

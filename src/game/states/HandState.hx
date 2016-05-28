@@ -6,7 +6,7 @@ import luxe.States.State;
 import luxe.Vector;
 import luxe.tween.Actuate;
 import game.Entities.CardEntity;
-import game.components.PopIn;
+import game.Entities.DeckEntity;
 import core.Models.BattleModel;
 import phoenix.Batcher;
 import luxe.Scene;
@@ -16,7 +16,7 @@ import snow.api.Promise;
 
 class HandState extends State {
     static public var StateId :String = 'HandState';
-    var deck :CardEntity;
+    var deck :DeckEntity;
     var cardMap :Map<Int, CardEntity>;
     var battleModel :BattleModel;
     var batcher :Batcher;
@@ -30,35 +30,31 @@ class HandState extends State {
         this.batcher = batcher;
         this.scene = scene;
         card_y = Luxe.screen.height - 100;
+
         reset();
     }
 
     override function onenabled<T>(value :T) {
         card_y = Luxe.screen.height - 100;
 
-        deck = new CardEntity({
-            centered: true,
-            text: 'DECK',
-            cost: 0,
-            pos: new Vector(Luxe.screen.width - 100, card_y),
-            color: new Color(1, 1, 1),
-            batcher: this.batcher,
-            depth: 2,
-            scene: this.scene
-        });
-
-        for (cardId in cardMap.keys()) {
-            var cardEntity = cardMap[cardId];
-            luxe.tween.Actuate.tween(cardEntity.pos, 0.4, { y: card_y });
+        if (deck == null) {
+            deck = new DeckEntity({
+                centered: true,
+                pos: new Vector(Luxe.screen.width - 300, Luxe.screen.height),
+                color: new Color(0, 0, 0),
+                batcher: this.batcher,
+                depth: 4,
+                scene: this.scene
+            });
+            deck.set_text('Deck');
         }
+
+        position_cards();
     }
 
     override function ondisabled<T>(value :T) {
         card_y = Luxe.screen.height;
-        for (cardId in cardMap.keys()) {
-            var cardEntity = cardMap[cardId];
-            luxe.tween.Actuate.tween(cardEntity.pos, 0.4, { y: card_y });
-        }
+        position_cards();
     }
 
     function card_from_model(cardId :Int) {
@@ -79,7 +75,7 @@ class HandState extends State {
             centered: true,
             text: card.title,
             cost: cost,
-            pos: new Vector(Luxe.screen.width - 100, Luxe.screen.height - 100),
+            pos: deck.pos.clone(),
             color: color,
             batcher: batcher,
             depth: 3,
@@ -87,24 +83,30 @@ class HandState extends State {
         });
         cardMap.set(card.id, cardEntity);
 
-        position_cards();
-
-        var popIn = new PopIn();
-        cardEntity.add(popIn);
-        return popIn.promise;
+        return position_cards();
     }
 
-    function position_cards() {
+    function position_cards() :Promise {
+        var count = Lambda.count(cardMap) + 1 /* deck */;
+        var cardWidth = 130;
+        var startX = (Luxe.screen.width / 2) - (count / 2) * cardWidth;
         var i = 0;
         for (c in cardMap) {
-            luxe.tween.Actuate.tween(c.pos, 0.3, {
-                x: Luxe.screen.width / 2 + 120 - 120 * (i++),
+            Actuate.tween(c.pos, 0.3, {
+                x: startX + (i++) * cardWidth,
                 y: card_y
             });
-            luxe.tween.Actuate.tween(c, 0.3, {
+            Actuate.tween(c, 0.3, {
                 rotation_z: 0
             });
         }
+
+        return new Promise(function(resolve) {
+            Actuate.tween(deck.pos, 0.3, {
+                x: startX + (count - 1) * cardWidth,
+                y: card_y
+            }).onComplete(resolve);
+        });
     }
 
     public function play_card(cardId :Int) :Promise {
@@ -119,6 +121,7 @@ class HandState extends State {
         cardMap.remove(cardId);
         if (grabbedCardEntity == cardEntity) grabbedCardEntity = null;
         cardEntity.destroy();
+        position_cards();
         return Promise.resolve();
     }
 

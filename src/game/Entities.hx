@@ -247,3 +247,34 @@ class CardEntity extends luxe.Sprite {
         });
     }
 }
+
+class DeckEntity extends luxe.Sprite {
+    var text :luxe.Text;
+
+    public function new(options :SpriteOptions) {
+        var _options = options;
+        if (_options.name == null) _options.name = 'deck';
+        if (_options.color == null) _options.color = new Color(0.1, 0.1, 0.1);
+        if (_options.geometry == null) _options.geometry = Luxe.draw.box({
+            rect: new luxe.Rectangle(0, 0, 100, 150),
+            batcher: _options.batcher
+        });
+        super(_options);
+
+        text = new luxe.Text({
+            text: '',
+            pos: new Vector(50, 15),
+            point_size: 18,
+            align: luxe.Text.TextAlign.center,
+            align_vertical: luxe.Text.TextAlign.top,
+            parent: this,
+            batcher: _options.batcher,
+            scene: _options.scene,
+            depth: _options.depth + 0.01
+        });
+    }
+
+    public function set_text(t :String) {
+        text.text = t;
+    }
+}
