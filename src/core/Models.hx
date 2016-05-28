@@ -371,8 +371,8 @@ class BattleModel {
         state.playerDeck.unshift(card); // try adding discarded card back into deck as a mechanic
         emit(CardDiscarded(cardId));
 
-        var hero = get_hero(get_current_player());
-        heal_minion(hero.id, 1); // Test: heal 1 when discarding
+        // var hero = get_hero(get_current_player());
+        // heal_minion(hero.id, 1); // Test: heal 1 when discarding
 
         if (state.playerHand.length == 0) {
             handle_action(EndTurn);
