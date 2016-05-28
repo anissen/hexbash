@@ -83,7 +83,8 @@ class HandState extends State {
         });
         cardMap.set(card.id, cardEntity);
 
-        return position_cards();
+        var deckSize = battleModel.get_deck_size();
+        deck.set_text('Deck\n\nCards: $deckSize');
     }
 
     function position_cards() :Promise {
@@ -110,19 +111,23 @@ class HandState extends State {
     }
 
     public function play_card(cardId :Int) :Promise {
-        var cardEntity = card_from_model(cardId);
-        cardMap.remove(cardId);
-        cardEntity.destroy();
-        return Promise.resolve();
+        return remove_card(cardId);
     }
 
     public function discard_card(cardId :Int) :Promise {
+        return remove_card(cardId);
+    }
+
+    public function remove_card(cardId :Int) :Promise {
         var cardEntity = card_from_model(cardId);
         cardMap.remove(cardId);
         if (grabbedCardEntity == cardEntity) grabbedCardEntity = null;
         cardEntity.destroy();
-        position_cards();
-        return Promise.resolve();
+
+        var deckSize = battleModel.get_deck_size();
+        deck.set_text('Deck\n\nCards: $deckSize');
+
+        return position_cards();
     }
 
     public function reset() {

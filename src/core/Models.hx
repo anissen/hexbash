@@ -254,6 +254,10 @@ class BattleModel {
         }
     }
 
+    public function get_deck_size() {
+        return state.playerDeck.length;
+    }
+
     function draw_new_hand() {
         discard_hand();
 
@@ -363,9 +367,9 @@ class BattleModel {
     function handle_discard_card(cardId :Int) {
         var card = get_card_from_id(cardId);
 
-        emit(CardDiscarded(cardId));
         state.playerHand.remove(card);
         state.playerDeck.unshift(card); // try adding discarded card back into deck as a mechanic
+        emit(CardDiscarded(cardId));
 
         var hero = get_hero(get_current_player());
         heal_minion(hero.id, 1); // Test: heal 1 when discarding

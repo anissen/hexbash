@@ -86,8 +86,10 @@ class BattleState extends State {
         load_map(enemy, seed);
         //battleModel.load_map(seed);
         battleModel.add_card_to_deck(new CardModel('Attack', 0, CardType.Attack(2)));
+        battleModel.add_card_to_deck(new CardModel('Attack', 0, CardType.Attack(1)));
         battleModel.add_card_to_deck(new CardModel('Attack', 0, CardType.Attack(2)));
         battleModel.add_card_to_deck(new CardModel('Minion', 0, CardType.Minion('Rat', 2)));
+        battleModel.add_card_to_deck(new CardModel('Minion', 0, CardType.Minion('Rat', 1)));
         battleModel.start_game();
     }
 
