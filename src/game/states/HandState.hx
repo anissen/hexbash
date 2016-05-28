@@ -117,6 +117,7 @@ class HandState extends State {
     public function discard_card(cardId :Int) :Promise {
         var cardEntity = card_from_model(cardId);
         cardMap.remove(cardId);
+        if (grabbedCardEntity == cardEntity) grabbedCardEntity = null;
         cardEntity.destroy();
         return Promise.resolve();
     }
