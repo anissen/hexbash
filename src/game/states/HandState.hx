@@ -23,6 +23,7 @@ class HandState extends State {
     var scene :Scene;
     var grabbedCardEntity :CardEntity;
     var card_y :Float;
+    static public var hexGrid :game.Entities.HexGrid; // HACK!
 
     public function new(battleModel :BattleModel, batcher :Batcher, scene :Scene) {
         super({ name: StateId });
@@ -213,19 +214,29 @@ class HandState extends State {
 
         // if card is dropped on a target
         // TODO:
-        // var mouse_hex = hexGrid.pos_to_hex(screen_pos);
-        // var targets = battleModel.get_targets_for_card(cardId);
-        // for (hex in targets) {
-        //     if (hex.key == mouse_hex.key) {
-        //         select_target(hex);
-        //         return;
-        //     }
-        // }
+        var mouse_hex = hexGrid.pos_to_hex(screen_pos);
+        var targets = [new core.HexLibrary.Hex(0, 0), new core.HexLibrary.Hex(0, 1)]; // battleModel.get_targets_for_card(cardId);
+        for (hex in targets) {
+            if (hex.key == mouse_hex.key) {
+                battleModel.do_action(PlayCard(cardId, hex));
+                return;
+            }
+        }
 
         // if card has no valid drop, put it back
         grabbedCardEntity.color.a = 1;
         grabbedCardEntity = null;
         position_cards();
+    }
+
+    override public function onrender() {
+        if (grabbedCardEntity != null) {
+            var targets = [new core.HexLibrary.Hex(0, 0), new core.HexLibrary.Hex(0, 1)]; // battleModel.get_targets_for_card(cardId);
+            for (target in targets) {
+                var pos = hexGrid.hex_to_pos(target);
+                Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 0.5, 1, 0.4), r: 30, immediate: true, depth: 15 });
+            }
+        }
     }
 
     // override public function onmouseup(event :luxe.Input.MouseEvent) {
