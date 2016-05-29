@@ -94,13 +94,13 @@ class HandState extends State {
     }
 
     function position_cards() :Promise {
-        var count = Lambda.count(cardMap) + 1 /* deck */;
+        var cardCount = Lambda.count(cardMap);
         var cardWidth = 130;
-        var startX = (Luxe.screen.width / 2) - (count / 2) * cardWidth;
-        var i = 0;
+        var startX = (Luxe.screen.width / 2) - ((cardCount + 1 /* deck */) / 2) * cardWidth;
+        var i = cardCount - 1;
         for (c in cardMap) {
             Actuate.tween(c.pos, 0.3, {
-                x: startX + (i++) * cardWidth,
+                x: startX + (i--) * cardWidth,
                 y: card_y
             });
             Actuate.tween(c, 0.3, {
@@ -110,7 +110,7 @@ class HandState extends State {
 
         return new Promise(function(resolve) {
             Actuate.tween(deck.pos, 0.3, {
-                x: startX + (count - 1) * cardWidth,
+                x: startX + cardCount * cardWidth,
                 y: card_y
             }).onComplete(resolve);
         });
@@ -174,6 +174,7 @@ class HandState extends State {
 
     override public function onmousedown(event :luxe.Input.MouseEvent) {
         if (!enabled) return;
+        if (event.button != luxe.Input.MouseButton.left) return;
 
         var screen_pos = event.pos;
         var world_pos = Luxe.camera.screen_point_to_world(event.pos);
@@ -182,11 +183,7 @@ class HandState extends State {
         for (cardId in cardMap.keys()) {
             var cardEntity = cardMap[cardId];
             if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
-                if (event.button == luxe.Input.MouseButton.left) {
-                    if (battleModel.can_play_card(cardId)) {
-                        grabbed_card(cardEntity);
-                    }
-                }
+                grabbed_card(cardEntity);
                 break;
             }
         }
