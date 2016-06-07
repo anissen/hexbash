@@ -424,6 +424,20 @@ class BattleModel {
         handle_attack(hero.id, minionId);
     }
 
+    public function get_targets_for_card(cardId :Int) :Array<Hex> {
+        var card = get_card_from_id(cardId);
+        return switch (card.cardType) {
+            case Attack(_):
+                var hero = get_hero(get_current_player());
+                hero.hex.ring(1).map(function(hex) {
+                    var other = get_minion(hex);
+                    if (other != null && other.playerId != hero.playerId) return hex;
+                    return null;
+                }).filter(function(hex) { return (hex != null); });
+            default: [];
+        };
+    }
+
     public function get_hero(playerId :Int) :HeroModel { // HACK, should be a property of player
         for (model in state.minions) {
             if (model.playerId == playerId && model.hero) return cast model;

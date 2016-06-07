@@ -214,8 +214,8 @@ class HandState extends State {
 
         // if card is dropped on a target
         // TODO:
-        var mouse_hex = hexGrid.pos_to_hex(screen_pos);
-        var targets = [new core.HexLibrary.Hex(0, 0), new core.HexLibrary.Hex(0, 1)]; // battleModel.get_targets_for_card(cardId);
+        var mouse_hex = hexGrid.pos_to_hex(world_pos);
+        var targets = battleModel.get_targets_for_card(cardId); // [new core.HexLibrary.Hex(0, 0), new core.HexLibrary.Hex(0, 1)];
         for (hex in targets) {
             if (hex.key == mouse_hex.key) {
                 battleModel.do_action(PlayCard(cardId, hex));
@@ -231,10 +231,19 @@ class HandState extends State {
 
     override public function onrender() {
         if (grabbedCardEntity != null) {
-            var targets = [new core.HexLibrary.Hex(0, 0), new core.HexLibrary.Hex(0, 1)]; // battleModel.get_targets_for_card(cardId);
+            var cardId = -1;
+            for (key in cardMap.keys()) {
+                if (cardMap[key] == grabbedCardEntity) cardId = key;
+            }
+            if (cardId == -1) return;
+
+            var world_pos = Luxe.camera.screen_point_to_world(Luxe.screen.cursor.pos);
+            var mouse_hex = hexGrid.pos_to_hex(world_pos);
+            var targets = battleModel.get_targets_for_card(cardId);
             for (target in targets) {
                 var pos = hexGrid.hex_to_pos(target);
-                Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 0.5, 1, 0.4), r: 30, immediate: true, depth: 15 });
+                var radius = ((target.key == mouse_hex.key) ? 35 : 30);
+                Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 0.5, 1, 0.4), r: radius, immediate: true, depth: 15 });
             }
         }
     }
