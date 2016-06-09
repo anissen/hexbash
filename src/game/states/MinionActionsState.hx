@@ -57,13 +57,13 @@ class MinionActionsState extends State {
                 case Nothing:
                 case Move(hex):
                     var pos = hexGrid.hex_to_pos(hex);
-                    var radius = (mouse_hex.key == hex.key ? 20 : 10);
-                    Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 1, 1, 0.8), r: radius, immediate: true, depth: 15 });
+                    var radius = (mouse_hex.key == hex.key ? 30 : 25);
+                    Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 1, 1, 0.3), r: radius, immediate: true, depth: 15 });
                 case Attack(defenderId):
                     var defender = battleModel.get_minion_from_id(defenderId);
                     var pos = hexGrid.hex_to_pos(defender.hex);
-                    var radius = (mouse_hex.key == defender.hex.key ? 20 : 10);
-                    Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 0, 0, 0.8), r: radius, immediate: true, depth: 15 });
+                    var radius = (mouse_hex.key == defender.hex.key ? 30 : 25);
+                    Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 0, 0, 0.3), r: radius, immediate: true, depth: 15 });
             }
         }
     }
@@ -99,27 +99,4 @@ class MinionActionsState extends State {
         Main.states.disable(StateId);
         Main.states.enable(HandState.StateId);
     }
-
-    // override public function onkeyup(event :luxe.Input.KeyEvent) {
-    //     function random_int(v :Int) {
-    //         return battleModel.get_random().int(v);
-    //     }
-    //     if (event.keycode == luxe.Input.Key.key_m) {
-    //         var moves = battleModel.get_minion_moves(model.id);
-    //         if (moves.length == 0) return;
-    //         var randomMove = moves.random(random_int);
-    //         select_action(randomMove);
-    //     } else if (event.keycode == luxe.Input.Key.key_a) {
-    //         var attacks = battleModel.get_minion_attacks(model.id);
-    //         if (attacks.length == 0) return;
-    //         var randomAttack = attacks.random(random_int);
-    //         select_action(randomAttack);
-    //     } else if (event.keycode == luxe.Input.Key.key_p) {
-    //         var enemyMinions = battleModel.get_minions().filter(function(m) { return m.playerId != model.playerId; });
-    //         if (enemyMinions.length == 0) return;
-    //         var randomEnemy = enemyMinions.random(random_int);
-    //         var path = model.hex.find_path(randomEnemy.hex, 100, 6, battleModel.is_walkable, true);
-    //         for (p in path) select_action(Move(p));
-    //     }
-    // }
 }

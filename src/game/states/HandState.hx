@@ -165,14 +165,6 @@ class HandState extends State {
         }
     }
 
-    // function get_target(cardId :Int) :Promise {
-    //     var cardModel = battleModel.get_card_from_id(cardId);
-    //     switch (cardModel.cardType) {
-    //         case Attack(_): return TargetSelectionState.Target([new core.HexLibrary.Hex(0,0), new core.HexLibrary.Hex(0,1), new core.HexLibrary.Hex(1,1)]); //Promise.resolve(new core.HexLibrary.Hex(0, 0)); // Select target
-    //         default: return Promise.resolve();
-    //     }
-    // }
-
     override public function onmousedown(event :luxe.Input.MouseEvent) {
         if (!enabled) return;
         if (event.button != luxe.Input.MouseButton.left) return;
@@ -213,9 +205,8 @@ class HandState extends State {
         }
 
         // if card is dropped on a target
-        // TODO:
         var mouse_hex = hexGrid.pos_to_hex(world_pos);
-        var targets = battleModel.get_targets_for_card(cardId); // [new core.HexLibrary.Hex(0, 0), new core.HexLibrary.Hex(0, 1)];
+        var targets = battleModel.get_targets_for_card(cardId);
         for (hex in targets) {
             if (hex.key == mouse_hex.key) {
                 battleModel.do_action(PlayCard(cardId, hex));
@@ -247,34 +238,4 @@ class HandState extends State {
             }
         }
     }
-
-    // override public function onmouseup(event :luxe.Input.MouseEvent) {
-    //     if (!enabled) return;
-    //
-    //     var screen_pos = event.pos;
-    //     var world_pos = Luxe.camera.screen_point_to_world(event.pos);
-    //
-    //     /* HACK */
-    //     for (cardId in cardMap.keys()) {
-    //         var cardEntity = cardMap[cardId];
-    //         if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
-    //             if (event.button == luxe.Input.MouseButton.left) {
-    //                 if (battleModel.can_play_card(cardId)) {
-    //                     trace('Select target');
-    //                     get_target(cardId)
-    //                         .then(function(?target :core.HexLibrary.Hex) {
-    //                             trace('Got target: $target');
-    //                             battleModel.do_action(PlayCard(cardId, target));
-    //                         })
-    //                         .error(function() {
-    //                             trace('Error getting target');
-    //                         });
-    //                 }
-    //             } else if (event.button == luxe.Input.MouseButton.right) {
-    //                 battleModel.do_action(DiscardCard(cardId));
-    //             }
-    //             break;
-    //         }
-    //     }
-    // }
 }
