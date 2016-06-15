@@ -9,7 +9,7 @@ import luxe.tween.Actuate;
 import game.Entities.CardEntity;
 import game.components.PopIn;
 import game.components.MoveTo;
-import core.Models.BattleModel;
+import core.models.Battle;
 import phoenix.Batcher;
 import luxe.Scene;
 import luxe.Color;

@@ -7,7 +7,8 @@ import luxe.Vector;
 import luxe.tween.Actuate;
 import game.Entities.CardEntity;
 import game.Entities.DeckEntity;
-import core.Models.BattleModel;
+import core.models.Battle;
+import core.models.Minion;
 import phoenix.Batcher;
 import luxe.Scene;
 import luxe.Color;
@@ -18,16 +19,16 @@ class HandState extends State {
     static public var StateId :String = 'HandState';
     var deck :DeckEntity;
     var cardMap :Map<Int, CardEntity>;
-    var battleModel :BattleModel;
+    var battle :Battle;
     var batcher :Batcher;
     var scene :Scene;
     var grabbedCardEntity :CardEntity;
     var card_y :Float;
     static public var hexGrid :game.Entities.HexGrid; // HACK!
 
-    public function new(battleModel :BattleModel, batcher :Batcher, scene :Scene) {
+    public function new(battle :Battle, batcher :Batcher, scene :Scene) {
         super({ name: StateId });
-        this.battleModel = battleModel;
+        this.battle = battle;
         this.batcher = batcher;
         this.scene = scene;
         card_y = Luxe.screen.height - 100;
@@ -63,8 +64,8 @@ class HandState extends State {
     }
 
     public function draw_card(cardId :Int) :Promise {
-        var card = battleModel.get_card_from_id(cardId);
-        var cost = battleModel.get_card_cost(cardId);
+        var card = battle.get_card_from_id(cardId);
+        var cost = battle.get_card_cost(cardId);
         var color = switch (card.cardType) {
             case Minion(_, _): new Color(0.2, 0.5, 0.5);
             case Tower(_, _): new Color(0.2, 0.3, 0.8);
@@ -84,7 +85,7 @@ class HandState extends State {
         });
         cardMap.set(card.id, cardEntity);
 
-        var deckSize = battleModel.get_deck_size();
+        var deckSize = battle.get_deck_size();
         deck.set_text('Deck\n\nCards: $deckSize');
 
         var draw_animation = new Promise(function(resolve) {
@@ -131,7 +132,7 @@ class HandState extends State {
         if (grabbedCardEntity == cardEntity) grabbedCardEntity = null;
         cardEntity.destroy();
 
-        var deckSize = battleModel.get_deck_size();
+        var deckSize = battle.get_deck_size();
         deck.set_text('Deck\n\nCards: $deckSize');
 
         return position_cards();
@@ -159,7 +160,7 @@ class HandState extends State {
             var cardEntity = cardMap[cardId];
             cardEntity.color.r = 0.2;
             if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
-                var can_play = battleModel.can_play_card(cardId);
+                var can_play = battle.can_play_card(cardId);
                 cardEntity.color.r = (can_play ? 0.8 : 0.2);
             }
         }
@@ -200,16 +201,16 @@ class HandState extends State {
         var screen_pos = event.pos;
         var world_pos = Luxe.camera.screen_point_to_world(event.pos);
         if (Luxe.utils.geometry.point_in_geometry(screen_pos, deck.geometry)) {
-            battleModel.do_action(DiscardCard(cardId));
+            battle.do_action(DiscardCard(cardId));
             return;
         }
 
         // if card is dropped on a target
         var mouse_hex = hexGrid.pos_to_hex(world_pos);
-        var targets = battleModel.get_targets_for_card(cardId);
+        var targets = battle.get_targets_for_card(cardId);
         for (hex in targets) {
             if (hex.key == mouse_hex.key) {
-                battleModel.do_action(PlayCard(cardId, hex));
+                battle.do_action(PlayCard(cardId, hex));
                 return;
             }
         }
@@ -230,7 +231,7 @@ class HandState extends State {
 
             var world_pos = Luxe.camera.screen_point_to_world(Luxe.screen.cursor.pos);
             var mouse_hex = hexGrid.pos_to_hex(world_pos);
-            var targets = battleModel.get_targets_for_card(cardId);
+            var targets = battle.get_targets_for_card(cardId);
             for (target in targets) {
                 var pos = hexGrid.hex_to_pos(target);
                 var radius = ((target.key == mouse_hex.key) ? 35 : 30);

@@ -22,7 +22,7 @@ import game.components.PopIn;
 
 using Lambda;
 using core.HexLibrary.HexTools;
-using core.ArrayTools;
+using core.tools.ArrayTools;
 
 class MinionActionsState extends State {
     static public var StateId :String = 'MinionActionsState';

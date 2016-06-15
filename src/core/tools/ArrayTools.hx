@@ -1,5 +1,5 @@
 
-package core;
+package core.tools;
 
 class ArrayTools {
     static public inline function random<T>(array :Array<T>, ?random :Int->Int) :T {

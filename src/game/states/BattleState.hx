@@ -12,6 +12,8 @@ import luxe.Visual;
 import luxe.Color;
 import snow.api.Promise;
 
+import core.models.Battle;
+import core.models.Card;
 import core.Models;
 import core.PromiseQueue;
 import game.Entities.MinionEntity;
@@ -21,23 +23,15 @@ import game.Entities.HexGrid;
 import game.components.PopIn;
 
 using core.HexLibrary.HexTools;
-using core.ArrayTools;
-using game.states.BattleState.TweenTools;
-
-class TweenTools {
-    static public function toPromise(tween :luxe.tween.actuators.GenericActuator.IGenericActuator) :Promise {
-        return new Promise(function(resolve) {
-            tween.onComplete(resolve);
-        });
-    }
-}
+using core.tools.ArrayTools;
+using game.tools.TweenTools;
 
 class BattleState extends State {
     static public var StateId :String = 'BattleState';
     var levelScene :Scene;
     var minionMap :Map<Int, MinionEntity>;
     var hexMap :Map<String, HexSpriteTile>;
-    var battleModel :BattleModel;
+    var battle :Battle;
     var hexGrid :HexGrid;
     var currentPlayer :Int;
     var guiBatcher :phoenix.Batcher;
@@ -45,14 +39,14 @@ class BattleState extends State {
 
     public function new() {
         super({ name: StateId });
-        battleModel = new BattleModel();
+        battle = new Battle();
         hexGrid = new HexGrid(35, 6, 4); //new HexGrid();
         TargetSelectionState.hexGrid = hexGrid; // HACK
         HandState.hexGrid = hexGrid; // HACK
         levelScene = new Scene();
         guiBatcher = Luxe.renderer.create_batcher({ name: 'gui', layer: 4 });
-        handState = new HandState(battleModel, guiBatcher, levelScene);
-        battleModel.listen(handle_event);
+        handState = new HandState(battle, guiBatcher, levelScene);
+        battle.listen(handle_event);
     }
 
     override function init() {
@@ -85,41 +79,41 @@ class BattleState extends State {
         Main.states.enable(HandState.StateId);
 
         load_map(enemy, seed);
-        //battleModel.load_map(seed);
-        battleModel.add_card_to_deck(new CardModel('Attack', 0, CardType.Attack(2)));
-        battleModel.add_card_to_deck(new CardModel('Attack', 0, CardType.Attack(1)));
-        battleModel.add_card_to_deck(new CardModel('Attack', 0, CardType.Attack(2)));
-        battleModel.add_card_to_deck(new CardModel('Minion', 0, CardType.Minion('Rat', 2)));
-        battleModel.add_card_to_deck(new CardModel('Minion', 0, CardType.Minion('Rat', 1)));
-        battleModel.start_game();
+        //battle.load_map(seed);
+        battle.add_card_to_deck(new Card('Attack', 0, CardType.Attack(2)));
+        battle.add_card_to_deck(new Card('Attack', 0, CardType.Attack(1)));
+        battle.add_card_to_deck(new Card('Attack', 0, CardType.Attack(2)));
+        battle.add_card_to_deck(new Card('Minion', 0, CardType.Minion('Rat', 2)));
+        battle.add_card_to_deck(new Card('Minion', 0, CardType.Minion('Rat', 1)));
+        battle.start_game();
     }
 
     function load_map(enemy :String, seed :Float) {
         var hexes = core.factories.MapFactory.create_custom_map();
-        hexes.map(battleModel.add_hex);
+        hexes.map(battle.add_hex);
 
         function get_placement() {
             while (true) {
                 var random_hex = hexes[Math.floor(hexes.length * Math.random())];
-                if (battleModel.get_minion(random_hex) == null) return random_hex;
+                if (battle.get_minion(random_hex) == null) return random_hex;
             }
         }
 
         function create_enemy_minion(data :core.factories.EnemyFactory.EnemyData) {
             var enemyId = 1;
-            var model = new MinionModel(data.identifier, enemyId, Luxe.utils.random.int(1, 6), get_placement(), data.icon);
-            battleModel.add_minion(model);
+            var model = new Minion(data.identifier, enemyId, Luxe.utils.random.int(1, 6), get_placement(), data.icon);
+            battle.add_minion(model);
         }
 
-        battleModel.add_minion(new HeroModel('Enemy', 1, 8, new Hex(1, -2), 'crowned-skull.png')); // TODO: Should be part of normal generation
+        battle.add_minion(new Minion('Enemy', 1, 8, new Hex(1, -2), 'crowned-skull.png')); // TODO: Should be part of normal generation
 
         var enemy_database :Array<core.factories.EnemyFactory.EnemyData> = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
         var enemy_grammar = Luxe.resources.text('assets/data/encounter_grammar.txt').asset.text;
         var enemy_factory = new core.factories.EnemyFactory(enemy_database, enemy_grammar); // TODO: Maybe make this a singleton?
         enemy_factory.create_many().map(create_enemy_minion);
-        battleModel.add_minion(new HeroModel('Hero', 0, 10, new Hex(-1, 2), 'pointy-hat.png'));
+        battle.add_minion(new Minion('Hero', 0, 10, new Hex(-1, 2), 'pointy-hat.png'));
 
-        battleModel.add_minion(new MinionModel('Rat', 0, Luxe.utils.random.int(1, 6), get_placement(), 'wolf-head.png'));
+        battle.add_minion(new Minion('Rat', 0, Luxe.utils.random.int(1, 6), get_placement(), 'wolf-head.png'));
     }
 
     function handle_event(event :Event) :Promise {
@@ -159,7 +153,7 @@ class BattleState extends State {
     }
 
     function add_minion(modelId :Int) :Promise {
-        var model = battleModel.get_minion_from_id(modelId);
+        var model = battle.get_minion_from_id(modelId);
         var minionPos = hexGrid.hex_to_pos(model.hex);
         var options :game.Entities.MinionOptions = {
             model: model,
@@ -194,7 +188,7 @@ class BattleState extends State {
 
         currentPlayer = playerId;
         if (currentPlayer == 1) { // AI
-            core.AI.do_actions(battleModel);
+            core.AI.do_actions(battle);
         }
         return Promise.resolve();
     }
@@ -236,7 +230,7 @@ class BattleState extends State {
 
     function game_over(won :Bool) {
         trace('Game Over - You ${won ? "Won" : "Lost"}!');
-        // reset(battleModel.get_random().get());
+        // reset(battle.get_random().get());
         return Promise.resolve().then(to_overworld_map);
     }
 
@@ -249,7 +243,7 @@ class BattleState extends State {
         var world_pos = Luxe.camera.screen_point_to_world(event.pos);
 
         /* HACK */
-        for (model in battleModel.get_minions()) {
+        for (model in battle.get_minions()) {
             if (model.playerId != 0) continue; // Only open actions for own minions
             var minion = minionMap[model.id];
             if (minion == null) continue;
@@ -265,13 +259,13 @@ class BattleState extends State {
         var world_pos = Luxe.camera.screen_point_to_world(event.pos);
 
         /* HACK */
-        for (model in battleModel.get_minions()) {
+        for (model in battle.get_minions()) {
             if (model.playerId != 0) continue; // Only open actions for own minions
             var minion = minionMap[model.id];
             if (minion == null) continue;
             if (Luxe.utils.geometry.point_in_geometry(world_pos, minion.geometry)) {
                 Main.states.disable(HandState.StateId);
-                Main.states.enable(MinionActionsState.StateId, { model: model, battleModel: battleModel, hexGrid: hexGrid });
+                Main.states.enable(MinionActionsState.StateId, { model: model, battle: battle, hexGrid: hexGrid });
                 return;
             }
         }
@@ -290,7 +284,7 @@ class BattleState extends State {
     //     var world_pos = Luxe.camera.screen_point_to_world(event.pos);
     //
     //     /* HACK */
-    //     for (model in battleModel.get_minions()) {
+    //     for (model in battle.get_minions()) {
     //         if (model.playerId != 0) continue; // Only open actions for own minions
     //         var minion = minionMap[model.id];
     //         if (minion == null) continue;
@@ -300,7 +294,7 @@ class BattleState extends State {
     //                 Main.states.enable(HandState.StateId);
     //             } else {
     //                 Main.states.disable(HandState.StateId);
-    //                 Main.states.enable(MinionActionsState.StateId, { model: model, battleModel: battleModel, hexGrid: hexGrid });
+    //                 Main.states.enable(MinionActionsState.StateId, { model: model, battle: battle, hexGrid: hexGrid });
     //             }
     //             return;
     //         }
@@ -309,7 +303,7 @@ class BattleState extends State {
 
     override public function onkeyup(event :luxe.Input.KeyEvent) {
         switch (event.keycode) {
-            // case luxe.Input.Key.enter: battleModel.do_action(core.Models.Action.EndTurn);
+            // case luxe.Input.Key.enter: battle.do_action(core.Models.Action.EndTurn);
             case luxe.Input.Key.key_r: reset('spider', 1000 * Math.random());
             // case luxe.Input.Key.kp_minus: Luxe.camera.zoom -= 0.05;
             // case luxe.Input.Key.kp_period: Luxe.camera.zoom += 0.05;

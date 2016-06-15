@@ -10,7 +10,7 @@ import luxe.Visual;
 import luxe.Sprite;
 import luxe.Color;
 
-import core.Models.MinionModel;
+import core.models.Minion;
 
 using core.HexLibrary.HexTools;
 
@@ -95,7 +95,7 @@ class HexGrid extends luxe.Entity {
 
 typedef MinionOptions = {
     > SpriteOptions,
-    model :MinionModel
+    model :Minion
 };
 class MinionEntity extends Sprite {
     var power :Int;
