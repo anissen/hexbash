@@ -1,4 +1,4 @@
-package core;
+package core.factories;
 
 import generativegrammar.Generator;
 import generativegrammar.Tree;
@@ -16,17 +16,15 @@ class EnemyFactory {
     var generator = new Generator();
     var enemy_database :Map<String, EnemyData>;
 
-    public function new() {
+    public function new(enemyDatabase :Array<EnemyData>, enemyGrammar :String) {
         enemy_database = new Map();
 
-        var database :Array<EnemyData> = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
-        for (d in database) {
+        for (d in enemyDatabase) {
             enemy_database[d.identifier] = d;
         }
 
-        var enemy_grammar = Luxe.resources.text('assets/data/encounter_grammar.txt').asset.text;
         generator = new Generator();
-        generator.add_rules(enemy_grammar);
+        generator.add_rules(enemyGrammar);
     }
 
     public function create(identifier :String) :EnemyData {

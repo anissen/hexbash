@@ -1,5 +1,5 @@
 
-package core;
+package core.factories;
 
 import core.HexLibrary;
 import core.Models.HeroModel;

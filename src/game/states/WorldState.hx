@@ -14,14 +14,14 @@ import phoenix.Batcher;
 import luxe.Scene;
 import luxe.Color;
 import snow.api.Promise;
-import core.MapFactory;
+import core.factories.MapFactory;
 import game.Entities.HexTile;
 import game.Entities.HexSpriteTile;
 import game.Entities.HexGrid;
 import game.entities.Enemy;
 import core.HexLibrary.Hex;
 import core.HexLibrary.Layout;
-import core.EnemyFactory;
+import core.factories.EnemyFactory;
 
 import libnoise.QualityMode;
 import libnoise.ModuleBase;
@@ -49,7 +49,10 @@ class WorldState extends State {
         super({ name: StateId });
 
         path = [];
-        enemy_factory = new EnemyFactory();
+
+        var enemy_database :Array<core.factories.EnemyFactory.EnemyData> = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
+        var enemy_grammar = Luxe.resources.text('assets/data/encounter_grammar.txt').asset.text;
+        enemy_factory = new EnemyFactory(enemy_database, enemy_grammar); // TODO: Maybe make this a singleton?
     }
 
     override function onenter(_) {

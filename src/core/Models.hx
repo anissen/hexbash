@@ -5,6 +5,7 @@ import core.HexLibrary;
 using core.HexLibrary.HexTools;
 using core.ArrayTools;
 
+
 class MinionModel { // TODO: Make a hero type as well?
     static var Id :Int = 0;
     public var id :Int;
@@ -100,26 +101,6 @@ class CardModel {
         return new CardModel(title, playerId, cardType, id);
     }
 }
-
-// class PlayerModel {
-//     static var Id :Int = 0;
-//     public var id :Int;
-//     public var ai :Bool;
-//     // public var hero :MinionModel;
-//     public var deck :Array<CardModel>;
-//     public var hand :Array<CardModel>;
-//
-//     public function new(ai :Bool = true, ?deck :Array<CardModel>, ?hand :Array<CardModel>, ?id :Int) {
-//         this.id = (id != null ? id : Id++);
-//         this.ai = ai;
-//         this.deck = (deck != null ? deck : []);
-//         this.hand = (hand != null ? hand : []);
-//     }
-//
-//     public function clone() :CardModel {
-//         return new PlayerModel(ai, deck, hand, id);
-//     }
-// }
 
 typedef EventListenerFunction = Event -> snow.api.Promise;
 
@@ -228,7 +209,7 @@ class BattleModel {
     }
 
     public function load_map(seed :Float) {
-        var battle = BattleFactory.Generate(seed);
+        var battle = core.factories.BattleFactory.Generate(seed);
         battle.hexes.map(add_hex);
         state = battle.gameState;
         state.minions.map(function(m) { emit(MinionAdded(m.id)); });
