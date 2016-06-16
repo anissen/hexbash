@@ -1,12 +1,12 @@
-package core;
+package core.models;
 
 // @structInit
 class Player {
-    @:isVar life(default, default) :Int;
-    @:isVar life_max(default, default) :Int;
-    @:isVar library(default, default) :Library;
-    @:isVar deck(default, default) :Deck;
-    @:isVar hand(default, default) :Array<Card>;
+    public var life :Int;
+    public var life_max :Int;
+    public var library :Library;
+    public var deck :Deck;
+    public var hand :Hand;
 
     // var life :Int;
     // var life_max :Int;

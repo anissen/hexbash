@@ -1,6 +1,7 @@
 package core.models;
 
 import core.Models;
+import core.models.Minion;
 import core.MessageQueue;
 import core.PromiseQueue;
 import core.HexLibrary.Hex;
@@ -19,11 +20,17 @@ class Battle {
     var events :PromiseQueue<Event>;
     var listeners :List<EventListenerFunction>;
 
+    var playerDeck :Deck;
+    var playerHand :Hand;
+
     public function new() {
         minions = new Map();
         // effects = new Map();
         currentPlayerId = 0;
         random = new luxe.utils.Random(42);
+
+        playerDeck = Game.player.deck;
+        playerHand = Game.player.hand;
 
         listeners = new List();
         hexes = new Map();
@@ -150,11 +157,11 @@ class Battle {
         emit(CardPlayed(cardId));
         playerHand.remove(card);
         // playerDeck.unshift(card); // try adding played card back into deck as a mechanic
-        switch (card.cardType) {
+        switch (card.type) {
             // case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);
             // case Tower(name, cost, trigger, effect): handle_play_tower(hero, name, cost, trigger, effect);
-            // case Spell(effect, cost): handle_play_spell(effect, cost);
+            case Spell(effect, cost): handle_play_spell(effect, cost);
             case Attack(power): handle_play_attack(power, target);
         }
 
@@ -167,7 +174,7 @@ class Battle {
         var card = get_card_from_id(cardId);
 
         playerHand.remove(card);
-        playerDeck.unshift(card); // try adding discarded card back into deck as a mechanic
+        playerDeck.discard(card); // try adding discarded card back into deck as a mechanic
         emit(CardDiscarded(cardId));
 
         // heal_minion(hero.id, 1); // Test: heal 1 when discarding
@@ -226,26 +233,26 @@ class Battle {
     }
 
     public function add_minion(minion :Minion) {
-        minions.push(minion);
+        minions[minion.id] = minion;
         emit(MinionAdded(minion.id));
     }
 
     public function add_card_to_deck(card :Card) {
-        playerDeck.push(card);
+        playerDeck.add_card(card);
     }
 
     function emit(event :Event) :Void {
         events.handle(event);
-        for (eff in effects) {
-            if (eff.trigger(this, event)) {
-                trace('TRIGGERED! ($event)');
-                var commands = eff.effect(this);
-                for (command in commands) {
-                    trace('effect: $command');
-                    do_command(command);
-                }
-            }
-        }
+        // for (eff in effects) {
+        //     if (eff.trigger(this, event)) {
+        //         trace('TRIGGERED! ($event)');
+        //         var commands = eff.effect(this);
+        //         for (command in commands) {
+        //             trace('effect: $command');
+        //             do_command(command);
+        //         }
+        //     }
+        // }
     }
 
     function do_command(command :Command) :Void {
@@ -257,7 +264,7 @@ class Battle {
     }
 
     function kill_minion(modelId :Int) {
-        minions.remove(get_minion_from_id(modelId));
+        minions.remove(modelId);
 
         // effects.remove('tower_${modelId}'); // HACK HACK HACK!!!
 

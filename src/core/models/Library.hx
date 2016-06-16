@@ -1,7 +1,7 @@
 package core.models;
 
 class Library {
-    var cardIds :Array<String>();
+    var cardIds :Array<String>;
 
     public function new() {
         cardIds = [];
@@ -11,7 +11,7 @@ class Library {
         cardIds.push(id);
     }
 
-    public function create_card(id :String) :Card {
-        return new Card()
-    }
+    // public function create_card(id :String) :Card {
+    //     return new Card()
+    // }
 }

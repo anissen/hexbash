@@ -15,6 +15,7 @@ import snow.api.Promise;
 import core.models.Battle;
 import core.models.Card;
 import core.Models;
+import core.models.Minion;
 import core.PromiseQueue;
 import game.Entities.MinionEntity;
 import game.Entities.HeroEntity;
@@ -80,11 +81,11 @@ class BattleState extends State {
 
         load_map(enemy, seed);
         //battle.load_map(seed);
-        battle.add_card_to_deck(new Card('Attack', 0, CardType.Attack(2)));
-        battle.add_card_to_deck(new Card('Attack', 0, CardType.Attack(1)));
-        battle.add_card_to_deck(new Card('Attack', 0, CardType.Attack(2)));
-        battle.add_card_to_deck(new Card('Minion', 0, CardType.Minion('Rat', 2)));
-        battle.add_card_to_deck(new Card('Minion', 0, CardType.Minion('Rat', 1)));
+        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack, icon: 'wolf-head.png' });
+        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack, icon: 'wolf-head.png' });
+        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack, icon: 'wolf-head.png' });
+        battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion, icon: 'wolf-head.png' });
+        battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion, icon: 'wolf-head.png' });
         battle.start_game();
     }
 
