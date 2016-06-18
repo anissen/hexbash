@@ -68,8 +68,8 @@ class HandState extends State {
         var cost = battle.get_card_cost(cardId);
         var color = switch (card.cardType) {
             case Minion(_, _): new Color(0.2, 0.5, 0.5);
-            case Tower(_, _): new Color(0.2, 0.3, 0.8);
-            case Potion(_): new Color(0.2, 0.8, 0.3);
+            // case Tower(_, _): new Color(0.2, 0.3, 0.8);
+            // case Potion(_): new Color(0.2, 0.8, 0.3);
             case Spell(_): new Color(0.8, 0.2, 0.3);
             case Attack(_): new Color(1.0, 0.1, 0.2);
         };
