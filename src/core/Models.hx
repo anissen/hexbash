@@ -5,11 +5,12 @@ import core.HexLibrary.Hex;
 import snow.api.Promise;
 
 enum CardType {
-    Minion; //(name :String, cost :Int);
+    // TODO: Remove arguments
+    Minion(name :String, cost :Int);
     // Tower(name :String, cost :Int, trigger :Battle->Event->Bool, effect :Battle->Array<Command>);
     // Potion(power :Int);
-    Spell; //(effect :Battle->Array<Command>, cost :Int);
-    Attack; //(power :Int);
+    Spell(effect :Battle->Array<Command>, cost :Int);
+    Attack(power :Int);
 }
 
 typedef EventListenerFunction = Event -> snow.api.Promise;

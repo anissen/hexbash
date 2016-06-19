@@ -8,6 +8,7 @@ import core.HexLibrary.Hex;
 import snow.api.Promise;
 
 using core.HexLibrary.HexTools;
+using core.tools.ArrayTools;
 
 class Battle {
     var hero :Minion;
@@ -49,9 +50,11 @@ class Battle {
     }
 
     public function load_map(seed :Float) {
-        var battle = core.factories.BattleFactory.Generate(seed);
-        battle.hexes.map(add_hex);
-        minions.map(function(m) { emit(MinionAdded(m.id)); });
+        // var battle = core.factories.BattleFactory.Generate(seed);
+        // battle.hexes.map(add_hex);
+        for (m in minions) {
+            emit(MinionAdded(m.id));
+        }
     }
 
     public function start_game() {
@@ -313,9 +316,9 @@ class Battle {
 
     public function get_targets_for_card(cardId :Int) :Array<Hex> {
         var card = get_card_from_id(cardId);
-        return switch (card.cardType) {
+        return switch (card.type) {
             case Attack(_):
-                var hero = get_hero(get_current_player());
+                // var hero = get_hero(get_current_player());
                 hero.hex.ring(1).map(function(hex) {
                     var other = get_minion(hex);
                     if (other != null && other.playerId != hero.playerId) return hex;
@@ -344,7 +347,7 @@ class Battle {
         // if (model.hero) return []; // Test mechanic: Heroes cannot attack but has to use cards to deal damage
         return model.hex.ring(1).map(function(hex) {
             var other = get_minion(hex);
-            if (other != null && other.playerId != model.playerId) return Attack(other.id);
+            if (other != null && other.playerId != model.playerId) return core.MinionAction.Attack(other.id);
             return null;
         }).filter(function(action) { return (action != null); });
     }
@@ -375,12 +378,12 @@ class Battle {
         var card = get_card_from_id(cardId);
         var cost = switch (card.type) {
             case Minion(_, cost): cost;
-            case Tower(_, cost, _, _): cost;
-            case Potion(power): -power; // heals
+            // case Tower(_, cost, _, _): cost;
+            // case Potion(power): -power; // heals
             case Spell(_, cost): cost;
             case Attack(_): 0;
         };
-        var hero = get_hero(get_current_player());
+        // var hero = get_hero(get_current_player());
         return (cost < hero.power);
     }
 
@@ -388,9 +391,9 @@ class Battle {
         return hexes.exists(hex.key);
     }
 
-    // public function get_minions() :Array<Minion> {
-    //     return minions;
-    // }
+    public function get_minions() :Array<Minion> {
+        return [ for (m in minions) m ];
+    }
 
     public function get_card_from_id(id :Int) :Card {
         for (c in playerHand) { // HACK

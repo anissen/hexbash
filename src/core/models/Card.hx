@@ -7,4 +7,5 @@ typedef Card = {
     // var identifier :String;
     var icon :String;
     var type :core.Models.CardType;
+    var id :Int;
 };

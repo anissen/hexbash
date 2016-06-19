@@ -2,14 +2,13 @@
 package core.factories;
 
 import core.HexLibrary;
-import core.Models.HeroModel;
-import core.Models.MinionModel;
-import core.Models.BattleGameState;
-import core.Models.CardModel;
+import core.models.Minion;
+import core.models.Battle;
+import core.models.Card;
 import core.Models.CardType;
 
 using core.HexLibrary.HexTools;
-using core.ArrayTools;
+using core.tools.ArrayTools;
 
 typedef BattleInstanceModel = {
     hexes :Array<Hex>,

@@ -66,7 +66,7 @@ class HandState extends State {
     public function draw_card(cardId :Int) :Promise {
         var card = battle.get_card_from_id(cardId);
         var cost = battle.get_card_cost(cardId);
-        var color = switch (card.cardType) {
+        var color = switch (card.type) {
             case Minion(_, _): new Color(0.2, 0.5, 0.5);
             // case Tower(_, _): new Color(0.2, 0.3, 0.8);
             // case Potion(_): new Color(0.2, 0.8, 0.3);
@@ -75,7 +75,7 @@ class HandState extends State {
         };
         var cardEntity = new CardEntity({
             centered: true,
-            text: card.title,
+            text: card.name,
             cost: cost,
             pos: deck.pos.clone(),
             color: color,

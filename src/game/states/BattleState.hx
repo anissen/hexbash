@@ -81,11 +81,11 @@ class BattleState extends State {
 
         load_map(enemy, seed);
         //battle.load_map(seed);
-        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack, icon: 'wolf-head.png' });
-        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack, icon: 'wolf-head.png' });
-        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack, icon: 'wolf-head.png' });
-        battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion, icon: 'wolf-head.png' });
-        battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion, icon: 'wolf-head.png' });
+        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack(1), icon: 'wolf-head.png', id: 0 });
+        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack(1), icon: 'wolf-head.png', id: 1 });
+        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack(1), icon: 'wolf-head.png', id: 2 });
+        battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion('Wolf', 3), icon: 'wolf-head.png', id: 0 });
+        battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion('Wolf', 3), icon: 'wolf-head.png', id: 1 });
         battle.start_game();
     }
 
@@ -163,7 +163,7 @@ class BattleState extends State {
             depth: 2,
             scene: levelScene
         };
-        var minion = (model.hero ? new HeroEntity(options) : new MinionEntity(options));
+        var minion = (/*model.hero ? new HeroEntity(options) : */ new MinionEntity(options));
         minionMap.set(modelId, minion);
         var popIn = new PopIn();
         minion.add(popIn);
