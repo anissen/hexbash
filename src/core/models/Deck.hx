@@ -7,7 +7,8 @@ class Deck {
     var discarded :Array<Card>;
 
     public function new() {
-
+        cards = [];
+        discarded = [];
     }
 
     function shuffle_discarded_into_deck() {

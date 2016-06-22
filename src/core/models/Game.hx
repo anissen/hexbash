@@ -5,7 +5,7 @@ package core.models;
 class Game {
     //public static var instance(default, null) :Game = new Game();
 
-    static public var player :Player;
+    static public var player :Player = new Player();
 
     function new() {}
 }

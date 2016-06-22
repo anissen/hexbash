@@ -200,7 +200,7 @@ class Battle {
         var nearbyHexes = hero.hex.reachable(is_walkable);
         if (nearbyHexes.length == 0) return; // should not happen
         var randomHex = nearbyHexes.random(function(v :Int) { return random.int(v); });
-        add_minion(new Minion(name, 0, cost, randomHex, 'spider-alt.png'));
+        add_minion(new Minion(name, 0, cost, randomHex, 'spider-alt.png', false));
     }
 
     // function handle_play_tower(hero :Minion, name :String, cost :Int, trigger, effect) {
@@ -239,6 +239,7 @@ class Battle {
 
     public function add_minion(minion :Minion) {
         minions[minion.id] = minion;
+        if (minion.hero && minion.playerId == 0) hero = minion; // GIANT HACK!
         emit(MinionAdded(minion.id));
     }
 
@@ -305,6 +306,10 @@ class Battle {
 
 
     // TODO: Move the following functions elsewhere!
+
+    public function get_current_player() :Int {
+        return currentPlayerId;
+    }
 
     public function get_minion_from_id(id :Int) :Minion {
         return minions[id];

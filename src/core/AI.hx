@@ -79,35 +79,53 @@ class AI {
         var ai_hero = ai_heroes[0];
         var reachableHexes = ai_hero.hex.reachable(battle.is_walkable);
         var randomHex = reachableHexes.random(random_int);
-        battle.add_minion(new Minion('Enemy Minion', currentPlayer, battle.get_random().int(1, 7), randomHex, 'spider-alt.png'));
+        battle.add_minion(new Minion('Enemy Minion', currentPlayer, battle.get_random().int(1, 7), randomHex, 'spider-alt.png', false));
     }
 
     static function do_ai_actions(battle :Battle) {
-        var newBattle = battle;
-        var chosenActions = [];
+        // var newBattle = battle;
+        // var chosenActions = [];
+        // while (true) {
+        //     var model = null;
+        //     var actions = [];
+        //     for (m in newBattle.get_minions()) {
+        //         if (m.playerId != battle.get_current_player()) continue;
+        //         if (m.actions <= 0) continue;
+        //         model = m;
+        //         actions = newBattle.get_minion_actions(m.id);
+        //         if (actions.length > 0) break;
+        //     }
+        //     if (model == null || actions.empty()) break;
+        //
+        //     // has minion with available actions
+        //     var minion_action = get_ai_minion_action(newBattle, model);
+        //     var ai_action = MinionAction(model.id, minion_action);
+        //     chosenActions.push(ai_action);
+        //
+        //     newBattle = newBattle.clone();
+        //     newBattle.do_action(ai_action);
+        // }
+        //
+        // for (action in chosenActions) {
+        //     battle.do_action(action);
+        // }
+
         while (true) {
             var model = null;
             var actions = [];
-            for (m in newBattle.get_minions()) {
+            for (m in battle.get_minions()) {
                 if (m.playerId != battle.get_current_player()) continue;
                 if (m.actions <= 0) continue;
                 model = m;
-                actions = newBattle.get_minion_actions(m.id);
+                actions = battle.get_minion_actions(m.id);
                 if (actions.length > 0) break;
             }
             if (model == null || actions.empty()) break;
 
             // has minion with available actions
-            var minion_action = get_ai_minion_action(newBattle, model);
+            var minion_action = get_ai_minion_action(battle, model);
             var ai_action = MinionAction(model.id, minion_action);
-            chosenActions.push(ai_action);
-
-            newBattle = newBattle.clone();
-            newBattle.do_action(ai_action);
-        }
-
-        for (action in chosenActions) {
-            battle.do_action(action);
+            battle.do_action(ai_action);
         }
     }
 }

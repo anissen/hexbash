@@ -8,6 +8,14 @@ class Player {
     public var deck :Deck;
     public var hand :Hand;
 
+    public function new() {
+        life = 5;
+        life_max = 5;
+        library = new Library();
+        deck = new Deck();
+        hand = new Hand();
+    }
+
     // var life :Int;
     // var life_max :Int;
     // var library :Library;

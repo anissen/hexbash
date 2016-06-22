@@ -3,6 +3,7 @@ assets_source
 bin
 
 android.project
+ios.project
 
 *.sublime-*
 *.zip
