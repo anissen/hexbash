@@ -34,7 +34,6 @@ class BattleState extends State {
     var hexMap :Map<String, HexSpriteTile>;
     var battle :Battle;
     var hexGrid :HexGrid;
-    var currentPlayer :Int;
     var guiBatcher :phoenix.Batcher;
     var handState :HandState;
 
@@ -145,7 +144,8 @@ class BattleState extends State {
         var tile = new HexSpriteTile({
             pos: new Vector(pos.x, pos.y + 12),
             texture: Luxe.resources.texture('assets/images/tiles/tile' + (Math.random() > 0.3 ? 'Grass' : 'Dirt') + '_full.png'),
-            depth: -100 + hex.r
+            depth: -100 + hex.r,
+            scene: levelScene
         });
         var popIn = new FastPopIn();
         tile.add(popIn);
@@ -187,8 +187,7 @@ class BattleState extends State {
             if (Main.states.enabled(HandState.StateId)) Main.states.disable(HandState.StateId);
         }
 
-        currentPlayer = playerId;
-        if (currentPlayer == 1) { // AI
+        if (playerId == 1) { // AI
             core.AI.do_actions(battle);
         }
         return Promise.resolve();
@@ -272,42 +271,10 @@ class BattleState extends State {
         }
     }
 
-    // override public function onmouseup(event :luxe.Input.MouseEvent) {
-    //     if (Main.states.enabled(MinionActionsState.StateId)) {
-    //         Main.states.disable(MinionActionsState.StateId);
-    //         Main.states.enable(HandState.StateId);
-    //     }
-    // }
-
-
-    // override public function onmouseup(event :luxe.Input.MouseEvent) {
-    //     var screen_pos = event.pos;
-    //     var world_pos = Luxe.camera.screen_point_to_world(event.pos);
-    //
-    //     /* HACK */
-    //     for (model in battle.get_minions()) {
-    //         if (model.playerId != 0) continue; // Only open actions for own minions
-    //         var minion = minionMap[model.id];
-    //         if (minion == null) continue;
-    //         if (Luxe.utils.geometry.point_in_geometry(world_pos, minion.geometry)) {
-    //             if (Main.states.enabled(MinionActionsState.StateId)) {
-    //                 Main.states.disable(MinionActionsState.StateId);
-    //                 Main.states.enable(HandState.StateId);
-    //             } else {
-    //                 Main.states.disable(HandState.StateId);
-    //                 Main.states.enable(MinionActionsState.StateId, { model: model, battle: battle, hexGrid: hexGrid });
-    //             }
-    //             return;
-    //         }
-    //     }
-    // }
-
     override public function onkeyup(event :luxe.Input.KeyEvent) {
         switch (event.keycode) {
             // case luxe.Input.Key.enter: battle.do_action(core.Models.Action.EndTurn);
             case luxe.Input.Key.key_r: reset('spider', 1000 * Math.random());
-            // case luxe.Input.Key.kp_minus: Luxe.camera.zoom -= 0.05;
-            // case luxe.Input.Key.kp_period: Luxe.camera.zoom += 0.05;
         }
     }
 }
