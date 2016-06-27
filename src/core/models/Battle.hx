@@ -270,13 +270,14 @@ class Battle {
     }
 
     function kill_minion(modelId :Int) {
+        var minion = get_minion_from_id(modelId);
         minions.remove(modelId);
 
         // effects.remove('tower_${modelId}'); // HACK HACK HACK!!!
 
         emit(MinionDied(modelId));
 
-        emit(GameWon); // TODO: Missing GameLost handling
+        if (minion.hero) emit(minion.playerId == 0 ? GameLost : GameWon); // GIANT HACK:
     }
 
     function damage_minion(modelId :Int, amount :Int) {
