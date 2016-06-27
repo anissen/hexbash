@@ -3,8 +3,8 @@ package core;
 
 import core.models.Battle;
 import core.models.Minion;
-import core.Models.Action;
-import core.Models.MinionAction;
+import core.Enums.Action;
+import core.Enums.MinionAction;
 
 import core.HexLibrary;
 using core.HexLibrary.HexTools;

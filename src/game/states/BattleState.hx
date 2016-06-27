@@ -14,7 +14,7 @@ import snow.api.Promise;
 
 import core.models.Battle;
 import core.models.Card;
-import core.Models;
+import core.Enums;
 import core.models.Minion;
 import core.PromiseQueue;
 import game.Entities.MinionEntity;

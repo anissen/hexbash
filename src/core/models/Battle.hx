@@ -1,6 +1,6 @@
 package core.models;
 
-import core.Models;
+import core.Enums;
 import core.models.Minion;
 import core.MessageQueue;
 import core.PromiseQueue;

@@ -6,6 +6,6 @@ typedef Card = {
     var power :Int;
     // var identifier :String;
     var icon :String;
-    var type :core.Models.CardType;
+    var type :core.Enums.CardType;
     var id :Int;
 };

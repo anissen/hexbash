@@ -12,7 +12,7 @@ import luxe.Visual;
 import luxe.Color;
 import snow.api.Promise;
 
-import core.Models;
+import core.Enums;
 import core.models.Battle;
 import core.models.Minion;
 import core.PromiseQueue;
@@ -70,7 +70,7 @@ class MinionActionsState extends State {
         }
     }
 
-    function select_action(action :core.Models.MinionAction) {
+    function select_action(action :core.Enums.MinionAction) {
         battle.do_action(MinionAction(model.id, action));
         // if (model.actions <= 0) {
             Main.states.disable(StateId);
