@@ -323,6 +323,11 @@ class Battle {
     public function get_targets_for_card(cardId :Int) :Array<Hex> {
         var card = get_card_from_id(cardId);
         return switch (card.type) {
+            case Minion(_, _):
+                hero.hex.ring(1).map(function(hex) {
+                    if (get_minion(hex) == null) return hex;
+                    return null;
+                }).filter(function(hex) { return (hex != null); });
             case Attack(_):
                 // var hero = get_hero(get_current_player());
                 hero.hex.ring(1).map(function(hex) {
