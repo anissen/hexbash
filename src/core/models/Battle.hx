@@ -67,8 +67,7 @@ class Battle {
         player.hand = [];
     }
 
-    function draw_card() {
-        var card = playerDeck.pop();
+    function draw_card(card :Card) {
         if (card != null) {
             player.hand.push(card);
             emit(CardDrawn(card.id));
@@ -81,6 +80,9 @@ class Battle {
         var hand_size = 3;
         for (i in 0 ... hand_size) {
             draw_card();
+        for (i in player.hand.length ... hand_size) {
+            var card = player.deck.pop();
+            draw_card(card);
         }
     }
 
@@ -112,11 +114,7 @@ class Battle {
         }
         emit(TurnStarted(currentPlayerId));
         if (currentPlayerId == 0) { // HACK
-            // draw_card();
-            // draw_new_hand();
-            for (i in 0 ... (3 - playerHand.length)) { // draw so that hand has 3 cards
-                draw_card();
-            }
+            draw_new_hand();
         }
     }
 
@@ -168,6 +166,7 @@ class Battle {
             case Attack(power): handle_play_attack(power, target);
         }
 
+        if (player.hand.length == 0) {
             handle_action(EndTurn);
         }
     }
@@ -176,6 +175,10 @@ class Battle {
         var card = get_card_from_id(cardId);
 
         player.hand.remove(card);
+        switch (card.type) { // try adding discarded MINION and SPELL cards back into deck as a mechanic
+            case Minion(_, _): player.deck.discard(card);
+            default:
+        }
         emit(CardDiscarded(cardId));
 
         // heal_minion(hero.id, 1); // Test: heal 1 when discarding
