@@ -59,7 +59,7 @@ class Battle {
 
     public function start_game() {
         // draw cards for player
-        draw_new_hand();
+        handle_start_turn();
     }
 
     function discard_hand() {
@@ -101,13 +101,13 @@ class Battle {
     }
 
     function handle_end_turn() {
+        currentPlayerId = (currentPlayerId + 1) % 2;
         // // draw cards for player
         // draw_new_hand();
         // discard_hand();
     }
 
     function handle_start_turn() {
-        currentPlayerId = (currentPlayerId + 1) % 2;
         for (m in minions) {
             if (m.playerId != currentPlayerId) continue;
             m.actions = 1;
@@ -325,15 +325,16 @@ class Battle {
         return switch (card.type) {
             case Minion(_, _):
                 hero.hex.ring(1).map(function(hex) {
-                    if (get_minion(hex) == null) return hex;
-                    return null;
+                    if (!has_hex(hex)) return null;
+                    if (get_minion(hex) != null) return null;
+                    return hex;
                 }).filter(function(hex) { return (hex != null); });
             case Attack(_):
                 // var hero = get_hero(get_current_player());
                 hero.hex.ring(1).map(function(hex) {
                     var other = get_minion(hex);
-                    if (other != null && other.playerId != hero.playerId) return hex;
-                    return null;
+                    if (other == null || other.playerId == hero.playerId) return null;
+                    return hex;
                 }).filter(function(hex) { return (hex != null); });
             default: [];
         };
