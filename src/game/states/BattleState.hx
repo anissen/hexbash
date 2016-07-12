@@ -80,11 +80,14 @@ class BattleState extends State {
 
         load_map(enemy, seed);
         //battle.load_map(seed);
-        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack(1), icon: 'wolf-head.png', id: 0 });
-        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack(1), icon: 'wolf-head.png', id: 1 });
-        battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack(1), icon: 'wolf-head.png', id: 2 });
-        battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion('Wolf', 3), icon: 'wolf-head.png', id: 0 });
-        battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion('Wolf', 3), icon: 'wolf-head.png', id: 1 });
+        // battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack(1), icon: 'wolf-head.png', id: 0 });
+        // battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack(1), icon: 'wolf-head.png', id: 1 });
+        // battle.add_card_to_deck({ name: 'Attack', cost: 1, power: 2, type: Attack(1), icon: 'wolf-head.png', id: 2 });
+        // battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion('Wolf', 3), icon: 'wolf-head.png', id: 0 });
+        // battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion('Wolf', 3), icon: 'wolf-head.png', id: 1 });
+
+        battle.add_card_to_deck(new Card('Minion', 1, 2, 'wolf-head.png', Minion('Wolf', 3)));
+        battle.add_card_to_deck(new Card('Minion', 1, 2, 'wolf-head.png', Minion('Wolf', 3)));
         battle.start_game();
     }
 
