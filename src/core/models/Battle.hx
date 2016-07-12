@@ -78,8 +78,13 @@ class Battle {
         discard_hand();
 
         var hand_size = 3;
-        for (i in 0 ... hand_size) {
-            draw_card();
+        var equipmentCards = player.get_cards_from_equipment();
+        for (i in player.hand.length ... hand_size) {
+            if (equipmentCards.length == 0) break;
+            var card = equipmentCards.splice(0, 1)[0];
+            draw_card(card);
+        }
+
         for (i in player.hand.length ... hand_size) {
             var card = player.deck.pop();
             draw_card(card);

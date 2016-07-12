@@ -7,6 +7,7 @@ class Player {
     public var library :Library;
     public var deck :Deck;
     public var hand :Hand;
+    public var equipment :Array<Equipment>;
 
     public function new() {
         life = 5;
@@ -14,6 +15,18 @@ class Player {
         library = new Library();
         deck = new Deck();
         hand = new Hand();
+        equipment = [new Equipment.Fists()];
+    }
+
+    public function get_cards_from_equipment() :Array<Card> {
+        var cards = [];
+        for (e in equipment) {
+            if (!Std.is(e, Equipment.CardProvider)) continue;
+            var cardProvider :Equipment.CardProvider = cast e;
+            if (cardProvider == null) continue;
+            cards = cards.concat(cardProvider.get_cards());
+        }
+        return cards;
     }
 
     // var life :Int;
