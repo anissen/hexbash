@@ -23,8 +23,7 @@ class Battle {
     var events :PromiseQueue<Event>;
     var listeners :List<EventListenerFunction>;
 
-    var playerDeck :Deck;
-    var playerHand :Hand;
+    var player :Player;
 
     public function new() {
         minions = new Map();
@@ -32,8 +31,7 @@ class Battle {
         currentPlayerId = 0;
         random = new luxe.utils.Random(42);
 
-        playerDeck = Game.player.deck;
-        playerHand = Game.player.hand;
+        player = Game.player;
 
         listeners = new List();
         hexes = new Map();
@@ -63,16 +61,16 @@ class Battle {
     }
 
     function discard_hand() {
-        for (card in playerHand) {
+        for (card in player.hand) {
             emit(CardDiscarded(card.id));
         }
-        playerHand = [];
+        player.hand = [];
     }
 
     function draw_card() {
         var card = playerDeck.pop();
         if (card != null) {
-            playerHand.push(card);
+            player.hand.push(card);
             emit(CardDrawn(card.id));
         }
     }
@@ -160,8 +158,8 @@ class Battle {
         var card = get_card_from_id(cardId);
 
         emit(CardPlayed(cardId));
-        playerHand.remove(card);
-        // playerDeck.unshift(card); // try adding played card back into deck as a mechanic
+        player.hand.remove(card);
+        // player.deck.unshift(card); // try adding played card back into deck as a mechanic
         switch (card.type) {
             // case Potion(power): handle_drink_potion(hero, power);
             case Minion(name, cost): handle_play_minion(hero, name, cost);
@@ -170,7 +168,6 @@ class Battle {
             case Attack(power): handle_play_attack(power, target);
         }
 
-        if (playerHand.length == 0) {
             handle_action(EndTurn);
         }
     }
@@ -178,13 +175,12 @@ class Battle {
     function handle_discard_card(cardId :Int) {
         var card = get_card_from_id(cardId);
 
-        playerHand.remove(card);
-        playerDeck.discard(card); // try adding discarded card back into deck as a mechanic
+        player.hand.remove(card);
         emit(CardDiscarded(cardId));
 
         // heal_minion(hero.id, 1); // Test: heal 1 when discarding
 
-        if (playerHand.length == 0) {
+        if (player.hand.length == 0) {
             handle_action(EndTurn);
         }
     }
@@ -244,7 +240,7 @@ class Battle {
     }
 
     public function add_card_to_deck(card :Card) {
-        playerDeck.add(card);
+        player.deck.add(card);
     }
 
     function emit(event :Event) :Void {
@@ -317,7 +313,7 @@ class Battle {
     }
 
     public function get_deck_size() {
-        return playerDeck.count();
+        return player.deck.count();
     }
 
     public function get_targets_for_card(cardId :Int) :Array<Hex> {
@@ -408,7 +404,7 @@ class Battle {
     }
 
     public function get_card_from_id(id :Int) :Card {
-        for (c in playerHand) { // HACK
+        for (c in player.hand) { // HACK
             if (c.id == id) return c;
         }
         return null;
