@@ -53,13 +53,14 @@ class Main extends luxe.Game {
         var shader = Luxe.resources.shader('postprocess');
         shader.set_vector2('resolution', Luxe.screen.size);
         postprocess = new PostProcess(shader);
+        postprocess.toggle(); // disable shader for now
 
         states = new States({ name: 'state_machine' });
         states.add(new BattleState());
         states.add(new MinionActionsState());
         states.add(new WorldState());
         states.add(new TargetSelectionState());
-        states.set(WorldState.StateId);
+        states.set(BattleState.StateId, { enemy: 'spider' });
     }
 
     // Scale camera's viewport accordingly when game is scaled, common and suitable for most games
