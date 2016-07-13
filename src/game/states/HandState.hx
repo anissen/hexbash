@@ -232,9 +232,27 @@ class HandState extends State {
             var world_pos = Luxe.camera.screen_point_to_world(Luxe.screen.cursor.pos);
             var mouse_hex = hexGrid.pos_to_hex(world_pos);
             var targets = battle.get_targets_for_card(cardId);
+            var card = battle.get_card_from_id(cardId);
+
+            function is_target_highlighted(target :core.HexLibrary.Hex) {
+                // if mouse over
+                if (target.key == mouse_hex.key) return true;
+
+                // if card is type minion and the mouse is over ANY of the targets
+                switch (card.type) {
+                    case Minion(_, _):
+                    default: return false;
+                }
+                var over_target = false;
+                for (t in targets) {
+                    if (t.key == mouse_hex.key) return true;
+                }
+                return false;
+            }
+
             for (target in targets) {
                 var pos = hexGrid.hex_to_pos(target);
-                var radius = ((target.key == mouse_hex.key) ? 35 : 30);
+                var radius = (is_target_highlighted(target) ? 35 : 30);
                 Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 0.5, 1, 0.4), r: radius, immediate: true, depth: 15 });
             }
         }
