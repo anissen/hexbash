@@ -4,7 +4,6 @@ class Card {
     public var name :String;
     public var cost :Int;
     public var power :Int;
-    // public var identifier :String;
     public var icon :String;
     public var type :core.Enums.CardType;
     public var id :Int;
@@ -17,5 +16,11 @@ class Card {
         this.icon = icon;
         this.type = type;
         this.id = Id++;
+    }
+}
+
+class AttackCard extends Card {
+    public function new(name :String, power :Int, icon :String) {
+        super(name, 0, power, icon, core.Enums.CardType.Attack(power));
     }
 }
