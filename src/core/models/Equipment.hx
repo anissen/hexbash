@@ -18,6 +18,6 @@ class Fists extends Equipment implements CardProvider {
     public function get_cards() :Array<Card> {
         // 100% chance for providing 1 card per turn
         // return [{ name: 'Punch', cost: 0, power: 1, type: Attack(1), icon: 'wolf-head.png', id: 0 }];
-        return [new Card('Punch', 0, 1, 'wolf-head.png', Attack(1))];
+        return [new Card('Punch 1', 0, 1, 'wolf-head.png', Attack(1))];
     }
 }

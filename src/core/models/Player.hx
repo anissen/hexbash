@@ -15,7 +15,7 @@ class Player {
         library = new Library();
         deck = new Deck();
         hand = new Hand();
-        equipment = [new Equipment.Fists()];
+        equipment = [new Equipment.Fists() /* new Equipment.Spellbook() */];
     }
 
     public function get_cards_from_equipment() :Array<Card> {

@@ -232,8 +232,12 @@ class Battle {
     }
 
     function handle_play_attack(power :Int, target :Hex) {
-        var minionId = get_minion(target).id;
-        handle_attack(hero.id, minionId);
+        var attackerId = hero.id;
+        var defenderId = get_minion(target).id;
+
+        emit(MinionAttacked(attackerId, defenderId));
+
+        damage_minion(defenderId, power);
     }
 
     public function add_hex(hex :Hex) {
@@ -360,6 +364,7 @@ class Battle {
     public function get_minion_attacks(modelId :Int) :Array<MinionAction> {
         var model = get_minion_from_id(modelId);
         if (model.actions <= 0) return [];
+        if (model.id == hero.id) return []; // Hero cannot attack normally
         // if (model.hero) return []; // Test mechanic: Heroes cannot attack but has to use cards to deal damage
         return model.hex.ring(1).map(function(hex) {
             var other = get_minion(hex);

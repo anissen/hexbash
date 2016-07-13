@@ -235,7 +235,7 @@ class CardEntity extends luxe.Sprite {
         super(_options);
 
         text = new luxe.Text({
-            text: _options.text + (_options.cost != null ? '\n\n(${_options.cost})' : ''),
+            text: _options.text + (_options.cost != null ? '\n\n(Cost: ${_options.cost})' : ''),
             pos: new Vector(50, 15),
             point_size: 18,
             align: luxe.Text.TextAlign.center,
