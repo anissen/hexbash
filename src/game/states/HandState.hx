@@ -222,6 +222,11 @@ class HandState extends State {
     }
 
     override public function onrender() {
+        // TODO: Maybe only update this when drawing cards and playing cards (e.g. when the state changes)
+        for (cardId in cardMap.keys()) {
+            cardMap[cardId].color.a = (battle.get_targets_for_card(cardId).length == 0 ? 0.5 : 1.0);
+        }
+
         if (grabbedCardEntity != null) {
             var cardId = -1;
             for (key in cardMap.keys()) {
