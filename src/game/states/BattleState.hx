@@ -110,13 +110,13 @@ class BattleState extends State {
 
         battle.add_minion(new Minion('Enemy', 1, 8, new Hex(1, -2), 'crowned-skull.png', true)); // TODO: Should be part of normal generation
 
+        battle.add_minion(new Minion('Hero', 0, 10, new Hex(-1, 2), 'pointy-hat.png', true));
+        battle.add_minion(new Minion('Rat', 0, Luxe.utils.random.int(1, 6), get_placement(), 'wolf-head.png', false));
+
         var enemy_database :Array<core.factories.EnemyFactory.EnemyData> = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
         var enemy_grammar = Luxe.resources.text('assets/data/encounter_grammar.txt').asset.text;
         var enemy_factory = new core.factories.EnemyFactory(enemy_database, enemy_grammar); // TODO: Maybe make this a singleton?
         enemy_factory.create_many().map(create_enemy_minion);
-        battle.add_minion(new Minion('Hero', 0, 10, new Hex(-1, 2), 'pointy-hat.png', true));
-
-        battle.add_minion(new Minion('Rat', 0, Luxe.utils.random.int(1, 6), get_placement(), 'wolf-head.png', false));
     }
 
     function handle_event(event :Event) :Promise {
