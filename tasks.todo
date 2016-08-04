@@ -3,7 +3,6 @@
 
 --> If this game is shipped tomorrow, what is the most important thing to work on right now??
 
-[ ] Battle: Implement attack cards
 [ ] Move some game state out of the battle state (e.g. hero life, cards)
 [ ] Map + Battle: Handle progression of life, cards
 [ ] Battle: Create battle with the given enemy type
