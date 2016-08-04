@@ -205,14 +205,14 @@ class HeroEntity extends MinionEntity {
     }
 }
 
-class TowerEntity extends MinionEntity {
-    public function new(options :MinionOptions) {
-        var _options = options;
-
-        if (_options.geometry == null) _options.geometry = Luxe.draw.box({ x: -30, y: -30, w: 60, h: 60 });
-        super(_options);
-    }
-}
+// class TowerEntity extends MinionEntity {
+//     public function new(options :MinionOptions) {
+//         var _options = options;
+//
+//         if (_options.geometry == null) _options.geometry = Luxe.draw.box({ x: -30, y: -30, w: 60, h: 60 });
+//         super(_options);
+//     }
+// }
 
 typedef CardOptions = {
     > luxe.options.SpriteOptions,
@@ -222,6 +222,7 @@ typedef CardOptions = {
 
 class CardEntity extends luxe.Sprite {
     var text :luxe.Text;
+    var icon :luxe.Sprite;
     static var Count :Int = 0;
 
     public function new(options :CardOptions) {
@@ -234,16 +235,26 @@ class CardEntity extends luxe.Sprite {
         });
         super(_options);
 
+        icon = new Sprite({
+            pos: new Vector(100 / 2, 150 / 2),
+            size: Vector.Multiply(size, 1.4),
+            texture: Luxe.resources.texture('assets/images/icons/wolf-head.png'),
+            parent: this,
+            batcher: _options.batcher,
+            scene: _options.scene,
+            depth: _options.depth + 0.01
+        });
+
         text = new luxe.Text({
-            text: _options.text + (_options.cost != null ? '\n\n(Cost: ${_options.cost})' : ''),
-            pos: new Vector(50, 15),
+            text: _options.text, // + (_options.cost != null ? '\n\n(Cost: ${_options.cost})' : ''),
+            pos: new Vector(50, 10),
             point_size: 18,
             align: luxe.Text.TextAlign.center,
             align_vertical: luxe.Text.TextAlign.top,
             parent: this,
             batcher: _options.batcher,
             scene: _options.scene,
-            depth: _options.depth + 0.01
+            depth: _options.depth + 0.02
         });
     }
 }
