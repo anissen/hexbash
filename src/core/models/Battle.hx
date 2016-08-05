@@ -25,6 +25,8 @@ class Battle {
 
     var player :Player;
 
+    var game_over :Bool = false;
+
     public function new() {
         minions = new Map();
         // effects = new Map();
@@ -97,6 +99,7 @@ class Battle {
     }
 
     function handle_action(action :Action) {
+        if (game_over) return;
         switch (action) {
             case MinionAction(modelId, action): handle_minion_action(modelId, action);
             case PlayCard(cardId, target): handle_play_card(cardId, target);
@@ -282,7 +285,7 @@ class Battle {
 
         emit(MinionDied(modelId));
 
-        if (minion.hero) game_over(minion.playerId != 0); // GIANT HACK:
+        if (minion.hero) end_game(minion.playerId != 0); // GIANT HACK:
 
         if (minion.playerId != 0) player.equipment.push(new core.models.Equipment.CursedSword()); // Test
     }
@@ -309,7 +312,8 @@ class Battle {
         listeners.add(func);
     }
 
-    function game_over(won :Bool) {
+    function end_game(won :Bool) {
+        game_over = true;
         // Put unused cards back into the deck
         for (card in player.hand) {
             switch (card.type) {

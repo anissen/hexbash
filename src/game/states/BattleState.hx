@@ -39,12 +39,9 @@ class BattleState extends State {
 
     public function new() {
         super({ name: StateId });
-        battle = new Battle();
         hexGrid = new HexGrid(35, 6, 4); //new HexGrid();
-        HandState.hexGrid = hexGrid; // HACK
         levelScene = new Scene();
         guiBatcher = Luxe.renderer.create_batcher({ name: 'gui', layer: 4 });
-        battle.listen(handle_event);
     }
 
     override function init() {
@@ -72,12 +69,17 @@ class BattleState extends State {
         levelScene.empty();
         hexMap = new Map();
         minionMap = new Map();
-        handState.reset();
+        if (handState != null) handState.reset();
     }
 
     function reset(enemy :String, seed :Float) {
-        handState = new HandState(battle, guiBatcher, levelScene);
         clear();
+
+        battle = new Battle();
+        battle.listen(handle_event);
+
+        handState = new HandState(battle, guiBatcher, levelScene);
+        HandState.hexGrid = hexGrid; // HACK
 
         Main.states.add(handState);
         Main.states.enable(HandState.StateId);
@@ -235,6 +237,7 @@ class BattleState extends State {
 
     function game_over(won :Bool) {
         trace('Game Over - You ${won ? "Won" : "Lost"}!');
+        if (Main.states.enabled(HandState.StateId)) Main.states.disable(HandState.StateId);
         // reset(battle.get_random().get());
         return Promise.resolve().then(to_overworld_map);
     }
