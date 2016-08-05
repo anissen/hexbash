@@ -33,4 +33,9 @@ class Deck {
     public function count() :Int {
         return cards.length + discarded.length;
     }
+
+    public function print() {
+        var i = 0;
+        for (card in cards) trace('Card #${++i} $card');
+    }
 }

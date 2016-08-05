@@ -251,10 +251,6 @@ class Battle {
         emit(MinionAdded(minion.id));
     }
 
-    public function add_card_to_deck(card :Card) {
-        player.deck.add(card);
-    }
-
     function emit(event :Event) :Void {
         events.handle(event);
         // for (eff in effects) {
@@ -285,7 +281,9 @@ class Battle {
 
         emit(MinionDied(modelId));
 
-        if (minion.hero) emit(minion.playerId == 0 ? GameLost : GameWon); // GIANT HACK:
+        if (minion.hero) game_over(minion.playerId != 0); // GIANT HACK:
+
+        if (minion.playerId != 0) player.equipment.push(new core.models.Equipment.Sword()); // Test
     }
 
     function damage_minion(modelId :Int, amount :Int) {
@@ -310,7 +308,18 @@ class Battle {
         listeners.add(func);
     }
 
+    function game_over(won :Bool) {
+        // Put unused cards back into the deck
+        for (card in player.hand) {
+            switch (card.type) {
+                case Attack(_): continue; // don't put attack cards in the deck
+                default: player.deck.add(card);
+            }
+        }
+        player.hand = [];
 
+        emit(won ? GameWon : GameLost);
+    }
 
 
 

@@ -217,6 +217,7 @@ class HeroEntity extends MinionEntity {
 typedef CardOptions = {
     > luxe.options.SpriteOptions,
     text :String,
+    icon :String,
     ?cost :Int
 }
 
@@ -238,7 +239,7 @@ class CardEntity extends luxe.Sprite {
         icon = new Sprite({
             pos: new Vector(100 / 2, 150 / 2),
             size: Vector.Multiply(size, 1.4),
-            texture: Luxe.resources.texture('assets/images/icons/wolf-head.png'),
+            texture: Luxe.resources.texture('assets/images/icons/${_options.icon}'),
             parent: this,
             batcher: _options.batcher,
             scene: _options.scene,

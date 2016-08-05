@@ -27,6 +27,8 @@ class Main extends luxe.Game {
         config.preload.textures.push({ id: 'assets/images/icons/pointy-hat.png' });
         config.preload.textures.push({ id: 'assets/images/icons/shadow.png' });
         config.preload.textures.push({ id: 'assets/images/icons/background.png' });
+        config.preload.textures.push({ id: 'assets/images/icons/fist.png' });
+        config.preload.textures.push({ id: 'assets/images/icons/gladius.png' });
 
         config.preload.textures.push({ id: 'assets/images/overlay_filter.png' });
         config.preload.textures.push({ id: 'assets/images/sun_ray.png' });

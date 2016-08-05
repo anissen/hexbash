@@ -76,6 +76,7 @@ class HandState extends State {
         var cardEntity = new CardEntity({
             centered: true,
             text: card.name,
+            icon: card.icon,
             cost: cost,
             pos: deck.pos.clone(),
             color: color,
@@ -128,6 +129,8 @@ class HandState extends State {
 
     public function remove_card(cardId :Int) :Promise {
         var cardEntity = card_from_model(cardId);
+        if (cardEntity == null) return Promise.resolve();
+
         cardMap.remove(cardId);
         if (grabbedCardEntity == cardEntity) grabbedCardEntity = null;
         cardEntity.destroy();

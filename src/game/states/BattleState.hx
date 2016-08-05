@@ -45,7 +45,6 @@ class BattleState extends State {
         HandState.hexGrid = hexGrid; // HACK
         levelScene = new Scene();
         guiBatcher = Luxe.renderer.create_batcher({ name: 'gui', layer: 4 });
-        handState = new HandState(battle, guiBatcher, levelScene);
         battle.listen(handle_event);
     }
 
@@ -54,6 +53,9 @@ class BattleState extends State {
     }
 
     override function onenter(data :Dynamic) {
+        trace('Player deck:');
+        core.models.Game.player.deck.print();
+
         Luxe.camera.zoom = 0.2;
         luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1.5 });
         Luxe.camera.pos = new Vector(0, 0);
@@ -73,6 +75,7 @@ class BattleState extends State {
     }
 
     function reset(enemy :String, seed :Float) {
+        handState = new HandState(battle, guiBatcher, levelScene);
         clear();
 
         Main.states.add(handState);
@@ -86,8 +89,6 @@ class BattleState extends State {
         // battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion('Wolf', 3), icon: 'wolf-head.png', id: 0 });
         // battle.add_card_to_deck({ name: 'Minion', cost: 1, power: 2, type: Minion('Wolf', 3), icon: 'wolf-head.png', id: 1 });
 
-        battle.add_card_to_deck(new Card('Minion', 1, 2, 'wolf-head.png', Minion('Wolf', 3)));
-        battle.add_card_to_deck(new Card('Minion', 1, 2, 'wolf-head.png', Minion('Wolf', 3)));
         battle.start_game();
     }
 
@@ -108,7 +109,7 @@ class BattleState extends State {
             battle.add_minion(model);
         }
 
-        battle.add_minion(new Minion('Enemy', 1, 8, new Hex(1, -2), 'crowned-skull.png', true)); // TODO: Should be part of normal generation
+        battle.add_minion(new Minion('Enemy', 1, 4, new Hex(1, -2), 'crowned-skull.png', true)); // TODO: Should be part of normal generation
 
         battle.add_minion(new Minion('Hero', 0, 10, new Hex(-1, 2), 'pointy-hat.png', true));
         battle.add_minion(new Minion('Rat', 0, Luxe.utils.random.int(1, 6), get_placement(), 'wolf-head.png', false));
@@ -238,6 +239,7 @@ class BattleState extends State {
     }
 
     function to_overworld_map() {
+        Actuate.reset();
         Main.states.set(WorldState.StateId);
     }
 
