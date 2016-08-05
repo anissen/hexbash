@@ -17,7 +17,7 @@ import snow.api.Promise;
 
 class HandState extends State {
     static public var StateId :String = 'HandState';
-    var deck :DeckEntity;
+    var deckEntity :DeckEntity;
     var cardMap :Map<Int, CardEntity>;
     var battle :Battle;
     var batcher :Batcher;
@@ -39,8 +39,8 @@ class HandState extends State {
     override function onenabled<T>(value :T) {
         card_y = Luxe.screen.height - 100;
 
-        if (deck == null) {
-            deck = new DeckEntity({
+        if (deckEntity == null) {
+            deckEntity = new DeckEntity({
                 centered: true,
                 pos: new Vector(Luxe.screen.width - 300, Luxe.screen.height),
                 color: new Color(0, 0, 0),
@@ -48,7 +48,7 @@ class HandState extends State {
                 depth: 4,
                 scene: this.scene
             });
-            deck.set_text('Deck');
+            deckEntity.set_text('Deck');
         }
 
         position_cards();
@@ -65,20 +65,18 @@ class HandState extends State {
 
     public function draw_card(cardId :Int) :Promise {
         var card = battle.get_card_from_id(cardId);
-        var cost = battle.get_card_cost(cardId);
         var color = switch (card.type) {
             case Minion(_, _): new Color(0.2, 0.5, 0.5);
             // case Tower(_, _): new Color(0.2, 0.3, 0.8);
             // case Potion(_): new Color(0.2, 0.8, 0.3);
             case Spell(_): new Color(0.8, 0.2, 0.3);
+            case Curse(_): new Color(0.7, 0.0, 0.6);
             case Attack(_): new Color(1.0, 0.1, 0.2);
         };
         var cardEntity = new CardEntity({
             centered: true,
-            text: card.name,
-            icon: card.icon,
-            cost: cost,
-            pos: deck.pos.clone(),
+            card: card,
+            pos: deckEntity.pos.clone(),
             color: color,
             batcher: batcher,
             depth: 3,
@@ -87,11 +85,11 @@ class HandState extends State {
         cardMap.set(card.id, cardEntity);
 
         var deckSize = battle.get_deck_size();
-        deck.set_text('Deck\n\nCards: $deckSize');
+        deckEntity.set_text('Deck\n\nCards: $deckSize');
 
         var draw_animation = new Promise(function(resolve) {
             Actuate.tween(cardEntity, 0.2, { rotation_z: -10 + 20 * Math.random() });
-            Actuate.tween(cardEntity.pos, 0.4, { x: deck.pos.x + 50 - 150 * Math.random(), y: deck.pos.y - 100 - 50 * Math.random() }).onComplete(resolve);
+            Actuate.tween(cardEntity.pos, 0.4, { x: deckEntity.pos.x + 50 - 150 * Math.random(), y: deckEntity.pos.y - 100 - 50 * Math.random() }).onComplete(resolve);
         });
         return draw_animation.then(position_cards);
     }
@@ -112,7 +110,7 @@ class HandState extends State {
         }
 
         return new Promise(function(resolve) {
-            Actuate.tween(deck.pos, 0.3, {
+            Actuate.tween(deckEntity.pos, 0.3, {
                 x: startX + cardCount * cardWidth,
                 y: card_y
             }).onComplete(resolve);
@@ -132,11 +130,11 @@ class HandState extends State {
         if (cardEntity == null) return Promise.resolve();
 
         cardMap.remove(cardId);
-        if (grabbedCardEntity == cardEntity) grabbedCardEntity = null;
+        if (grabbedCardEntity == cardEntity) release_grabbed_card();
         cardEntity.destroy();
 
         var deckSize = battle.get_deck_size();
-        deck.set_text('Deck\n\nCards: $deckSize');
+        deckEntity.set_text('Deck\n\nCards: $deckSize');
 
         return position_cards();
     }
@@ -180,14 +178,28 @@ class HandState extends State {
         for (cardId in cardMap.keys()) {
             var cardEntity = cardMap[cardId];
             if (Luxe.utils.geometry.point_in_geometry(screen_pos, cardEntity.geometry)) {
-                grabbed_card(cardEntity);
+                grab_card(cardEntity);
                 break;
             }
         }
     }
 
-    function grabbed_card(cardEntity :CardEntity) {
+    function grab_card(cardEntity :CardEntity) {
         grabbedCardEntity = cardEntity;
+        var deckText = switch (cardEntity.card.type) {
+            case Attack(_): 'Discard';
+            case Curse(_): 'Curse!';
+            default: 'Put Back';
+        }
+        deckEntity.set_text(deckText);
+    }
+
+    function release_grabbed_card() {
+        if (grabbedCardEntity != null) grabbedCardEntity.color.a = 1;
+        grabbedCardEntity = null;
+
+        var deckSize = battle.get_deck_size();
+        deckEntity.set_text('Deck\n\nCards: $deckSize');
     }
 
     override public function onmouseup(event :luxe.Input.MouseEvent) {
@@ -201,9 +213,13 @@ class HandState extends State {
         if (cardId == -1) return;
 
         // if card is dropped on the deck
+        var is_curse = switch (grabbedCardEntity.card.type) {
+            case core.Enums.CardType.Curse: true;
+            default: false;
+        };
         var screen_pos = event.pos;
         var world_pos = Luxe.camera.screen_point_to_world(event.pos);
-        if (Luxe.utils.geometry.point_in_geometry(screen_pos, deck.geometry)) {
+        if (!is_curse && Luxe.utils.geometry.point_in_geometry(screen_pos, deckEntity.geometry)) {
             battle.do_action(DiscardCard(cardId));
             return;
         }
@@ -219,8 +235,7 @@ class HandState extends State {
         }
 
         // if card has no valid drop, put it back
-        grabbedCardEntity.color.a = 1;
-        grabbedCardEntity = null;
+        release_grabbed_card();
         position_cards();
     }
 

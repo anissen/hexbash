@@ -11,6 +11,7 @@ enum CardType {
     // Potion(power :Int);
     Spell(effect :Battle->Array<Command>, cost :Int);
     Attack(power :Int);
+    Curse(effect :Battle->Array<Command>);
 }
 
 typedef EventListenerFunction = Event -> snow.api.Promise;

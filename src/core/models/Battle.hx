@@ -168,6 +168,7 @@ class Battle {
             case Minion(name, cost): handle_play_minion(hero, name, cost);
             // case Tower(name, cost, trigger, effect): handle_play_tower(hero, name, cost, trigger, effect);
             case Spell(effect, cost): handle_play_spell(effect, cost);
+            case Curse(effect): handle_play_spell(effect, 0);
             case Attack(power): handle_play_attack(power, target);
         }
 
@@ -283,7 +284,7 @@ class Battle {
 
         if (minion.hero) game_over(minion.playerId != 0); // GIANT HACK:
 
-        if (minion.playerId != 0) player.equipment.push(new core.models.Equipment.Sword()); // Test
+        if (minion.playerId != 0) player.equipment.push(new core.models.Equipment.CursedSword()); // Test
     }
 
     function damage_minion(modelId :Int, amount :Int) {
@@ -329,6 +330,10 @@ class Battle {
         return currentPlayerId;
     }
 
+    public function get_current_hero() :Minion {
+        return hero;
+    }
+
     public function get_minion_from_id(id :Int) :Minion {
         return minions[id];
     }
@@ -353,6 +358,7 @@ class Battle {
                     if (other == null || other.playerId == hero.playerId) return null;
                     return hex;
                 }).filter(function(hex) { return (hex != null); });
+            case Curse(_): [hero.hex];
             default: [];
         };
     }
@@ -393,28 +399,20 @@ class Battle {
         return null;
     }
 
-    public function get_card_cost(cardId :Int) :Int {
-        var card = get_card_from_id(cardId);
-        return switch (card.type) {
-            case Minion(_, cost): cost;
-            // case Tower(_, cost, _, _): cost;
-            // case Potion(power): power;
-            case Spell(_, cost): cost;
-            case Attack(_): 0;
-        }
-    }
+    // public function get_card_cost(cardId :Int) :Int {
+    //     var card = get_card_from_id(cardId);
+    //     return switch (card.type) {
+    //         case Minion(_, cost): cost;
+    //         // case Tower(_, cost, _, _): cost;
+    //         // case Potion(power): power;
+    //         case Spell(_, cost): cost;
+    //         case Attack(_): 0;
+    //     }
+    // }
 
     public function can_play_card(cardId :Int) :Bool {
         var card = get_card_from_id(cardId);
-        var cost = switch (card.type) {
-            case Minion(_, cost): cost;
-            // case Tower(_, cost, _, _): cost;
-            // case Potion(power): -power; // heals
-            case Spell(_, cost): cost;
-            case Attack(_): 0;
-        };
-        // var hero = get_hero(get_current_player());
-        return (cost < hero.power);
+        return (card.cost < hero.power);
     }
 
     public function has_hex(hex :Hex) {

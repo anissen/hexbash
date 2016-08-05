@@ -216,18 +216,19 @@ class HeroEntity extends MinionEntity {
 
 typedef CardOptions = {
     > luxe.options.SpriteOptions,
-    text :String,
-    icon :String,
+    card :core.models.Card,
     ?cost :Int
 }
 
 class CardEntity extends luxe.Sprite {
+    public var card :core.models.Card;
     var text :luxe.Text;
     var icon :luxe.Sprite;
     static var Count :Int = 0;
 
     public function new(options :CardOptions) {
         var _options = options;
+        card = _options.card;
         if (_options.name == null) _options.name = 'card.' + Luxe.utils.uniqueid();
         if (_options.color == null) _options.color = new Color(0, 0.5, 0.5);
         if (_options.geometry == null) _options.geometry = Luxe.draw.box({
@@ -239,7 +240,7 @@ class CardEntity extends luxe.Sprite {
         icon = new Sprite({
             pos: new Vector(100 / 2, 150 / 2),
             size: Vector.Multiply(size, 1.4),
-            texture: Luxe.resources.texture('assets/images/icons/${_options.icon}'),
+            texture: Luxe.resources.texture('assets/images/icons/${card.icon}'),
             parent: this,
             batcher: _options.batcher,
             scene: _options.scene,
@@ -247,7 +248,7 @@ class CardEntity extends luxe.Sprite {
         });
 
         text = new luxe.Text({
-            text: _options.text, // + (_options.cost != null ? '\n\n(Cost: ${_options.cost})' : ''),
+            text: card.name, // + (_options.cost != null ? '\n\n(Cost: ${card.cost})' : ''),
             pos: new Vector(50, 10),
             point_size: 18,
             align: luxe.Text.TextAlign.center,
