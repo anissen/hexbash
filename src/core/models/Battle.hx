@@ -387,7 +387,11 @@ class Battle {
     public function get_minion_moves(modelId :Int) :Array<MinionAction> {
         var model = get_minion_from_id(modelId);
         if (model.actions <= 0) return [];
-        return model.hex.ring(1).map(function(hex) {
+        var targets = switch (model.movement) {
+            case Freely(range): model.hex.range(range);
+            case Jump(range): model.hex.ring(range);
+        }
+        return targets.map(function(hex) {
             if (is_walkable(hex)) return Move(hex);
             return null;
         }).filter(function(action) { return (action != null); });
@@ -398,7 +402,7 @@ class Battle {
         if (model.actions <= 0) return [];
         if (model.id == hero.id) return []; // Hero cannot attack normally
         // if (model.hero) return []; // Test mechanic: Heroes cannot attack but has to use cards to deal damage
-        return model.hex.ring(1).map(function(hex) {
+        return model.hex.range(model.range).map(function(hex) {
             var other = get_minion(hex);
             if (other != null && other.playerId != model.playerId) return core.MinionAction.Attack(other.id);
             return null;

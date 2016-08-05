@@ -86,6 +86,10 @@ class HexTools {
         return results;
     }
 
+    static public function range(center :Hex, radius :Int = 1) {
+        return rings(center, 1, radius);
+    }
+
     static public function reachable(start :Hex, is_walkable :Hex -> Bool, movement :Int = 1) :Array<Hex> {
         var result = [];
         var visited = new Map();

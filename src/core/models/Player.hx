@@ -21,6 +21,7 @@ class Player {
         deck.add(new Card('Wolf', 1, 2, 'wolf-head.png', Minion('Wolf', 2)));
         deck.add(new Card('Alpha Wolf', 1, 2, 'wolf-head.png', Minion('Wolf', 3)));
         deck.add(new Card('Direwolf', 1, 2, 'wolf-head.png', Minion('Wolf', 4)));
+        deck.add(new Card('Archer', 1, 2, 'crowned-skull.png', Minion('Archer', 3)));
     }
 
     public function get_cards_from_equipment() :Array<Card> {

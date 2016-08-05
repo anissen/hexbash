@@ -3,15 +3,12 @@
 
 --> If this game is shipped tomorrow, what is the most important thing to work on right now??
 
-[ ] Move some game state out of the battle state (e.g. hero life, cards)
-[ ] Map + Battle: Handle progression of life, cards
 [ ] Battle: Create battle with the given enemy type
 [ ] Refactor: Split into files
 [ ] Refactor: Clean up code
 [ ] Battle: Clean up effects handling
 [ ] General-purpose effect handling (of type Void->Array<Command>, Command includes RemoveEffect)
 [ ] Spell that moves a minion (jump)
-[ ] Ranged attackers
 [ ] Generate weapons
 [ ] Persist game state across sessions
 [ ] Battle: Dungeon type battles
