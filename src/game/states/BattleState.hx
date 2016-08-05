@@ -41,7 +41,6 @@ class BattleState extends State {
         super({ name: StateId });
         battle = new Battle();
         hexGrid = new HexGrid(35, 6, 4); //new HexGrid();
-        TargetSelectionState.hexGrid = hexGrid; // HACK
         HandState.hexGrid = hexGrid; // HACK
         levelScene = new Scene();
         guiBatcher = Luxe.renderer.create_batcher({ name: 'gui', layer: 4 });
