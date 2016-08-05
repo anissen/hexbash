@@ -56,11 +56,12 @@ class BattleState extends State {
         trace('Player deck:');
         core.models.Game.player.deck.print();
 
+        reset(data.enemy, 1000 * Math.random());
+
         Luxe.camera.zoom = 0.2;
         luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1.5 });
         Luxe.camera.pos = new Vector(0, 0);
         //reset(87634.34);
-        reset(data.enemy, 1000 * Math.random());
     }
 
     override function onleave(_) {
@@ -68,6 +69,7 @@ class BattleState extends State {
     }
 
     function clear() {
+        Actuate.reset();
         levelScene.empty();
         hexMap = new Map();
         minionMap = new Map();
@@ -109,7 +111,7 @@ class BattleState extends State {
             battle.add_minion(model);
         }
 
-        battle.add_minion(new Minion('Enemy', 1, 4, new Hex(1, -2), 'crowned-skull.png', true)); // TODO: Should be part of normal generation
+        battle.add_minion(new Minion('Enemy', 1, 4, new Hex(0, 0), 'crowned-skull.png', true)); // TODO: Should be part of normal generation
 
         battle.add_minion(new Minion('Hero', 0, 10, new Hex(-1, 2), 'pointy-hat.png', true));
         battle.add_minion(new Minion('Rat', 0, Luxe.utils.random.int(1, 6), get_placement(), 'wolf-head.png', false));
@@ -239,7 +241,6 @@ class BattleState extends State {
     }
 
     function to_overworld_map() {
-        Actuate.reset();
         Main.states.set(WorldState.StateId);
     }
 

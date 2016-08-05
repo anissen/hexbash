@@ -344,6 +344,7 @@ class Battle {
 
     public function get_targets_for_card(cardId :Int) :Array<Hex> {
         var card = get_card_from_id(cardId);
+        if (card == null) return [];
         return switch (card.type) {
             case Minion(_, _):
                 hero.hex.ring(1).map(function(hex) {

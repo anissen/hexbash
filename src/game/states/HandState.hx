@@ -109,6 +109,8 @@ class HandState extends State {
             });
         }
 
+        if (deckEntity == null) return Promise.resolve(); // If we're terminating the game
+
         return new Promise(function(resolve) {
             Actuate.tween(deckEntity.pos, 0.3, {
                 x: startX + cardCount * cardWidth,
