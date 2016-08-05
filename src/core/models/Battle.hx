@@ -314,11 +314,23 @@ class Battle {
 
     function end_game(won :Bool) {
         game_over = true;
+
+        // Drain life from minions
+        for (minion in get_minions()) {
+            if (minion.playerId == 0 && minion.id != hero.id) {
+                kill_minion(minion.id);
+                heal_minion(hero.id, 1);
+            }
+        }
+
+        player.life = hero.power;
+
         // Put unused cards back into the deck
         for (card in player.hand) {
             switch (card.type) {
-                case Attack(_): continue; // don't put attack cards in the deck
-                default: player.deck.add(card);
+                case Minion(_): player.deck.add(card);
+                case Spell(_): player.deck.add(card);
+                default: // Don't add attack and curse cards
             }
         }
         player.hand = [];
