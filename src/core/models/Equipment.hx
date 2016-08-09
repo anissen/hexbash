@@ -21,13 +21,18 @@ class Fists extends Equipment implements CardProvider {
 
 class Sword extends Equipment implements CardProvider {
     public function get_cards() :Array<Card> {
-        // 100% chance for providing 2 card per turn
-        return [new Card.AttackCard('Slash 5', 5, 'gladius.png'), new Card.AttackCard('Stab 3', 3, 'gladius.png')];
+        // 100% chance for providing 1 card per turn
+        var rand = Math.random();
+        if (rand < 0.5) {
+            return [new Card.AttackCard('Stab 2', 2, 'gladius.png')];
+        } else {
+            return [new Card.AttackCard('Swing 3', 3, 'gladius.png')];
+        }
     }
 }
 
-class CursedSword extends Sword {
-    override public function get_cards() :Array<Card> {
+class CursedSword extends Equipment implements CardProvider /* extends Sword */ {
+    public function get_cards() :Array<Card> {
         // 20% risk of getting a curse instead
         if (Math.random() < 0.2) {
             function curse(battle :core.models.Battle) {
@@ -35,6 +40,6 @@ class CursedSword extends Sword {
             }
             return [new Card.Card('Curse', 0, 0, 'fist.png', core.Enums.CardType.Curse(curse))];
         }
-        return super.get_cards();
+        return [new Card.AttackCard('Slash 5', 5, 'gladius.png')];
     }
 }

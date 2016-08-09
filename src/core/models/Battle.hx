@@ -286,8 +286,6 @@ class Battle {
         emit(MinionDied(modelId));
 
         if (minion.hero) end_game(minion.playerId != 0); // GIANT HACK:
-
-        if (minion.playerId != 0) player.equipment.push(new core.models.Equipment.CursedSword()); // Test
     }
 
     function damage_minion(modelId :Int, amount :Int) {
