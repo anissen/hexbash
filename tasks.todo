@@ -3,6 +3,7 @@
 
 --> If this game is shipped tomorrow, what is the most important thing to work on right now??
 
+[ ] Persist game state across sessions
 [ ] Battle: Create battle with the given enemy type
 [ ] Refactor: Split into files
 [ ] Refactor: Clean up code

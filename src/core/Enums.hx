@@ -5,7 +5,7 @@ import core.HexLibrary.Hex;
 import snow.api.Promise;
 
 enum CardType {
-    // TODO: Remove arguments
+    // TODO: Remove arguments, or maybe simplify to only one argument, e.g. Minion(MinionData) where MinionData = { name, cost } or enum MinionData { NormalMinion(name, cost); SuperMinion(x) };
     Minion(name :String, cost :Int);
     // Tower(name :String, cost :Int, trigger :Battle->Event->Bool, effect :Battle->Array<Command>);
     // Potion(power :Int);
