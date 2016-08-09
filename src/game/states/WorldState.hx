@@ -43,16 +43,11 @@ class WorldState extends State {
 
     var overlay_batcher :phoenix.Batcher;
     var overlay_filter :Sprite;
-    var enemy_factory :EnemyFactory;
 
     public function new() {
         super({ name: StateId });
 
         path = [];
-
-        var enemy_database :Array<core.factories.EnemyFactory.EnemyData> = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
-        var enemy_grammar = Luxe.resources.text('assets/data/encounter_grammar.txt').asset.text;
-        enemy_factory = new EnemyFactory(enemy_database, enemy_grammar); // TODO: Maybe make this a singleton?
     }
 
     override function onenter(_) {
@@ -164,7 +159,7 @@ class WorldState extends State {
         var is_hero_start_hex = (hex.q == 0 && hex.r == 0);
         var walkable = true;
         if (Math.random() > 0.95 && !is_hero_start_hex) {
-            var data = enemy_factory.create_random();
+            var data = EnemyFactory.CreateRandom();
             var enemy = new Enemy({
                 pos: new Vector(pos.x, pos.y),
                 identifier: data.identifier,

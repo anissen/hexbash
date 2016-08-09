@@ -208,7 +208,7 @@ class Battle {
         var nearbyHexes = hero.hex.reachable(is_walkable);
         if (nearbyHexes.length == 0) return; // should not happen
         var randomHex = nearbyHexes.random(function(v :Int) { return random.int(v); });
-        add_minion(new Minion(name, 0, cost, randomHex, 'spider-alt.png', false));
+        add_minion(core.factories.MinionFactory.Create(name, currentPlayerId, randomHex));
     }
 
     // function handle_play_tower(hero :Minion, name :String, cost :Int, trigger, effect) {

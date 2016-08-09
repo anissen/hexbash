@@ -36,6 +36,7 @@ class Main extends luxe.Game {
         config.preload.shaders.push({ id: 'postprocess', frag_id: 'assets/shaders/postprocess2.glsl', vert_id: 'default' });
 
         config.preload.jsons.push({ id: 'assets/data/world_enemies.json' });
+        config.preload.jsons.push({ id: 'assets/data/minions.json' });
         config.preload.texts.push({ id: 'assets/data/encounter_grammar.txt' });
 
         return config;
@@ -57,11 +58,22 @@ class Main extends luxe.Game {
         postprocess = new PostProcess(shader);
         postprocess.toggle(); // disable shader for now
 
+        setup_data();
+
         states = new States({ name: 'state_machine' });
         states.add(new BattleState());
         states.add(new MinionActionsState());
         states.add(new WorldState());
         states.set(BattleState.StateId, { enemy: 'spider' });
+    }
+
+    function setup_data() {
+        var minion_database :Array<core.factories.MinionFactory.MinionData> = Luxe.resources.json('assets/data/minions.json').asset.json;
+        core.factories.MinionFactory.Initialize(minion_database);
+
+        var enemy_database :Array<core.factories.EnemyFactory.EnemyData> = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
+        var enemy_grammar = Luxe.resources.text('assets/data/encounter_grammar.txt').asset.text;
+        core.factories.EnemyFactory.Initialize(enemy_database, enemy_grammar);
     }
 
     // Scale camera's viewport accordingly when game is scaled, common and suitable for most games

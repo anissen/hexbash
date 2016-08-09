@@ -13,10 +13,10 @@ typedef EnemyData = {
 };
 
 class EnemyFactory {
-    var generator = new Generator();
-    var enemy_database :Map<String, EnemyData>;
+    static var generator = new Generator();
+    static var enemy_database :Map<String, EnemyData>;
 
-    public function new(enemyDatabase :Array<EnemyData>, enemyGrammar :String) {
+    static public function Initialize(enemyDatabase :Array<EnemyData>, enemyGrammar :String) {
         enemy_database = new Map();
 
         for (d in enemyDatabase) {
@@ -27,17 +27,17 @@ class EnemyFactory {
         generator.add_rules(enemyGrammar);
     }
 
-    public function create(identifier :String) :EnemyData {
+    static public function Create(identifier :String) :EnemyData {
         return enemy_database[identifier];
     }
 
-    public function create_random() :EnemyData {
+    static public function CreateRandom() :EnemyData {
         var identifier = generator.generate('Encounter').leafs()[0];
-        return create(identifier);
+        return Create(identifier);
     }
 
-    public function create_many() :Array<EnemyData> {
+    static public function CreateMany() :Array<EnemyData> {
         var identifiers = generator.generate('Encounter').leafs();
-        return [ for (id in identifiers) create(id) ];
+        return [ for (id in identifiers) Create(id) ];
     }
 }
