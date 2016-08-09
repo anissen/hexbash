@@ -74,6 +74,11 @@ class Main extends luxe.Game {
         var enemy_database :Array<core.factories.EnemyFactory.EnemyData> = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
         var enemy_grammar = Luxe.resources.text('assets/data/encounter_grammar.txt').asset.text;
         core.factories.EnemyFactory.Initialize(enemy_database, enemy_grammar);
+
+        var deck = core.models.Game.player.deck;
+        deck.add(new core.models.Card.MinionCard('wolf'));
+        deck.add(new core.models.Card.MinionCard('archer'));
+        deck.add(new core.models.Card.MinionCard('jumper'));
     }
 
     // Scale camera's viewport accordingly when game is scaled, common and suitable for most games

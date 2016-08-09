@@ -16,13 +16,6 @@ class Player {
         deck = new Deck();
         hand = new Hand();
         equipment = [/* new Equipment.Fists() */ new Equipment.CursedSword() /* new Equipment.Spellbook() */];
-
-        deck.add(new Card('Wolf Cub', 1, 2, 'wolf-head.png', Minion('wolf', 1)));
-        deck.add(new Card('Wolf', 1, 2, 'wolf-head.png', Minion('wolf', 2)));
-        deck.add(new Card('Alpha Wolf', 1, 2, 'wolf-head.png', Minion('wolf', 3)));
-        deck.add(new Card('Direwolf', 1, 2, 'wolf-head.png', Minion('wolf', 4)));
-        deck.add(new Card('Archer', 1, 2, 'crowned-skull.png', Minion('archer', 2)));
-        deck.add(new Card('Jumper', 1, 2, 'crowned-skull.png', Minion('jumper', 3)));
     }
 
     public function get_cards_from_equipment() :Array<Card> {

@@ -168,7 +168,7 @@ class Battle {
         // player.deck.unshift(card); // try adding played card back into deck as a mechanic
         switch (card.type) {
             // case Potion(power): handle_drink_potion(hero, power);
-            case Minion(name, cost): handle_play_minion(hero, name, cost);
+            case Minion(name): handle_play_minion(hero, name);
             // case Tower(name, cost, trigger, effect): handle_play_tower(hero, name, cost, trigger, effect);
             case Spell(effect, cost): handle_play_spell(effect, cost);
             case Curse(effect): handle_play_spell(effect, 0);
@@ -185,7 +185,7 @@ class Battle {
 
         player.hand.remove(card);
         switch (card.type) { // try adding discarded MINION and SPELL cards back into deck as a mechanic
-            case Minion(_, _): player.deck.discard(card);
+            case Minion(_): player.deck.discard(card);
             default:
         }
         emit(CardDiscarded(cardId));
@@ -201,14 +201,18 @@ class Battle {
     //     heal_minion(hero.id, power);
     // }
 
-    function handle_play_minion(hero :Minion, name :String, cost :Int) {
-        damage_minion(hero.id, cost);
+    function handle_play_minion(hero :Minion, name :String) {
+        var minionData = core.factories.MinionFactory.GetData(name);
+
+        damage_minion(hero.id, minionData.power);
         if (hero.power <= 0) return;
 
         var nearbyHexes = hero.hex.reachable(is_walkable);
         if (nearbyHexes.length == 0) return; // should not happen
         var randomHex = nearbyHexes.random(function(v :Int) { return random.int(v); });
-        add_minion(core.factories.MinionFactory.Create(name, currentPlayerId, randomHex));
+        var minion = core.factories.MinionFactory.Create(name, currentPlayerId, randomHex);
+
+        add_minion(minion);
     }
 
     // function handle_play_tower(hero :Minion, name :String, cost :Int, trigger, effect) {
@@ -360,7 +364,7 @@ class Battle {
         var card = get_card_from_id(cardId);
         if (card == null) return [];
         return switch (card.type) {
-            case Minion(_, _):
+            case Minion(_):
                 hero.hex.ring(1).map(function(hex) {
                     if (!has_hex(hex)) return null;
                     if (get_minion(hex) != null) return null;
@@ -431,6 +435,7 @@ class Battle {
 
     public function can_play_card(cardId :Int) :Bool {
         var card = get_card_from_id(cardId);
+        trace('Can cast card ${card.name}: ${card.cost} < ${hero.power}');
         return (card.cost < hero.power);
     }
 

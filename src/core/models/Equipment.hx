@@ -24,9 +24,9 @@ class Sword extends Equipment implements CardProvider {
         // 100% chance for providing 1 card per turn
         var rand = Math.random();
         if (rand < 0.5) {
-            return [new Card.AttackCard('Stab 2', 2, 'gladius.png')];
+            return [new Card.AttackCard('Stab', 2, 'gladius.png')];
         } else {
-            return [new Card.AttackCard('Swing 3', 3, 'gladius.png')];
+            return [new Card.AttackCard('Swing', 3, 'gladius.png')];
         }
     }
 }
@@ -38,8 +38,8 @@ class CursedSword extends Equipment implements CardProvider /* extends Sword */ 
             function curse(battle :core.models.Battle) {
                 return [core.Enums.Command.DamageMinion(battle.get_current_hero().id, 2)];
             }
-            return [new Card.Card('Curse', 0, 0, 'fist.png', core.Enums.CardType.Curse(curse))];
+            return [new Card.Card('Curse', 0, 'fist.png', core.Enums.CardType.Curse(curse))];
         }
-        return [new Card.AttackCard('Slash 5', 5, 'gladius.png')];
+        return [new Card.AttackCard('Slash', 5, 'gladius.png')];
     }
 }

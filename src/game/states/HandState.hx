@@ -66,7 +66,7 @@ class HandState extends State {
     public function draw_card(cardId :Int) :Promise {
         var card = battle.get_card_from_id(cardId);
         var color = switch (card.type) {
-            case Minion(_, _): new Color(0.2, 0.5, 0.5);
+            case Minion(_): new Color(0.2, 0.5, 0.5);
             // case Tower(_, _): new Color(0.2, 0.3, 0.8);
             // case Potion(_): new Color(0.2, 0.8, 0.3);
             case Spell(_): new Color(0.8, 0.2, 0.3);
@@ -208,11 +208,7 @@ class HandState extends State {
         if (!enabled) return;
         if (grabbedCardEntity == null) return;
 
-        var cardId = -1;
-        for (key in cardMap.keys()) {
-            if (cardMap[key] == grabbedCardEntity) cardId = key;
-        }
-        if (cardId == -1) return;
+        var cardId = grabbedCardEntity.card.id;
 
         // if card is dropped on the deck
         var is_curse = switch (grabbedCardEntity.card.type) {
@@ -227,12 +223,14 @@ class HandState extends State {
         }
 
         // if card is dropped on a target
-        var mouse_hex = hexGrid.pos_to_hex(world_pos);
-        var targets = battle.get_targets_for_card(cardId);
-        for (hex in targets) {
-            if (hex.key == mouse_hex.key) {
-                battle.do_action(PlayCard(cardId, hex));
-                return;
+        if (battle.can_play_card(cardId)) {
+            var mouse_hex = hexGrid.pos_to_hex(world_pos);
+            var targets = battle.get_targets_for_card(cardId);
+            for (hex in targets) {
+                if (hex.key == mouse_hex.key) {
+                    battle.do_action(PlayCard(cardId, hex));
+                    return;
+                }
             }
         }
 
@@ -248,11 +246,7 @@ class HandState extends State {
         }
 
         if (grabbedCardEntity != null) {
-            var cardId = -1;
-            for (key in cardMap.keys()) {
-                if (cardMap[key] == grabbedCardEntity) cardId = key;
-            }
-            if (cardId == -1) return;
+            var cardId = grabbedCardEntity.card.id;
 
             var world_pos = Luxe.camera.screen_point_to_world(Luxe.screen.cursor.pos);
             var mouse_hex = hexGrid.pos_to_hex(world_pos);
@@ -265,7 +259,7 @@ class HandState extends State {
 
                 // if card is type minion and the mouse is over ANY of the targets
                 switch (card.type) {
-                    case Minion(_, _):
+                    case Minion(_):
                     default: return false;
                 }
                 var over_target = false;

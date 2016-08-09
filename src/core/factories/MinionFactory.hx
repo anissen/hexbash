@@ -13,7 +13,6 @@ typedef MinionData = {
     var name :String;
     var identifier :String;
     var icon :String;
-    var cost :Int;
     var power :Int;
     // var abilities :Array<{ key :String, value :Int }>;
     var abilities :AbilitiesData;
@@ -31,9 +30,13 @@ class MinionFactory {
         }
     }
 
-    static public function Create(identifier :String, playerId :Int, hex :Hex) :Minion {
+    static public function GetData(identifier :String) :MinionData {
         if (minion_database == null) throw 'Minion database not initialized!';
-        var data = minion_database[identifier];
+        return minion_database[identifier];
+    }
+
+    static public function Create(identifier :String, playerId :Int, hex :Hex) :Minion {
+        var data = GetData(identifier);
         var minion = new Minion(data.name, playerId, data.power, hex, data.icon, (data.hero != null ? data.hero : false));
 
         if (data.abilities.jump != null) {
