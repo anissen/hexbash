@@ -150,7 +150,7 @@ class HandState extends State {
 
         if (grabbedCardEntity != null) {
             grabbedCardEntity.rotation_z = luxe.utils.Maths.clamp(grabbedCardEntity.rotation_z + event.x_rel / 50, -5, 5);
-            grabbedCardEntity.color.a = 0.25; // Remove everything but the icon instead
+            grabbedCardEntity.color.a = 0; // Remove everything but the icon instead
             grabbedCardEntity.pos = Vector.Subtract(Luxe.screen.cursor.pos, grabbedCardEntity.size);
             return;
         }
@@ -241,9 +241,9 @@ class HandState extends State {
 
     override public function onrender() {
         // TODO: Maybe only update this when drawing cards and playing cards (e.g. when the state changes)
-        for (cardId in cardMap.keys()) {
-            cardMap[cardId].color.a = (battle.get_targets_for_card(cardId).length == 0 ? 0.5 : 1.0);
-        }
+        // for (cardId in cardMap.keys()) {
+        //     cardMap[cardId].color.a = (battle.get_targets_for_card(cardId).length == 0 ? 0.5 : 1.0);
+        // }
 
         if (grabbedCardEntity != null) {
             var cardId = grabbedCardEntity.card.id;
@@ -273,6 +273,8 @@ class HandState extends State {
                 var pos = hexGrid.hex_to_pos(target);
                 var radius = (is_target_highlighted(target) ? 35 : 30);
                 Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 0.5, 1, 0.4), r: radius, immediate: true, depth: 15 });
+                trace(card.icon);
+                Luxe.draw.texture({ texture: Luxe.resources.texture('assets/images/icons/${card.icon}'), size: new Vector(radius, radius), immediate: true, x: pos.x - radius * 0.5, y: pos.y - radius * 0.5 });
             }
         }
     }
