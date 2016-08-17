@@ -1,0 +1,40 @@
+[
+  {
+    "type": "mint.Panel",
+    "name": "panel",
+    "x": 0,
+    "y": 0,
+    "w": 194,
+    "h": 301,
+    "children": [
+      {
+        "type": "mint.Panel",
+        "name": "panel",
+        "x": 10,
+        "y": 58,
+        "w": 177,
+        "h": 107
+      },
+      {
+        "type": "mint.Label",
+        "text": "Loot!",
+        "text_size": "14",
+        "align": "center",
+        "align_vertical": "center",
+        "name": "label",
+        "x": 8,
+        "y": 9,
+        "w": 179,
+        "h": 40
+      }
+    ]
+  },
+  {
+    "type": "mint.Panel",
+    "name": "panel",
+    "x": 0,
+    "y": 0,
+    "w": 173,
+    "h": 118
+  }
+]

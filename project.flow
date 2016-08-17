@@ -31,7 +31,8 @@
             dependencies : {
                 luxe: '*',
                 libnoise: '*',
-                generativegrammar: '*'
+                generativegrammar: '*',
+                mint: '*'
             },
             defines : [
                 'absolute-path'
