@@ -41,6 +41,8 @@ class Main extends luxe.Game {
         config.preload.jsons.push({ id: 'assets/data/minions.json' });
         config.preload.texts.push({ id: 'assets/data/encounter_grammar.txt' });
 
+        config.preload.jsons.push({ id: 'assets/ui/loot_menu.json' });
+
         return config;
     }
 
@@ -66,7 +68,9 @@ class Main extends luxe.Game {
         states.add(new BattleState());
         states.add(new MinionActionsState());
         states.add(new WorldState());
+        states.add(new LootState());
         states.set(BattleState.StateId, { enemy: 'spider' });
+        // states.enable(LootState.StateId);
     }
 
     function setup_data() {
@@ -105,6 +109,12 @@ class Main extends luxe.Game {
             fullscreen = !fullscreen;
             Luxe.snow.runtime.window_fullscreen(fullscreen, true /* true-fullscreen */);
         } else if (e.keycode == Key.key_s) {
+            // save state
+            Luxe.io.string_save('save', 'blah test');
+        } else if (e.keycode == Key.key_l) {
+            // load saved state
+            trace('loaded state: ' + Luxe.io.string_load('save'));
+        } else if (e.keycode == Key.key_p) {
             postprocess.toggle();
         } else if (e.keycode == Key.key_m) {
             states.set(WorldState.StateId);

@@ -236,7 +236,16 @@ class BattleState extends State {
         trace('Game Over - You ${won ? "Won" : "Lost"}!');
         if (Main.states.enabled(HandState.StateId)) Main.states.disable(HandState.StateId);
         // reset(battle.get_random().get());
-        return Promise.resolve().then(to_overworld_map);
+
+        var promise = new Promise(function(resolve) {
+            Main.states.enable(LootState.StateId, { callback: function(x) {
+                Main.states.disable(LootState.StateId);
+                trace('choose loot #$x');
+                resolve();
+            }});
+        });
+
+        return promise.then(to_overworld_map);
     }
 
     function to_overworld_map() {

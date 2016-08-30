@@ -29,6 +29,8 @@ class LootState extends State {
     }
 
     override function onenabled<T>(value :T) {
+        var data :{ callback :Int->Void } = cast value;
+        var callback = data.callback;
         rendering = new LuxeMintRender({ depth: 1000, batcher: Luxe.renderer.create_batcher({ name: 'gui', layer: 5 }) });
         layout = new Margins();
 
@@ -57,7 +59,7 @@ class LootState extends State {
             options: { color: new Color(0.5,0.5,0,0.8) },
         });
 
-        function create_choice(startY :Int) {
+        function create_choice(startY :Int, index :Int) {
             var choice = new mint.Panel({
                 parent: panel,
                 x: 10,
@@ -95,7 +97,7 @@ class LootState extends State {
                 name: 'button',
                 text: 'Choose',
                 x: 10, y: 145, w: 260, h: 32,
-                onclick: function(e,c) { trace('button clicked!'); },
+                onclick: function(e,c) { trace('button clicked!'); callback(index); },
             });
 
             new mint.Image({
@@ -107,8 +109,8 @@ class LootState extends State {
             });
         }
 
-        create_choice(10);
-        create_choice(205);
+        create_choice(10, 0);
+        create_choice(205, 1);
     }
 
     override function ondisabled<T>(value :T) {

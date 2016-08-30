@@ -5,14 +5,11 @@
 
 [ ] Persist game state across sessions
 [ ] Battle: Create battle with the given enemy type
-[ ] Refactor: Split into files
-[ ] Refactor: Clean up code
+[ ] Refactor: Split Entities.hx into files
 [ ] Battle: Clean up effects handling
 [ ] General-purpose effect handling (of type Void->Array<Command>, Command includes RemoveEffect)
 [ ] Spell that moves a minion (jump)
 [ ] Generate weapons
-[ ] Persist game state across sessions
-[ ] Battle: Dungeon type battles
 
 # Equipment/skills:
 [ ] Allow 1 additional action per minion (penalty: -1 power)
