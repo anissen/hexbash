@@ -168,7 +168,7 @@ class Battle {
         // player.deck.unshift(card); // try adding played card back into deck as a mechanic
         switch (card.type) {
             // case Potion(power): handle_drink_potion(hero, power);
-            case Minion(name): handle_play_minion(hero, name);
+            case Minion(name): handle_play_minion(hero, name, target);
             // case Tower(name, cost, trigger, effect): handle_play_tower(hero, name, cost, trigger, effect);
             case Spell(effect, cost): handle_play_spell(effect, cost);
             case Curse(effect): handle_play_spell(effect, 0);
@@ -201,16 +201,18 @@ class Battle {
     //     heal_minion(hero.id, power);
     // }
 
-    function handle_play_minion(hero :Minion, name :String) {
+    function handle_play_minion(hero :Minion, name :String, target :Hex) {
         var minionData = core.factories.MinionFactory.GetData(name);
 
         damage_minion(hero.id, minionData.power);
         if (hero.power <= 0) return;
 
-        var nearbyHexes = hero.hex.reachable(is_walkable);
-        if (nearbyHexes.length == 0) return; // should not happen
-        var randomHex = nearbyHexes.random(function(v :Int) { return random.int(v); });
-        var minion = core.factories.MinionFactory.Create(name, currentPlayerId, randomHex);
+        // var nearbyHexes = hero.hex.reachable(is_walkable);
+        // if (nearbyHexes.length == 0) return; // should not happen
+        // var randomHex = nearbyHexes.random(function(v :Int) { return random.int(v); });
+        // var minion = core.factories.MinionFactory.Create(name, currentPlayerId, randomHex);
+
+        var minion = core.factories.MinionFactory.Create(name, currentPlayerId, target);
 
         add_minion(minion);
     }
