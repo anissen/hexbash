@@ -31,7 +31,10 @@ class LootState extends State {
     override function onenabled<T>(value :T) {
         var data :{ callback :Int->Void } = cast value;
         var callback = data.callback;
-        rendering = new LuxeMintRender({ depth: 1000, batcher: Luxe.renderer.create_batcher({ name: 'gui', layer: 5 }) });
+        rendering = new LuxeMintRender({
+            depth: 1000,
+            batcher: Luxe.renderer.create_batcher({ name: 'gui', layer: 5 })
+        });
         layout = new Margins();
 
         var _scale = Luxe.screen.device_pixel_ratio;
@@ -114,6 +117,7 @@ class LootState extends State {
     }
 
     override function ondisabled<T>(value :T) {
-
+        // scene.empty();
+        canvas.destroy();
     }
 }
