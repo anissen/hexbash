@@ -32,6 +32,7 @@ class Main extends luxe.Game {
         config.preload.textures.push({ id: 'assets/images/icons/bowman.png' });
         config.preload.textures.push({ id: 'assets/images/icons/jump-across.png' });
         config.preload.textures.push({ id: 'assets/images/icons/overlord-helm.png' });
+        config.preload.textures.push({ id: 'assets/images/icons/village.png' });
 
         config.preload.textures.push({ id: 'assets/images/overlay_filter.png' });
         config.preload.textures.push({ id: 'assets/images/sun_ray.png' });

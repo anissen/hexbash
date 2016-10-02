@@ -40,6 +40,7 @@ class WorldState extends State {
     var powerText :luxe.Text;
 
     var enemies :Array<Enemy>;
+    var villages :Array<Hex>;
 
     var boss :Enemy = null;
 
@@ -67,6 +68,7 @@ class WorldState extends State {
         hexes = new Map();
         heights = new Map();
         enemies = [];
+        villages = [];
 
         create_map();
 
@@ -219,6 +221,15 @@ class WorldState extends State {
                     depth: 100
                 });
             }
+        } else if (Math.random() > 0.99) {
+            new Sprite({
+                pos: pos,
+                texture: Luxe.resources.texture('assets/images/icons/village.png'),
+                color: new Color(0, 0, 0.5),
+                scale: new Vector(0.1, 0.1),
+                depth: 97
+            });
+            villages.push(hex);
         }
         if (walkable) {
             hexes[hex.key] = hex;
@@ -282,6 +293,14 @@ class WorldState extends State {
             var hex = path.shift();
             for (enemy in enemies) {
                 var enemy_hex = hexGrid.pos_to_hex(enemy.pos);
+                for (v in villages) {
+                    if (hex.key == v.key) {
+                        trace('Village!');
+                        core.models.Game.player.life = core.models.Game.player.life_max;
+                        powerText.text = '' + core.models.Game.player.life;
+                    }
+                }
+
                 if (hex.key == enemy_hex.key) {
                     enter_battle(enemy);
                     return;
