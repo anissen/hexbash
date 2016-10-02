@@ -37,6 +37,8 @@ class WorldState extends State {
     var heights :Map<String, Float>;
 
     var hero :Sprite;
+    var powerText :luxe.Text;
+
     var enemies :Array<Enemy>;
 
     var boss :Enemy = null;
@@ -57,6 +59,8 @@ class WorldState extends State {
         Luxe.renderer.clear_color.set(130/255, 220/255, 230/255); // water color
         luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1 });
 
+        // TODO: Don't re-initialize everything onenter
+
         hexGrid = new HexGrid(35, 2, 0);
         hexGrid.events.listen(HexGrid.HEX_CLICKED_EVENT, onhexclicked);
 
@@ -72,6 +76,27 @@ class WorldState extends State {
             color: new Color(0, 0.5, 0.5),
             scale: new Vector(0.1, 0.1),
             depth: 98
+        });
+
+        new Sprite({
+            pos: new Vector(hero.size.x / 2, hero.size.y + 6),
+            size: Vector.Multiply(hero.size, 0.65),
+            parent: hero,
+            depth: hero.depth + 0.01,
+            texture: Luxe.resources.texture('assets/images/icons/background.png'),
+            color: new Color(1, 1, 1, 0.5),
+        });
+
+        powerText = new luxe.Text({
+            text: '' + core.models.Game.player.life,
+            pos: new Vector(hero.size.x / 2, hero.size.y + 6),
+            color: new Color(0, 0, 0),
+            point_size: 24,
+            align: luxe.Text.TextAlign.center,
+            align_vertical: luxe.Text.TextAlign.center,
+            parent: hero,
+            depth: hero.depth + 0.02,
+            scale: new Vector(10, 10)
         });
 
         overlay_batcher = Luxe.renderer.create_batcher({
