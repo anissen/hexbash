@@ -1,0 +1,7 @@
+Encounter => Animal
+Encounter [0.25]=> Monster
+Encounter [0.10]=> Chief
+Animal => wolf
+Animal => spider
+Monster => orc
+Chief => necromancer

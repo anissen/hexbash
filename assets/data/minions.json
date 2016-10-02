@@ -1,0 +1,51 @@
+[
+    {
+        "name": "Orc",
+        "power": 5,
+        "identifier": "orc",
+        "icon": "orc-head.png"
+    },
+    {
+        "name": "Spider",
+        "power": 2,
+        "identifier": "spider",
+        "icon": "spider-alt.png"
+    },
+    {
+        "name": "Wolf",
+        "power": 4,
+        "identifier": "wolf",
+        "icon": "wolf-head.png"
+    },
+    {
+        "name": "Necromancer",
+        "power": 6,
+        "identifier": "necromancer",
+        "icon": "crowned-skull.png"
+    },
+    {
+        "name": "Overlord",
+        "power": 10,
+        "identifier": "overlord",
+        "icon": "overlord-helm.png"
+    },
+    {
+        "name": "Archer",
+        "power": 2,
+        "identifier": "archer",
+        "icon": "bowman.png",
+        "abilities": {
+            "range": 2,
+            "haste": true
+        }
+    },
+    {
+        "name": "Jumper",
+        "power": 3,
+        "identifier": "jumper",
+        "icon": "jump-across.png",
+        "abilities": {
+            "jump": 2
+        }
+    }
+]

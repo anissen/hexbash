@@ -39,6 +39,8 @@ class WorldState extends State {
     var hero :Sprite;
     var enemies :Array<Enemy>;
 
+    var boss :Enemy = null;
+
     var path :Array<Hex>;
 
     var overlay_batcher :phoenix.Batcher;
@@ -162,6 +164,9 @@ class WorldState extends State {
         var walkable = true;
         if (Math.random() > 0.95 && !is_hero_start_hex) {
             var data = EnemyFactory.CreateRandom();
+            if (boss == null) {
+                data = EnemyFactory.Create('overlord');
+            }
             var enemy = new Enemy({
                 pos: new Vector(pos.x, pos.y),
                 identifier: data.identifier,
@@ -171,6 +176,9 @@ class WorldState extends State {
                 chase_tiles: data.chase_tiles
             });
             enemies.push(enemy);
+            if (boss == null) {
+                boss = enemy;
+            }
         } else if (Math.random() > 0.9 && !is_hero_start_hex) {
             walkable = false;
             if (Math.random() < 0.8) {

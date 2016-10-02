@@ -1,0 +1,37 @@
+[
+    {
+        "identifier": "orc",
+        "icon": "orc-head.png",
+        "speed": 0.25,
+        "idle": 0.05,
+        "chase_tiles": 0
+    },
+    {
+        "identifier": "spider",
+        "icon": "spider-alt.png",
+        "speed": 0.5,
+        "idle": 0.75,
+        "chase_tiles": 2
+    },
+    {
+        "identifier": "wolf",
+        "icon": "wolf-head.png",
+        "speed": 1.0,
+        "idle": 0.25,
+        "chase_tiles": 4
+    },
+    {
+        "identifier": "necromancer",
+        "icon": "crowned-skull.png",
+        "speed": 0.4,
+        "idle": 0.1,
+        "chase_tiles": 3
+    },
+    {
+        "identifier": "overlord",
+        "icon": "overlord-helm.png",
+        "speed": 0.25,
+        "idle": 0.2,
+        "chase_tiles": 2
+    }
+]
