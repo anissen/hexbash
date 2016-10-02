@@ -273,7 +273,6 @@ class HandState extends State {
                 var pos = hexGrid.hex_to_pos(target);
                 var radius = (is_target_highlighted(target) ? 35 : 30);
                 Luxe.draw.circle({ x: pos.x, y: pos.y, color: new Color(1, 0.5, 1, 0.4), r: radius, immediate: true, depth: 15 });
-                trace(card.icon);
                 Luxe.draw.texture({ texture: Luxe.resources.texture('assets/images/icons/${card.icon}'), size: new Vector(radius, radius), immediate: true, x: pos.x - radius * 0.5, y: pos.y - radius * 0.5 });
             }
         }

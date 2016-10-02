@@ -91,6 +91,7 @@ class WorldState extends State {
         });
         overlay_filter.color.a = 0.5;
 
+        /*
         for (i in 0 ... 5) {
             var top = Math.random() < 0.5;
             var sun_ray = new Sprite({
@@ -102,6 +103,7 @@ class WorldState extends State {
             });
             sun_ray.color.a = 0.2;
         }
+        */
     }
 
     override function onleave(_) {

@@ -31,6 +31,7 @@ class Main extends luxe.Game {
         config.preload.textures.push({ id: 'assets/images/icons/gladius.png' });
         config.preload.textures.push({ id: 'assets/images/icons/bowman.png' });
         config.preload.textures.push({ id: 'assets/images/icons/jump-across.png' });
+        config.preload.textures.push({ id: 'assets/images/icons/overlord-helm.png' });
 
         config.preload.textures.push({ id: 'assets/images/overlay_filter.png' });
         config.preload.textures.push({ id: 'assets/images/sun_ray.png' });
@@ -78,6 +79,7 @@ class Main extends luxe.Game {
         core.factories.MinionFactory.Initialize(minion_database);
 
         var enemy_database :Array<core.factories.EnemyFactory.EnemyData> = Luxe.resources.json('assets/data/world_enemies.json').asset.json;
+
         var enemy_grammar = Luxe.resources.text('assets/data/encounter_grammar.txt').asset.text;
         core.factories.EnemyFactory.Initialize(enemy_database, enemy_grammar);
 

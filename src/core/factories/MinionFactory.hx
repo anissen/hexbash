@@ -39,14 +39,16 @@ class MinionFactory {
         var data = GetData(identifier);
         var minion = new Minion(data.name, playerId, data.power, hex, data.icon, (data.hero != null ? data.hero : false));
 
-        if (data.abilities.jump != null) {
-            minion.movement = Jump(data.abilities.jump);
-        }
-        if (data.abilities.range != null) {
-            minion.range = data.abilities.range;
-        }
-        if (data.abilities.haste != null && data.abilities.haste) {
-            minion.actions = 1;
+        if (data.abilities != null) {
+            if (data.abilities.jump != null) {
+                minion.movement = Jump(data.abilities.jump);
+            }
+            if (data.abilities.range != null) {
+                minion.range = data.abilities.range;
+            }
+            if (data.abilities.haste != null && data.abilities.haste) {
+                minion.actions = 1;
+            }
         }
         // for (ability in data.abilities) {
         //     switch (ability) {

@@ -437,7 +437,6 @@ class Battle {
 
     public function can_play_card(cardId :Int) :Bool {
         var card = get_card_from_id(cardId);
-        trace('Can cast card ${card.name}: ${card.cost} < ${hero.power}');
         return (card.cost < hero.power);
     }
 

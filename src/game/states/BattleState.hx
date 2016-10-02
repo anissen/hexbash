@@ -49,8 +49,7 @@ class BattleState extends State {
     }
 
     override function onenter(data :Dynamic) {
-        trace('Player deck:');
-        core.models.Game.player.deck.print();
+        // core.models.Game.player.deck.print();
 
         reset(data.enemy, 1000 * Math.random());
 
@@ -112,7 +111,10 @@ class BattleState extends State {
             battle.add_minion(model);
         }
 
-        battle.add_minion(new Minion('Enemy', 1, 4, new Hex(0, 0), 'crowned-skull.png', true)); // TODO: Should be part of normal generation
+        var enemy_hero = core.factories.MinionFactory.Create(enemy, 1, new Hex(0, 0));
+        enemy_hero.hero = true;
+        battle.add_minion(enemy_hero);
+        // battle.add_minion(new Minion('Enemy', 1, 4, new Hex(0, 0), 'crowned-skull.png', true)); // TODO: Should be part of normal generation
 
         battle.add_minion(new Minion('Hero', 0, core.models.Game.player.life, new Hex(-1, 2), 'pointy-hat.png', true));
         battle.add_minion(new Minion('Rat', 0, Luxe.utils.random.int(1, 6), get_placement(), 'wolf-head.png', false));
@@ -217,10 +219,14 @@ class BattleState extends State {
     }
 
     function heal_minion(modelId :Int, amount :Int) :Promise {
+        trace('heal_minion');
         var minion = minion_from_model(modelId);
         return new Promise(function(resolve) {
             Actuate.tween(minion.color, 0.1, { r: 0.0, g: 1.0, b: 0.0 }).reflect().repeat(1)
-                .onComplete(function() { minion.heal(amount); resolve(); });
+                .onComplete(function() {
+                    if (minion != null) minion.heal(amount);
+                    resolve();
+                });
         });
     }
 
