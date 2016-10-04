@@ -262,6 +262,7 @@ class Battle {
     }
 
     function emit(event :Event) :Void {
+        // trace('emit: $event');
         events.handle(event);
         // for (eff in effects) {
         //     if (eff.trigger(this, event)) {
@@ -291,7 +292,14 @@ class Battle {
 
         emit(MinionDied(modelId));
 
-        if (minion.hero) end_game(minion.playerId != 0); // GIANT HACK:
+        if (minion.hero && minion.playerId == 0) {
+            end_game(false);
+        } else if (minion.playerId != 0) {
+            for (m in minions) {
+                if (m.playerId != 0) return;
+            }
+            end_game(true);
+        }
     }
 
     function damage_minion(modelId :Int, amount :Int) {

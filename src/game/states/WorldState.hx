@@ -187,6 +187,8 @@ class WorldState extends State {
             depth: hex.r
         });
 
+        // TODO: Make a set of unoccupied hexes instead and use that to add enemies, obstacles, villages, etc.
+
         var is_hero_start_hex = (hex.q == 0 && hex.r == 0);
         var walkable = true;
         if (Math.random() > 0.95 && !is_hero_start_hex) {

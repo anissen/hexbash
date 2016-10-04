@@ -4,6 +4,7 @@
 --> If this game is shipped tomorrow, what is the most important thing to work on right now??
 
 [ ] Add an enemy that serves as the final boss
+[ ] Add underlaying map defining the world + add perlin noise on top
 [ ] Get a random weapon when winning a battle
 [ ] Persist game state across sessions
 [ ] Battle: Create battle with the given enemy type

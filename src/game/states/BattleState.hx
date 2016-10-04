@@ -219,12 +219,11 @@ class BattleState extends State {
     }
 
     function heal_minion(modelId :Int, amount :Int) :Promise {
-        trace('heal_minion');
         var minion = minion_from_model(modelId);
         return new Promise(function(resolve) {
             Actuate.tween(minion.color, 0.1, { r: 0.0, g: 1.0, b: 0.0 }).reflect().repeat(1)
                 .onComplete(function() {
-                    if (minion != null) minion.heal(amount);
+                    minion.heal(amount);
                     resolve();
                 });
         });
