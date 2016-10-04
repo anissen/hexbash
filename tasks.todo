@@ -6,6 +6,7 @@
 [ ] Add an enemy that serves as the final boss
 [ ] Add underlaying map defining the world + add perlin noise on top
 [ ] Get a random weapon when winning a battle
+[ ] Make enemies on world map move in sync with player (e.g. maintain a set of unoccupied hexes)
 [ ] Persist game state across sessions
 [ ] Battle: Create battle with the given enemy type
 [ ] Refactor: Split Entities.hx into files
@@ -13,6 +14,7 @@
 [ ] General-purpose effect handling (of type Void->Array<Command>, Command includes RemoveEffect)
 [ ] Spell that moves a minion (jump)
 [ ] Generate weapons
+[ ] Add a familiar
 
 # Equipment/skills:
 [ ] Allow 1 additional action per minion (penalty: -1 power)

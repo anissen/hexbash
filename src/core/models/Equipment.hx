@@ -14,8 +14,8 @@ class Fists extends Equipment implements CardProvider {
     public function get_cards() :Array<Card> {
         // 100% chance for providing 1 card per turn
         // return [{ name: 'Punch', cost: 0, power: 1, type: Attack(1), icon: 'wolf-head.png', id: 0 }];
-        var power = 1 + Math.floor(3 * Math.random());
-        return [new Card.AttackCard('Punch $power', power, 'fist.png')];
+        var power = 1 + Math.floor(2 * Math.random());
+        return [new Card.AttackCard('Punch', power, 'fist.png')];
     }
 }
 
