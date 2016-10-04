@@ -16,16 +16,14 @@ import mint.focus.Focus;
 
 class LootState extends State {
     static public var StateId :String = 'LootState';
-    var scene :Scene;
 
-    public static var canvas: mint.Canvas;
-    public static var rendering: LuxeMintRender;
-    public static var layout: Margins;
+    var canvas: mint.Canvas;
+    var rendering: LuxeMintRender;
+    var layout: Margins;
     var focus :Focus;
 
     public function new() {
         super({ name: StateId });
-        this.scene = new Scene();
     }
 
     override function onenabled<T>(value :T) {
@@ -117,7 +115,6 @@ class LootState extends State {
     }
 
     override function ondisabled<T>(value :T) {
-        // scene.empty();
         canvas.destroy();
     }
 }

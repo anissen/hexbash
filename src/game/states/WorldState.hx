@@ -40,7 +40,7 @@ class WorldState extends State {
     var powerText :luxe.Text;
 
     var enemies :Array<Enemy>;
-    var villages :Array<Hex>;
+    var villages :Array<String>; // map of hex keys
 
     var boss :Enemy = null;
 
@@ -55,12 +55,23 @@ class WorldState extends State {
         path = [];
     }
 
+    override function init() {
+        overlay_batcher = Luxe.renderer.create_batcher({
+            name: 'overlay',
+            layer: 100
+        });
+        overlay_batcher.on(prerender, function(b :Batcher) {
+            Luxe.renderer.blend_mode(BlendMode.src_alpha, BlendMode.one);
+        });
+        overlay_batcher.on(postrender, function(b :Batcher) {
+            Luxe.renderer.blend_mode();
+        });
+    }
+
     override function onenter(_) {
         Luxe.camera.zoom = 10;
         Luxe.renderer.clear_color.set(130/255, 220/255, 230/255); // water color
         luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1 });
-
-        // TODO: Don't re-initialize everything onenter
 
         hexGrid = new HexGrid(35, 2, 0);
         hexGrid.events.listen(HexGrid.HEX_CLICKED_EVENT, onhexclicked);
@@ -70,7 +81,7 @@ class WorldState extends State {
         enemies = [];
         villages = [];
 
-        create_map();
+        create_map(); // TODO: Don't re-initialize everything onenter
 
         hero = new Sprite({
             pos: hex_to_pos(new Hex(0, 0)),
@@ -99,17 +110,6 @@ class WorldState extends State {
             parent: hero,
             depth: hero.depth + 0.02,
             scale: new Vector(10, 10)
-        });
-
-        overlay_batcher = Luxe.renderer.create_batcher({
-            name: 'overlay',
-            layer: 100
-        });
-        overlay_batcher.on(prerender, function(b :Batcher) {
-            Luxe.renderer.blend_mode(BlendMode.src_alpha, BlendMode.one);
-        });
-        overlay_batcher.on(postrender, function(b :Batcher) {
-            Luxe.renderer.blend_mode();
         });
 
         overlay_filter = new Sprite({
@@ -153,7 +153,7 @@ class WorldState extends State {
     		return (val + 1) / 2;
     	}
 
-        var hex_list = MapFactory.create_hexagon_map(10);
+        var hex_list = MapFactory.create_hexagon_map(20);
         for (h in hex_list) {
             var value = get_normalized_value(module.getValue(h.q * 15, h.r * 15, 0));
             if (value < water_level) continue;
@@ -229,7 +229,7 @@ class WorldState extends State {
                 scale: new Vector(0.1, 0.1),
                 depth: 97
             });
-            villages.push(hex);
+            villages.push(hex.key);
         }
         if (walkable) {
             hexes[hex.key] = hex;
@@ -291,16 +291,14 @@ class WorldState extends State {
             Luxe.camera.center = hero.pos;
         } else {
             var hex = path.shift();
+            if (villages.has(hex.key)) {
+                trace('Village!');
+                // TODO: Healing should cost money
+                core.models.Game.player.life = core.models.Game.player.life_max;
+                powerText.text = '' + core.models.Game.player.life;
+            }
             for (enemy in enemies) {
                 var enemy_hex = hexGrid.pos_to_hex(enemy.pos);
-                for (v in villages) {
-                    if (hex.key == v.key) {
-                        trace('Village!');
-                        core.models.Game.player.life = core.models.Game.player.life_max;
-                        powerText.text = '' + core.models.Game.player.life;
-                    }
-                }
-
                 if (hex.key == enemy_hex.key) {
                     enter_battle(enemy);
                     return;
