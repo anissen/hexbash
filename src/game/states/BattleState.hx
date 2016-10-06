@@ -243,9 +243,14 @@ class BattleState extends State {
         // reset(battle.get_random().get());
 
         var promise = new Promise(function(resolve) {
-            Main.states.enable(LootState.StateId, { callback: function(x) {
+            Main.states.enable(LootState.StateId, { callback: function(selection :Int) {
                 Main.states.disable(LootState.StateId);
-                trace('choose loot #$x');
+                trace('choose loot #$selection');
+                if (selection == 0) {
+                    core.models.Game.player.equipment = [new core.models.Equipment.Sword()];
+                } else {
+                    core.models.Game.player.equipment = [new core.models.Equipment.CursedSword()];
+                }
                 resolve();
             }});
         });
