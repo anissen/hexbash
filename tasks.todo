@@ -5,7 +5,7 @@
 
 [ ] Add an enemy that serves as the final boss
 [ ] Add underlaying map defining the world + add perlin noise on top
-[ ] Get a random weapon when winning a battle
+[ ] Get a random weapon/spell when winning a battle
 [ ] Make enemies on world map move in sync with player (e.g. maintain a set of unoccupied hexes)
 [ ] Persist game state across sessions
 [ ] Battle: Create battle with the given enemy type
