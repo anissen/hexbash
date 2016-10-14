@@ -19,9 +19,9 @@ enum WeaponAbilityType {
 typedef WeaponAbility = { cost :Int, rarity :Float, type :WeaponAbilityType };
 
 class CustomWeapon extends Equipment implements CardProvider {
-    var abilities :Array<WeaponAbility>;
+    var abilities :Array<WeaponAbilityType>;
 
-    public function new(abilities :Array<WeaponAbility>) {
+    public function new(abilities :Array<WeaponAbilityType>) {
         super();
         this.abilities = abilities;
     }
@@ -30,7 +30,7 @@ class CustomWeapon extends Equipment implements CardProvider {
         var damage = 0;
         var maybe_damage = 0;
         for (a in abilities) {
-            switch (a.type) {
+            switch (a) {
                 case Damage(value): damage += value;
                 case MaybeDamage(value): maybe_damage += value;
                 case Curse: trace('CURSE! (TODO: Do something here)');
@@ -63,7 +63,7 @@ class WeaponBuilder {
             if (usable_abilities.length == 0) break;
 
             var random_ability = usable_abilities[Math.floor(usable_abilities.length * Math.random())];
-            picked_abilities.push(random_ability);
+            picked_abilities.push(random_ability.type);
             level -= random_ability.cost;
             if (picked_abilities.length >= level) break; // prevent too many abilities
         }

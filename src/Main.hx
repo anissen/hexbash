@@ -42,6 +42,7 @@ class Main extends luxe.Game {
         config.preload.jsons.push({ id: 'assets/data/world_enemies.json' });
         config.preload.jsons.push({ id: 'assets/data/minions.json' });
         config.preload.texts.push({ id: 'assets/data/encounter_grammar.txt' });
+        config.preload.texts.push({ id: 'assets/data/equipment_grammar.txt' });
 
         config.preload.jsons.push({ id: 'assets/ui/loot_menu.json' });
 
@@ -71,7 +72,8 @@ class Main extends luxe.Game {
         states.add(new MinionActionsState());
         states.add(new WorldState());
         states.add(new LootState());
-        states.set(BattleState.StateId, { enemy: 'spider' });
+        states.set(WorldState.StateId);
+        // states.set(BattleState.StateId, { enemy: 'spider' });
         // states.enable(LootState.StateId);
     }
 
@@ -83,6 +85,14 @@ class Main extends luxe.Game {
 
         var enemy_grammar = Luxe.resources.text('assets/data/encounter_grammar.txt').asset.text;
         core.factories.EnemyFactory.Initialize(enemy_database, enemy_grammar);
+
+        var equipment_grammar = Luxe.resources.text('assets/data/equipment_grammar.txt').asset.text;
+        core.factories.EquipmentFactory.Initialize(equipment_grammar);
+
+        for (i in 0 ... 5) {
+            var level = i + 1;
+            trace('weapon level $level: ' + core.factories.EquipmentFactory.Create(core.factories.EquipmentFactory.EquipmentType.Weapon, level));
+        }
 
         var deck = core.models.Game.player.deck;
         deck.add(new core.models.Card.MinionCard('wolf'));

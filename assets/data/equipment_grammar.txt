@@ -1,0 +1,9 @@
+
+Weapon_level5 => Weapon_level4 + Attribute
+Weapon_level4 => Weapon_level3 + Attribute
+Weapon_level3 => Weapon_level2 + Attribute
+Weapon_level2 => Weapon_level1 + Attribute
+Weapon_level1 => Attribute
+Attribute => damage_small
+Attribute [0.1]=> damage_medium
+Attribute [0.1]=> curse + Attribute

@@ -295,7 +295,7 @@ class WorldState extends State {
             var hex = path.shift();
             if (villages.has(hex.key)) {
                 trace('Village!');
-                // TODO: Healing should cost money
+                // TODO: Healing should cost money (maybe show a Village State screen)
                 core.models.Game.player.life = core.models.Game.player.life_max;
                 powerText.text = '' + core.models.Game.player.life;
             }
