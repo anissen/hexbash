@@ -33,10 +33,13 @@ class EquipmentFactory {
     }
 
     static function terminal_to_attribute(terminal :String) {
+        // trace('terminal: $terminal');
         return switch (terminal) {
             case 'damage_small': core.models.Equipment.WeaponAbilityType.Damage(1);
             case 'damage_medium': core.models.Equipment.WeaponAbilityType.Damage(2);
             case 'curse': core.models.Equipment.WeaponAbilityType.Curse;
+            case 'leech': core.models.Equipment.WeaponAbilityType.Curse;     // TODO: implement
+            case 'push_back': core.models.Equipment.WeaponAbilityType.Curse; // TODO: implement
             case _: throw 'Unhandled case!';
         };
     }
