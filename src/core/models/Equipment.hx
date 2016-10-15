@@ -14,6 +14,8 @@ enum WeaponAbilityType {
     Damage(value :Int);
     MaybeDamage(value :Int);
     Curse(/* function */);
+    Leech(/* ... */);
+    PushBack(/* ... */);
 }
 
 typedef WeaponAbility = { cost :Int, rarity :Float, type :WeaponAbilityType };
@@ -34,6 +36,7 @@ class CustomWeapon extends Equipment implements CardProvider {
                 case Damage(value): damage += value;
                 case MaybeDamage(value): maybe_damage += value;
                 case Curse: trace('CURSE! (TODO: Do something here)');
+                case _:
             }
         }
         return [new Card.AttackCard('Weapon', damage + Math.floor(maybe_damage * Math.random()), 'fist.png')];
