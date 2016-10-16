@@ -132,7 +132,7 @@ class Main extends luxe.Game {
         } else if (e.keycode == Key.key_m) {
             states.set(WorldState.StateId);
         } else if (e.keycode == Key.key_b) {
-            states.set(BattleState.StateId);
+            states.set(BattleState.StateId, { enemy: 'spider' });
         } else if (e.keycode == Key.escape) {
             if (!Luxe.core.shutting_down) Luxe.shutdown();
         }

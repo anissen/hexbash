@@ -206,6 +206,7 @@ class WorldState extends State {
             });
             enemies.push(enemy);
             if (boss == null) {
+                enemy.color.r = 0.5; // make the boss red-ish
                 boss = enemy;
             }
         } else if (Math.random() > 0.9 && !is_hero_start_hex) {

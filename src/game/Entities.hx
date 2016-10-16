@@ -52,7 +52,7 @@ class HexGrid extends luxe.Entity {
     var margin :Int;
 
     public function new(hexSize :Int = 60, marginX :Int = 5, marginY :Int = 5) {
-        super({ name: 'HexGrid' });
+        super({ name: 'HexGrid', name_unique: true });
         this.hexSize = hexSize;
         var size = new Point(hexSize + marginX, hexSize + marginY);
         var origin = new Point(Luxe.screen.mid.x, Luxe.screen.mid.y);
