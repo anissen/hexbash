@@ -8,7 +8,6 @@
 [ ] Get a random weapon/spell when winning a battle
 [ ] Make enemies on world map move in sync with player (e.g. maintain a set of unoccupied hexes)
 [ ] Persist game state across sessions
-[ ] Battle: Create battle with the given enemy type
 [ ] Refactor: Split Entities.hx into files
 [ ] Battle: Clean up effects handling
 [ ] General-purpose effect handling (of type Void->Array<Command>, Command includes RemoveEffect)
@@ -35,19 +34,19 @@ Spell ideas:
 · Draw a random card costing 3 to cast
 
 Ideas:
-· Thorns 1 ability (deal 1 damage back when attacked)
-· Taunt ability (nearby enemies can do nothing but attack this minion)
-· Amour 1 (prevent the first 1 damage)
-· Amour piercing 1 (ignore 1 amour)
-· Ranged
-· Heal random nearby ally
-· Empower 1 (+1 power to random nearby ally)
-· In general: Mechanic -> Rule -> Consequence -> Puzzle (https://www.youtube.com/watch?v=2zK8ItePe3Y)
-· Cards that give more moves/attacks
-· Equipment that can restore cards to the deck after an ended battle
-· Cards that allow for precise targeting of spells/minions
-· When the battle is won, the hero heals the remaining power of his own minions
-· Bad cards that *must* be played when drawn (e.g. hero tripped, cannot move/attack this turn) (https://youtu.be/AdW8dGEEWfA?t=8m37s)
-· Certain equipment include cards that *must* be put in the deck (see https://youtu.be/AdW8dGEEWfA?t=10m56s)
-· Crazy idea: Hero cannot attack - attacks are performed via cards
-· Trap cards are shown when played, but not *where* they are placed
+[·] Thorns 1 ability (deal 1 damage back when attacked)
+[·] Taunt ability (nearby enemies can do nothing but attack this minion)
+[·] Amour 1 (prevent the first 1 damage)
+[·] Amour piercing 1 (ignore 1 amour)
+[·] Ranged
+[·] Heal random nearby ally
+[·] Empower 1 (+1 power to random nearby ally)
+[·] In general: Mechanic -> Rule -> Consequence -> Puzzle (https://www.youtube.com/watch?v=2zK8ItePe3Y)
+[·] Cards that give more moves/attacks
+[·] Equipment that can restore cards to the deck after an ended battle
+[·] Cards that allow for precise targeting of spells/minions
+[X] When the battle is won, the hero heals the remaining power of his own minions
+[X] Bad cards that *must* be played when drawn (e.g. hero tripped, cannot move/attack this turn) (https://youtu.be/AdW8dGEEWfA?t=8m37s)
+[·] Certain equipment include cards that *must* be put in the deck (see https://youtu.be/AdW8dGEEWfA?t=10m56s)
+[X] Crazy idea: Hero cannot attack - attacks are performed via cards
+[·] Trap cards are shown when played, but not *where* they are placed
