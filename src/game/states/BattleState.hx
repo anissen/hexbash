@@ -96,28 +96,75 @@ class BattleState extends State {
 
     function load_map(enemy :String, seed :Float) {
         var hexes = core.factories.MapFactory.create_custom_map();
+
+        var enemy_hex = new Hex(1, -2);
+        var hero_hex = new Hex(-1, 2);
+
+        // remove random hexes
+        // var hexes_to_remove = 2;
+        // for (i in 0 ... hexes_to_remove) {
+        //     if (hexes.length <= 1) break;
+        //     var random_index = Math.floor(hexes.length * Math.random());
+        //     var random_hex = hexes[random_index];
+        //     var path = hero_hex.find_path(enemy_hex, hexes.length, 1000, function (h) {
+        //         if (h.key == random_hex.key) return false;
+        //         for (hex in hexes) {
+        //             if (hex.key == h.key) return true;
+        //         }
+        //         return false;
+        //     }, true);
+        //     if (path.length > 0) { // there is a path from hero to enemy
+        //         hexes.splice(random_index, 1)[0];
+        //     }
+        // }
+
+        var random_index = Math.floor(hexes.length * Math.random());
+        hexes.splice(random_index, 1)[0];
+
+        hexes.push(enemy_hex);
+        hexes.push(hero_hex);
+
+        if (Math.random() < 0.1) hexes.push(new Hex(0, 2));  // upper left
+        if (Math.random() < 0.1) hexes.push(new Hex(2, -2)); // upper right
+        if (Math.random() < 0.1) hexes.push(new Hex(-2, 2)); // lower left
+        if (Math.random() < 0.1) hexes.push(new Hex(0, 2));  // lower right
+
         hexes.map(battle.add_hex);
 
-        function get_placement() {
-            while (true) {
-                var random_hex = hexes[Math.floor(hexes.length * Math.random())];
-                if (battle.get_minion(random_hex) == null) return random_hex;
+        // function get_random_placement() {
+        //     while (true) {
+        //         var random_hex = hexes[Math.floor(hexes.length * Math.random())];
+        //         if (battle.get_minion(random_hex) == null) return random_hex;
+        //     }
+        // }
+
+        function get_placement_near(hex :Hex) :Null<Hex> {
+            var hexes = hex.range(1);
+            hexes.push(hex);
+            for (h in hexes.shuffle()) {
+                if (battle.has_hex(h) && battle.get_minion(h) == null) return h;
             }
+            return null;
         }
 
         function create_enemy_minion(data :core.factories.EnemyFactory.EnemyData) {
             var enemyId = 1;
-            var model = new Minion(data.identifier, enemyId, Luxe.utils.random.int(1, 6), get_placement(), data.icon, false);
+            var maybe_hex = get_placement_near(enemy_hex);
+            if (maybe_hex == null) return;
+            var model = new Minion(data.identifier, enemyId, Luxe.utils.random.int(1, 6), maybe_hex, data.icon, false);
             battle.add_minion(model);
         }
 
-        var enemy_hero = core.factories.MinionFactory.Create(enemy, 1, new Hex(0, 0));
+        var enemy_hero = core.factories.MinionFactory.Create(enemy, 1, get_placement_near(enemy_hex));
         enemy_hero.hero = true;
         battle.add_minion(enemy_hero);
         // battle.add_minion(new Minion('Enemy', 1, 4, new Hex(0, 0), 'crowned-skull.png', true)); // TODO: Should be part of normal generation
 
-        battle.add_minion(new Minion('Hero', 0, core.models.Game.player.life, new Hex(-1, 2), 'pointy-hat.png', true));
-        battle.add_minion(new Minion('Rat', 0, Luxe.utils.random.int(1, 6), get_placement(), 'wolf-head.png', false));
+        battle.add_minion(new Minion('Hero', 0, core.models.Game.player.life, get_placement_near(hero_hex), 'pointy-hat.png', true));
+        var minion_hex = get_placement_near(hero_hex);
+        if (minion_hex != null) {
+            battle.add_minion(new Minion('Rat', 0, Luxe.utils.random.int(1, 6), minion_hex, 'wolf-head.png', false));
+        }
 
         core.factories.EnemyFactory.CreateMany().map(create_enemy_minion);
     }
