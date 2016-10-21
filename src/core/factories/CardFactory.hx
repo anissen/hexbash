@@ -13,6 +13,12 @@ class CardFactory {
         }
     }
 
+    public function create_random() :Card {
+        var keys = cardData.keys();
+        var random_key = keys[Math.floor(keys.length * Math.random())];
+        return cardData[random_key];
+    }
+
     public function create(id :String) :Card {
         return cardData[id];
     }

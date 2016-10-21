@@ -288,9 +288,10 @@ class BattleState extends State {
         trace('Game Over - You ${won ? "Won" : "Lost"}!');
         if (Main.states.enabled(HandState.StateId)) Main.states.disable(HandState.StateId);
         // reset(battle.get_random().get());
+        var cards = [new core.models.Card.MinionCard('spider'), new core.models.Card.MinionCard('wolf')];
 
         var promise = new Promise(function(resolve) {
-            Main.states.enable(LootState.StateId, { callback: function(selection :Int) {
+            Main.states.enable(LootState.StateId, { cards: cards, callback: function(selection :Int) {
                 Main.states.disable(LootState.StateId);
                 trace('choose loot #$selection');
                 if (selection == 0) {
@@ -346,6 +347,7 @@ class BattleState extends State {
         switch (event.keycode) {
             // case luxe.Input.Key.enter: battle.do_action(core.Models.Action.EndTurn);
             case luxe.Input.Key.key_r: reset('spider', 1000 * Math.random());
+            case luxe.Input.Key.key_w: game_over(true);
         }
     }
 }
