@@ -445,6 +445,10 @@ class Battle {
 
     public function can_play_card(cardId :Int) :Bool {
         var card = get_card_from_id(cardId);
+        if (card == null) {
+            trace('Card $cardId was null!');
+            return false;
+        }
         return (card.cost < hero.power);
     }
 
